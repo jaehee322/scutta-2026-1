@@ -20,7 +20,7 @@ def create_app():
     app.config.from_object(Config)
     
     app.config['GLOBAL_TEXTS'] = {
-        'semester': '2025-1'
+        'semester': '2025-2'
     }
     
     db_url = app.config["SQLALCHEMY_DATABASE_URI"]
