@@ -1,32 +1,24 @@
 import os
-from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class Config:
-    # Render의 환경 변수에서 데이터베이스 주소를 가져옵니다.
-    db_url = os.getenv("DATABASE_URL")
-    
-    if db_url is None:
-        raise ValueError("DATABASE_URL 환경 변수가 설정되지 않았습니다. .env 파일을 확인해주세요.")
+    # 1. Render 환경 변수에서 데이터베이스 주소를 가져옵니다.
+    db_url = os.environ.get('DATABASE_URL')
 
-    # ▼▼▼▼▼ 바로 이 한 줄이 모든 문제를 해결합니다! ▼▼▼▼▼
-    # Render가 주는 'postgres://' 주소를 SQLAlchemy가 알아듣는 'postgresql://'로 바꿔줍니다.
-    if db_url.startswith("postgres://"):
+    # 2. Render의 'postgres://' 주소를 SQLAlchemy가 알아듣는 'postgresql://'로 바꿔줍니다.
+    if db_url and db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
-    # ▲▲▲▲▲ 이 부분이 추가되었습니다 ▲▲▲▲▲
 
-    # 이하는 기존의 좋은 로직을 그대로 사용합니다.
-    parsed_url = urlparse(db_url)
-   
-    if parsed_url.hostname and "render.com" in parsed_url.hostname:
-        if "sslmode" not in db_url:
-            db_url += "?sslmode=require"
-    else:
-        if "sslmode" not in db_url:
-            db_url += "?sslmode=disable"
-
+    # 3. 최종 DB 주소와 SECRET_KEY를 설정합니다.
     SQLALCHEMY_DATABASE_URI = db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = os.getenv('SECRET_KEY') or 'a-default-secret-key'
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'a-very-secret-key')
+
+    # 4. SSL 연결 설정을 위한 옵션을 추가합니다. (Render DB는 SSL 연결이 필요합니다.)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'connect_args': {
+            'sslmode': 'require'
+        }
+    }
