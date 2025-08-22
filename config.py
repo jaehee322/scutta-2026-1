@@ -4,21 +4,26 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    # 1. Render 환경 변수에서 데이터베이스 주소를 가져옵니다.
     db_url = os.environ.get('DATABASE_URL')
-
-    # 2. Render의 'postgres://' 주소를 SQLAlchemy가 알아듣는 'postgresql://'로 바꿔줍니다.
     if db_url and db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-    # 3. 최종 DB 주소와 SECRET_KEY를 설정합니다.
     SQLALCHEMY_DATABASE_URI = db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get('SECRET_KEY', 'a-very-secret-key')
 
-    # 4. SSL 연결 설정을 위한 옵션을 추가합니다. (Render DB는 SSL 연결이 필요합니다.)
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'connect_args': {
-            'sslmode': 'require'
+    # ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼
+    # 현재 환경이 Render인지 확인 (Render는 IS_PULL_REQUEST 같은 환경 변수를 제공)
+    is_render_env = 'IS_PULL_REQUEST' in os.environ
+
+    # Render 환경일 경우에만 SSL 연결을 요구하도록 수정
+    if is_render_env:
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'connect_args': {
+                'sslmode': 'require'
+            }
         }
-    }
+    # 로컬 환경에서는 SSL 설정을 적용하지 않음
+    else:
+        SQLALCHEMY_ENGINE_OPTIONS = {}
+    # ▲▲▲▲▲ 여기까지 수정 ▲▲▲▲▲
