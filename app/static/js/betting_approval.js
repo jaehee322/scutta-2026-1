@@ -1,189 +1,94 @@
-let currentTab = 'all';
-let offset = 0;
+// static/js/betting_approval.js
+
+let currentOffset = 0;
 const limit = 30;
+let currentTab = 'all';
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadBettings(currentTab);
-
-    const tabAll = document.getElementById('tab-all');
-    const tabPending = document.getElementById('tab-pending');
-    const tabApproved = document.getElementById('tab-approved');
-
-    document.getElementById('load-more').addEventListener('click', () => {
-        offset += limit;
-        loadBettings(currentTab, offset);
-    });
-
-    document.getElementById('tab-all').addEventListener('click', () => {
-        document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
-        tabAll.classList.add("active");
-
-        currentTab = 'all'
-        offset = 0;
-        loadBettings(currentTab, offset);
-    });
-
-    document.getElementById('tab-pending').addEventListener('click', () => {
-        document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
-        tabPending.classList.add("active");
-
-        currentTab = 'pending'
-        offset = 0;
-        loadBettings(currentTab, offset);
-    });
-
-    document.getElementById('tab-approved').addEventListener('click', () => {
-        document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
-        tabApproved.classList.add("active");
-
-        currentTab = 'approved'
-        offset = 0;
-        loadBettings(currentTab, offset);
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    loadBettings();
 });
 
-function loadBettings(tab, newOffset = 0) {
-    currentTab = tab;
-    offset = newOffset;
+function selectTab(tabElement, tabName) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    tabElement.classList.add('active');
+    currentTab = tabName;
+    currentOffset = 0;
+    loadBettings(false);
+}
 
-    fetch(`/get_bettings?tab=${tab}&offset=${offset}&limit=${limit}`)
+function loadBettings(append = false) {
+    fetch(`/get_bettings?offset=${currentOffset}&limit=${limit}&tab=${currentTab}`)
         .then(response => response.json())
         .then(data => {
             const tableBody = document.getElementById('betting-table-body');
-            if (offset === 0) tableBody.innerHTML = '';
-
+            if (!append) {
+                tableBody.innerHTML = '';
+            }
             data.forEach(betting => {
                 const row = document.createElement('tr');
+                const approvedText = betting.approved ? '✔️' : '❌';
                 row.innerHTML = `
-                    <td><input type="checkbox" class="select-betting" value="${betting.id}"></td>
-                    <td>${betting.approved ? '승인' : '미승인'}</td>
+                    <td><input type="checkbox" class="betting-checkbox" value="${betting.id}"></td>
+                    <td>${approvedText}</td>
                     <td>${betting.match.winner_name}</td>
                     <td>${betting.match.score}</td>
                     <td>${betting.match.loser_name}</td>
-                    <td>${betting.win_participants}</td>
-                    <td>${betting.lose_participants}</td>
+                    <td>${betting.win_participants.join(', ') || '없음'}</td>
+                    <td>${betting.lose_participants.join(', ') || '없음'}</td>
                     <td>${betting.point}</td>
                 `;
                 tableBody.appendChild(row);
             });
-            document.getElementById('load-more').style.display = data.length < limit ? 'none' : 'block';
-        })
-        .catch(error => console.error('Error fetching bettings:', error));
-}
-
-function approveAllBettings() {
-    fetch('/select_all_bettings', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-    })
-        .then(response => response.json())
-        .then(data => {
-            const ids = data.ids;
-            if (ids.length === 0) {
-                alert('승인할 베팅이 없습니다.');
-                return;
-            }
-
-            fetch('/approve_bettings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('모든 베팅이 승인되었습니다.');
-                        loadBettings(currentTab);
-                    } else {
-                        alert('오류가 발생했습니다.');
-                    }
-                })
-                .catch(error => {
-                    console.error('승인 요청 실패:', error);
-                    alert('승인 처리에 실패했습니다.');
-                });
-        })
-        .catch(error => {
-            console.error('베팅 조회 실패:', error);
-            alert('베팅 목록을 불러오는 중 오류가 발생했습니다.');
+            currentOffset += data.length;
         });
 }
 
-function approveBettings() {
-    const checkboxes = document.querySelectorAll('.select-betting:checked');
-    const ids = Array.from(checkboxes).map(checkbox => checkbox.value);
+document.getElementById('load-more').addEventListener('click', () => loadBettings(true));
 
-    if (ids.length === 0) {
-        alert('선택된 베팅이 없습니다.');
+function approveBettings() {
+    const selectedIds = Array.from(document.querySelectorAll('.betting-checkbox:checked')).map(cb => cb.value);
+    if (selectedIds.length === 0) {
+        alert('승인할 베팅을 선택하세요.');
         return;
     }
-
     fetch('/approve_bettings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                loadBettings(currentTab);
-            } else {
-                alert(data.error);
-            }
-        })
-        .catch(error => console.error('Error approving bettings:', error));
+        body: JSON.stringify({ ids: selectedIds })
+    }).then(() => location.reload());
 }
 
 function deleteBettings() {
-    const checkboxes = document.querySelectorAll('.select-betting:checked');
-    const ids = Array.from(checkboxes).map(checkbox => checkbox.value);
-
-    if (ids.length === 0) {
-        alert('선택된 베팅이 없습니다.');
+    const selectedIds = Array.from(document.querySelectorAll('.betting-checkbox:checked')).map(cb => cb.value);
+    if (selectedIds.length === 0) {
+        alert('삭제할 베팅을 선택하세요.');
         return;
     }
-
-    if (!confirm('정말 삭제하시겠습니까?')) {
-        return;
-    }
-
     fetch('/delete_bettings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let matchIds = data.match_ids;
-
-                fetch('/delete_matches', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: matchIds })
-                })
-                    .then(response => response.json())
-                    .catch(error => console.error('Error deleting matches:', error));
-                alert(data.message);
-                loadBettings(currentTab);
-            } else {
-                alert('오류가 발생했습니다.');
-            }
-        })
-        .catch(error => console.error('Error deleting bettings:', error));
+        body: JSON.stringify({ ids: selectedIds })
+    }).then(() => location.reload());
 }
 
-function toggleSelectAll(checkbox) {
-    const checkboxes = document.querySelectorAll('.select-betting');
+function approveAllBettings() {
+    fetch('/select_all_bettings')
+        .then(response => response.json())
+        .then(data => {
+            if (data.ids.length === 0) {
+                alert('승인 대기 중인 베팅이 없습니다.');
+                return;
+            }
+            fetch('/approve_bettings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: data.ids })
+            }).then(() => location.reload());
+        });
+}
 
-    checkboxes.forEach(cb => {
-        const approvedCell = cb.closest('tr').querySelector('td:nth-child(2)').textContent;
-
-        if ((currentTab === 'all' || currentTab === 'pending') && approvedCell === '미승인') {
-            cb.checked = checkbox.checked;
-        } else if (currentTab === 'approved' && approvedCell === '승인') {
-            cb.checked = checkbox.checked;
-        }
+function toggleSelectAll(source) {
+    document.querySelectorAll('.betting-checkbox').forEach(checkbox => {
+        checkbox.checked = source.checked;
     });
 }

@@ -1,0 +1,13 @@
+# Virtual Environment
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Sensitive Information
+.env
+*.env
+
+# IDE / Editor specific files
+.vscode/

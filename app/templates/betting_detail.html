@@ -3,115 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>베팅 상세</title>
+    <title>베팅 상세 - SCUTTA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        .container {
-            margin-top: 80px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <header class="flex justify-between items-center p-4 bg-white shadow">
-        <button class="text-xl" onclick="history.back()">&larr;</button>
-        <h1 class="text-lg font-bold">({{ rank.p1_rank or '무' }})  {{ betting.p1_name }} vs {{ betting.p2_name }}  ({{ rank.p2_rank or '무' }})</h1>
-        <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
+<body class="bg-gray-100">
+
+    <header>
+        <div class="w-1/3"><button class="text-2xl p-4 -ml-4" onclick="history.back()">&larr;</button></div>
+        <div class="w-1/3 text-center"><a href="{{ url_for('betting') }}" class="text-xl font-bold truncate px-2">({{ rank.p1_rank or '무' }}) {{ betting.p1_name }} vs {{ betting.p2_name }} ({{ rank.p2_rank or '무' }})</a></div>
+        <div class="w-1/3 flex justify-end items-center gap-4">
+           {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+            {% endif %}
+        </div>
     </header>
 
-    <div class="container mx-auto p-4">
-        <div class="flex justify-between mb-6">
-            <h2 class="text-lg font-bold mb-4">베팅 포인트: {{ betting.point * (2 + participants|length) }}</h2>
-            <button onclick="deleteBetting({{ betting.id }})" class="bg-red-500 text-white px-4 py-2 rounded">삭제</button>
-        </div>
-
-        <h2 class="text-lg font-bold mb-4">최근 전적</h2>
-        <table class="table w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border border-gray-300 p-2">
-                        <a href="/player/{{ betting.p1_id }}">({{ rank.p1_rank or '무' }})  {{ betting.p1_name }}</a>
-                    </th>
-                    <th class="border border-gray-300 p-2">세트</th>
-                    <th class="border border-gray-300 p-2">
-                        <a href="/player/{{ betting.p2_id }}">{{ betting.p2_name }}  ({{ rank.p2_rank or '무' }})</a>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for match in recent_matches %}
-                <tr>
-                    <td class="border border-gray-300 p-2 text-center">{{ match.p1_name }}</td>
-                    <td class="border border-gray-300 p-2 text-center">{{ match.score }}</td>
-                    <td class="border border-gray-300 p-2 text-center">{{ match.p2_name }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr class="bg-gray-100">
-                    <td class="border border-gray-300 p-2 text-center">{{ win_rate.p1_wins }}승</td>
-                    <td class="border border-gray-300 p-2 text-center">승률</td>
-                    <td class="border border-gray-300 p-2 text-center">{{ win_rate.p2_wins }}승</td>
-                </tr>
-            </tfoot>
-        </table>
-
-        <h2 class="text-lg font-bold mb-4">베팅 참가자</h2>
-        <table class="table w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border border-gray-300 p-2">{{ betting.p1_name }}</th>
-                    <th class="border border-gray-300 p-2">베팅</th>
-                    <th class="border border-gray-300 p-2">{{ betting.p2_name }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for participant in participants %}
-                <tr>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="radio" name="betting-{{ participant.id }}" value="{{ betting.p1_id }}-{{ participant.id }}" {% if participant.winner_id == betting.p1_id %}checked{% endif %} {% if participant.winner_id is not none %}disabled{% endif %} />
-                    </td>
-                    <td class="border border-gray-300 p-2">
-                        <a href="/player/{{ participant.id }}">{{ participant.name }}</a>
-                    </td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="radio" name="betting-{{ participant.id }}" value="{{ betting.p2_id }}-{{ participant.id }}" {% if participant.winner_id == betting.p2_id %}checked{% endif %} {% if participant.winner_id is not none %}disabled{% endif %} />
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="action-buttons">
-            <div class="left-buttons">
-                <button onclick="addParticipants({{ betting.id }})" class="bg-gray-200 text-gray-700 px-4 py-2 rounded">추가</button>
-                <button onclick="removeParticipants({{ betting.id }})" class="bg-gray-500 text-white px-4 py-2 rounded">삭제</button>
+    <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div class="flex justify-between items-center mb-4 border-b pb-4">
+                <div>
+                    <h2 class="text-xl font-bold">총 상금</h2>
+                    <p class="text-2xl font-bold text-blue-600">{{ betting.point * (2 + participants|length) }} pt</p>
+                </div>
+                {% if current_user.is_admin %}
+                <button onclick="deleteBetting({{ betting.id }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">베팅 삭제</button>
+                {% endif %}
             </div>
-            <div class="right-buttons">
-                <button onclick="saveBetting({{ betting.id }})" class="bg-main text-white px-4 py-2 rounded">저장</button>
-            </div>
-        </div>
 
-        <section class="bg-white shadow p-4 mb-6 rounded">
-            <h2 class="text-lg font-bold mb-4">경기 결과 제출</h2>
-            <div id="match-list">
-                <div id="match-1" class="match-row flex items-center justify-between mb-2">
-                    <input type="text" placeholder="승리" class="winner-input border rounded w-1/3 p-1 text-center mr-2">
-                    <div class="flex gap-2">
-                        <button class="score-input px-4 py-1 border rounded" onclick="toggleScore(this, 'match-1')">3:0</button>
-                        <button class="score-input px-4 py-1 border rounded" onclick="toggleScore(this, 'match-1')">2:1</button>
-                    </div>
-                    <input type="text" placeholder="패배" class="loser-input border rounded w-1/3 p-1 text-center ml-2">
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4">최근 10경기 상대 전적</h3>
+                <div class="overflow-x-auto">
+                    <table class="table-modern w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left"><a href="/player/{{ betting.p1_id }}" class="hover:underline">{{ betting.p1_name }}</a></th>
+                                <th class="text-center">스코어</th>
+                                <th class="text-right"><a href="/player/{{ betting.p2_id }}" class="hover:underline">{{ betting.p2_name }}</a></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {# ▼▼▼ 이 부분에 불필요한 for문이 있었습니다. 수정 완료! ▼▼▼ #}
+                            {% if recent_matches %}
+                            <tr class="bg-gray-50">
+                                <td class="text-left font-bold {% if win_rate.p1_wins > win_rate.p2_wins %}text-green-600{% endif %}">{{ win_rate.p1_wins }}승</td>
+                                <td class="text-center text-sm text-gray-500">전체</td>
+                                <td class="text-right font-bold {% if win_rate.p2_wins > win_rate.p1_wins %}text-green-600{% endif %}">{{ win_rate.p2_wins }}승</td>
+                            </tr>
+                            {% for match in recent_matches %}
+                            <tr>
+                                <td class="text-left">{% if match.winner_name == betting.p1_name %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}</td>
+                                <td class="text-center">{{ match.score }}</td>
+                                <td class="text-right">{% if match.winner_name == betting.p2_name %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-gray-500 py-4">최근 상대 전적이 없습니다.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="submitBetting({{ betting.id }})" class="bg-main text-white px-4 py-2 rounded">제출</button>
-            </div>
-        </section>
-    </div>
 
-    <script src="../static/js/script.js"></script>
-    <script src="../static/js/betting_detail.js"></script>
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4">베팅 참가자 현황</h3>
+                <div id="participants-table" class="space-y-2">
+                    <div class="flex items-center justify-between p-2">
+                        <span class="font-bold w-1/3 text-center">{{ betting.p1_name }}</span>
+                        <span class="font-bold w-1/3 text-center">참가자</span>
+                        <span class="font-bold w-1/3 text-center">{{ betting.p2_name }}</span>
+                    </div>
+                    {% for p in participants %}
+                    <div class="flex items-center justify-between p-2 border-t" data-participant-id="{{ p.id }}">
+                        <div class="w-1/3 text-center">
+                            <input type="radio" name="choice-{{ p.id }}" value="{{ betting.p1_id }}" {% if p.winner_id == betting.p1_id %}checked{% endif %} {% if betting.submitted %}disabled{% endif %}>
+                        </div>
+                        <div class="w-1/3 text-center">
+                            <a href="/player/{{ p.id }}" class="hover:underline">{{ p.name }}</a>
+                        </div>
+                        <div class="w-1/3 text-center">
+                            <input type="radio" name="choice-{{ p.id }}" value="{{ betting.p2_id }}" {% if p.winner_id == betting.p2_id %}checked{% endif %} {% if betting.submitted %}disabled{% endif %}>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if not betting.submitted %}
+                <div class="flex justify-between mt-4">
+                    {% if current_user.is_admin %}
+                    <div>
+                        <button onclick="addParticipants({{ betting.id }})" class="bg-gray-200 button text-sm">추가</button>
+                        <button onclick="removeParticipants({{ betting.id }})" class="bg-gray-500 text-white button text-sm">삭제</button>
+                    </div>
+                    {% else %}
+                    <div></div> {# 관리자가 아닐 때 공간을 차지하기 위한 빈 div #}
+                    {% endif %}
+                    <button onclick="saveBetting({{ betting.id }})" class="bg-main button">내 베팅 저장</button>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if current_user.is_admin and not betting.submitted %}
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-bold mb-4">경기 결과 제출 (관리자)</h3>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <select id="winner-select" class="border rounded p-2">
+                            <option value="" disabled selected>승자 선택</option>
+                            <option value="{{ betting.p1_name }}">{{ betting.p1_name }}</option>
+                            <option value="{{ betting.p2_name }}">{{ betting.p2_name }}</option>
+                        </select>
+                        <select id="score-select" class="border rounded p-2">
+                            <option value="2:0">2:0</option>
+                            <option value="2:1">2:1</option>
+                        </select>
+                    </div>
+                    <button onclick="submitBettingResult({{ betting.id }}, '{{ betting.p1_name }}', '{{ betting.p2_name }}')" class="w-full bg-main button">결과 제출 및 베팅 마감</button>
+                </div>
+            </div>
+            {% endif %}
+
+             {% if betting.submitted %}
+             <div class="text-center text-gray-500 font-semibold p-4 bg-gray-100 rounded-md">
+                 이 베팅은 경기 결과가 제출되어 마감되었습니다.
+             </div>
+             {% endif %}
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/betting_detail.js') }}"></script>
 </body>
 </html>

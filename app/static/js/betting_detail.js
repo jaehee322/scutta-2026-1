@@ -164,34 +164,36 @@ async function removeParticipants(bettingId) {
     .catch(error => console.error('Error fetching player IDs:', error));
 }
 
+// betting_detail.js 파일에서 기존 saveBetting 함수를 찾아 아래 내용으로 교체해주세요.
+
 function saveBetting(bettingId) {
-    const participants = Array.from(document.querySelectorAll('[name^="betting-"]'))
-        .filter(input => input.checked)
-        .map(input => {
-            const [winner, id] = input.value.split('-');
-            return {
-                id: parseInt(id, 10),
-                winner: parseInt(winner, 10)
-            };
+    const participantsData = [];
+    const participantRows = document.querySelectorAll('#participants-table [data-participant-id]');
+
+    participantRows.forEach(row => {
+        const participantId = row.dataset.participantId;
+        const choiceInput = row.querySelector(`input[name="choice-${participantId}"]:checked`);
+        
+        participantsData.push({
+            id: parseInt(participantId),
+            winner: choiceInput ? parseInt(choiceInput.value) : null // 선택된 값을 winner로 전송
         });
+    });
 
     fetch(`/betting/${bettingId}/update`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ participants })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participants: participantsData })
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('베팅 저장 실패: ' + data.error);
-            }
-        })
-        .catch(error => console.error('Error saving betting data:', error));
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('베팅 정보가 저장되었습니다.');
+            location.reload();
+        } else {
+            alert('오류: ' + data.error);
+        }
+    });
 }
 
 function toggleScore(button, matchId) {
@@ -247,4 +249,56 @@ function submitBetting(bettingId) {
             }
         })
         .catch(error => console.error('Error submitting betting:', error));
+}
+
+function submitBettingResult(bettingId, p1Name, p2Name) {
+    const winnerName = document.getElementById('winner-select').value;
+    const score = document.getElementById('score-select').value;
+
+    if (!winnerName) {
+        alert('승자를 선택해주세요.');
+        return;
+    }
+
+    const data = {
+        bettingId: bettingId,
+        p1Name: p1Name,
+        p2Name: p2Name,
+        winnerName: winnerName,
+        score: score
+    };
+
+    if (!confirm(`${winnerName} 선수의 승리로 결과를 제출하시겠습니까?\n이 작업은 되돌릴 수 없으며, 베팅이 즉시 마감됩니다.`)) {
+        return;
+    }
+
+    fetch('/submit_betting_result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.results) {
+            const results = data.results;
+            const winNames = results.winParticipants.join(', ') || '없음';
+            const loseNames = results.loseParticipants.join(', ') || '없음';
+            
+            alert(
+                `결과가 제출되었습니다!\n\n` +
+                `승자: ${results.winnerName}\n` +
+                `패자: ${results.loserName}\n\n` +
+                `베팅 성공자 (${results.winParticipants.length}명): ${winNames}\n` +
+                `베팅 실패자 (${results.loseParticipants.length}명): ${loseNames}\n\n` +
+                `1인당 예상 분배 포인트: ${results.distributedPoints} pt`
+            );
+            location.reload();
+        } else {
+            alert('오류: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('서버와 통신 중 오류가 발생했습니다.');
+    });
 }

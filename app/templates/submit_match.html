@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경기 결과 제출 - SCUTTA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-100">
+
+    <header class="flex justify-between items-center p-4 bg-white shadow">
+        <button class="text-xl" onclick="history.back()">&larr;</button>
+        <h1 class="text-xl font-bold">경기 결과 제출</h1>
+        <div class="flex items-center gap-4">
+           {% if current_user.is_authenticated %}
+                <span class="text-sm font-semibold">{{ current_user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4">
+        <section class="bg-white shadow p-4 mb-6 rounded">
+            <h2 class="text-lg font-bold mb-4">경기 정보 입력</h2>
+            <div id="match-list">
+                <div id="match-1" class="match-row flex items-center justify-between mb-2">
+                    <input type="text" placeholder="승리" class="winner-input border rounded w-1/3 p-1 text-center mr-2">
+                    <div class="flex gap-2">
+                        <button class="score-input px-4 py-1 border rounded" onclick="toggleScore(this, 'match-1')">3:0</button>
+                        <button class="score-input px-4 py-1 border rounded" onclick="toggleScore(this, 'match-1')">2:1</button>
+                    </div>
+                    <input type="text" placeholder="패배" class="loser-input border rounded w-1/3 p-1 text-center ml-2">
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="w-1/2 bg-gray-200 text-gray-700 rounded p-2 button" onclick="addMatch()">+ 경기 추가</button>
+                <button class="w-1/2 bg-main text-white rounded p-2 button" onclick="submitMatches()">결과 제출</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/submit_match.js') }}"></script>
+</body>
+</html>

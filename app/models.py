@@ -1,15 +1,28 @@
-from app import db
+import enum
+from .extensions import db
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
-seoul_time = datetime.now(ZoneInfo("Asia/Seoul"))
+def get_seoul_time():
+    return datetime.now(ZoneInfo("Asia/Seoul"))
+
+class GenderEnum(enum.Enum):
+    MALE='M'
+    FEMALE='F'
+
+class FreshmanEnum(enum.Enum):
+    YES='Y'
+    No='N'
 
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     is_valid = db.Column(db.Boolean, default=True)
+    gender=db.Column(db.Enum(GenderEnum), nullable=True)
     previous_rank = db.Column(db.Integer, default=None)
-    rank_change = db.Column(db.String(10), default=None)  # New/Up/Down
+    rank_change = db.Column(db.String(10), default=None)
     rank = db.Column(db.Integer, default=None)
     match_count = db.Column(db.Integer, default=0)
     win_count = db.Column(db.Integer, default=0)
@@ -25,7 +38,10 @@ class Player(db.Model):
     opponent_order = db.Column(db.Integer, default=None)
     achieve_order = db.Column(db.Integer, default=None)
     betting_order = db.Column(db.Integer, default=None)
+    is_she_or_he_freshman = db.Column(db.Enum(FreshmanEnum), nullable=True)
 
+   
+    
     def __repr__(self):
         return f"<Player {self.name}>"
 
@@ -36,7 +52,7 @@ class Match(db.Model):
     loser = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     loser_name = db.Column(db.String(100), nullable=False)
     score = db.Column(db.String(10), nullable=False)
-    timestamp = db.Column(db.DateTime, default=seoul_time)
+    timestamp = db.Column(db.DateTime(timezone=True), default=get_seoul_time)
     approved = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -46,7 +62,7 @@ class UpdateLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     html_content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=seoul_time)
+    timestamp = db.Column(db.DateTime(timezone=True), default=get_seoul_time)
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -104,3 +120,42 @@ class TodayPartner(db.Model):
     p2_name = db.Column(db.String(100), nullable=False)
     submitted = db.Column(db.Boolean, default=False)
     
+
+class PlayerPointLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    achieve_change = db.Column(db.Integer, default=0)
+    betting_change = db.Column(db.Integer, default=0)
+    reason = db.Column(db.String(100), nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("Asia/Seoul")))
+    player = db.relationship('Player', backref=db.backref('point_logs', lazy=True))
+
+    def __repr__(self):
+        return f"<PlayerPointLog {self.player.name} {self.reason}>"
+    
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), index=True, unique=True)
+    password_hash = db.Column(db.String(256))
+    is_admin = db.Column(db.Boolean, default=False)
+
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
+    # User 객체에서 player 정보에 접근하기 위한 관계 설정
+    player = db.relationship('Player', backref=db.backref('user', uselist=False))
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+    
+
+class Tournament(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    status = db.Column(db.String(20), default='대기중', nullable=False) # 대기중, 진행중, 완료
+    created_at = db.Column(db.DateTime(timezone=True), default=get_seoul_time)
+    bracket_data = db.Column(db.JSON, nullable=True)

@@ -6,82 +6,64 @@
     <title>관리 - 베팅 승인</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-gray-100">
-    <header class="flex justify-between items-center p-4 bg-white shadow">
-        <button class="text-xl" onclick="confirmNavigation()">&larr;</button>
-        <h1 class="text-xl font-bold">관리</h1>
-        <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
+
+    <header>
+        <div class="flex items-center gap-4">
+            <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
+        </div>
+        <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
+        <div class="flex items-center gap-4">
+           {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+            {% endif %}
+        </div>
     </header>
 
+    <div id="menu-overlay" class="menu-overlay"></div>
+    <div id="menu" class="menu">
+        <div class="menu-header">메뉴</div>
+        <a href="{{ url_for('mypage') }}" class="menu-item">마이페이지</a><hr class="my-4" />
+        <a href="{{ url_for('submit_match_page') }}" class="menu-item">경기 결과 제출</a>
+        <a href="{{ url_for('submitment') }}" class="menu-item">제출 현황</a>
+        <a href="{{ url_for('partner') }}" class="menu-item">오늘의 상대</a>
+        <a href="{{ url_for('league_or_tournament') }}" class="menu-item">리그전 및 토너먼트</a>
+        <a href="{{ url_for('betting') }}" class="menu-item">베팅</a><hr class="mt-10" />
+        <div class="menu-item mt-10"><a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank" rel="noopener noreferrer">NOTION</a></div>
+        <a href="{{ url_for('password') }}" class="menu-item">관리 페이지로 이동</a>
+    </div>
+
     <div class="index-bar">
-        <div class="index-item active" onclick="navigateTo('betting_approval.html')">베팅 승인</div>
-        <div class="index-item" onclick="navigateTo('approval.html')">경기 승인</div>
-        <div class="index-item" onclick="navigateTo('assignment.html')">부수 배정</div>
-        <div class="index-item" onclick="navigateTo('settings.html')">기타 설정</div>
+        <a href="{{ url_for('betting_approval') }}" class="index-item {% if request.endpoint == 'betting_approval' %}active{% endif %}">베팅 승인</a>
+        <a href="{{ url_for('approval') }}" class="index-item {% if request.endpoint == 'approval' %}active{% endif %}">경기 승인</a>
+        <a href="{{ url_for('assignment') }}" class="index-item {% if request.endpoint == 'assignment' %}active{% endif %}">부수/포인트</a>
+        <a href="{{ url_for('settings') }}" class="index-item {% if request.endpoint == 'settings' %}active{% endif %}">기타 설정</a>
     </div>
 
-    <div class="container mx-auto p-4">
-        <div class="tabs">
-            <div id="tab-all" class="tab text-sm active" onclick="selectTab(this, 'all')">전체</div>
-            <div id="tab-pending" class="tab text-sm" onclick="selectTab(this, 'pending')">승인 대기</div>
-            <div id="tab-approved" class="tab text-sm" onclick="selectTab(this, 'approved')">승인 완료</div>
-        </div>
-
-        <div class="action-buttons">
-            <div class="left-buttons">
-                <button class="bg-main text-white px-4 py-2 rounded button" onclick="approveAllBettings()">전체 승인</button>
-                <button class="bg-main text-white px-4 py-2 rounded button" onclick="approveBettings()">선택 승인</button>
+    <div class="container mx-auto p-4 admin-content">
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div class="tabs">
+                <div id="tab-all" class="tab text-sm active" onclick="selectTab(this, 'all')">전체</div>
+                <div id="tab-pending" class="tab text-sm" onclick="selectTab(this, 'pending')">승인 대기</div>
+                <div id="tab-approved" class="tab text-sm" onclick="selectTab(this, 'approved')">승인 완료</div>
             </div>
-            <div class="right-buttons">
-                <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded button" onclick="deleteBettings()">선택 삭제</button>
+            <div class="action-buttons">
+                <div class="left-buttons"><button class="bg-main button" onclick="approveAllBettings()">전체 승인</button><button class="bg-main button" onclick="approveBettings()">선택 승인</button></div>
+                <div class="right-buttons"><button class="bg-gray-200 text-gray-800 button" onclick="deleteBettings()">선택 삭제</button></div>
             </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <style>
-                .table-container {
-                    overflow-x: auto;
-                    white-space: nowrap;
-                }
-
-                .table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    table-layout: auto;
-                }
-
-                .table th,
-                .table td {
-                    text-align: center;
-                    padding: 8px;
-                     white-space: nowrap;
-                }
-            </style>
-            <table class="table min-w-full">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" onclick="toggleSelectAll(this)"></th>
-                        <th>승인</th>
-                        <th>승리자</th>
-                        <th>세트</th>
-                        <th>패배자</th>
-                        <th>베팅 성공</th>
-                        <th>베팅 실패</th>
-                        <th>포인트</th>
-                    </tr>
-                </thead>
-                <tbody id="betting-table-body">
-                </tbody>
-            </table>
-        </div>
-        <div class="flex justify-center items-center mt-4">
-            <button id="load-more" class="bg-gray-200 text-gray-700 rounded p-2 button">더 보기</button>
+            <div class="overflow-x-auto">
+                <table class="table-modern">
+                    <thead><tr><th><input type="checkbox" onclick="toggleSelectAll(this)"></th><th>승인</th><th>승리자</th><th>세트</th><th>패배자</th><th>베팅 성공</th><th>베팅 실패</th><th>포인트</th></tr></thead>
+                    <tbody id="betting-table-body"></tbody>
+                </table>
+            </div>
+            <div class="flex justify-center items-center mt-6"><button id="load-more" class="bg-gray-200 text-gray-800 rounded py-2 px-4">더 보기</button></div>
         </div>
     </div>
-
-    <script src="../static/js/script.js"></script>
-    <script src="../static/js/betting_approval.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/betting_approval.js') }}"></script>
 </body>
 </html>

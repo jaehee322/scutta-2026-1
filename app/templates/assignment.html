@@ -3,66 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리 - 부수 배정</title>
+    <title>관리 - 부수 및 포인트 배정</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-gray-100">
-    <header class="flex justify-between items-center p-4 bg-white shadow">
-        <button class="text-xl" onclick="confirmNavigation()">&larr;</button>
-        <h1 class="text-xl font-bold">관리</h1>
-        <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
+
+    <header>
+        <div class="flex items-center gap-4">
+            <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
+        </div>
+        <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
+        <div class="flex items-center gap-4">
+           {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+            {% endif %}
+        </div>
     </header>
 
-    <div class="index-bar">
-        <div class="index-item" onclick="navigateTo('betting_approval.html')">베팅 승인</div>
-        <div class="index-item" onclick="navigateTo('approval.html')">경기 승인</div>
-        <div class="index-item active" onclick="navigateTo('assignment.html')">부수 배정</div>
-        <div class="index-item" onclick="navigateTo('settings.html')">기타 설정</div>
+    <div id="menu-overlay" class="menu-overlay"></div>
+    <div id="menu" class="menu">
+        <div class="menu-header">메뉴</div>
+        <a href="{{ url_for('mypage') }}" class="menu-item">마이페이지</a><hr class="my-4" />
+        <a href="{{ url_for('submit_match_page') }}" class="menu-item">경기 결과 제출</a>
+        <a href="{{ url_for('submitment') }}" class="menu-item">제출 현황</a>
+        <a href="{{ url_for('partner') }}" class="menu-item">오늘의 상대</a>
+        <a href="{{ url_for('league_or_tournament') }}" class="menu-item">리그전 및 토너먼트</a>
+        <a href="{{ url_for('betting') }}" class="menu-item">베팅</a><hr class="mt-10" />
+        <div class="menu-item mt-10"><a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank" rel="noopener noreferrer">NOTION</a></div>
+        <a href="{{ url_for('password') }}" class="menu-item">관리 페이지로 이동</a>
     </div>
 
-    <div class="container mx-auto p-4">
-        <div class="content">
-            <button id="update-ranks" class="bg-main text-white px-10 py-2 rounded mb-4 button">부수 업데이트</button>
-            <div id="above-log-list" class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">업데이트 로그</h2>
-                <div class="flex space-x-2">
-                    <button id="revert-log" class="bg-gray-500 text-white px-4 py-2 rounded button">이전 로그로</button>
-                    <button id="delete-selected" class="bg-gray-200 text-gray-700 px-4 py-2 rounded button">선택 삭제</button>
-                </div>
+    <div class="index-bar">
+        <a href="{{ url_for('betting_approval') }}" class="index-item {% if request.endpoint == 'betting_approval' %}active{% endif %}">베팅 승인</a>
+        <a href="{{ url_for('approval') }}" class="index-item {% if request.endpoint == 'approval' %}active{% endif %}">경기 승인</a>
+        <a href="{{ url_for('assignment') }}" class="index-item {% if request.endpoint == 'assignment' %}active{% endif %}">부수/포인트</a>
+        <a href="{{ url_for('settings') }}" class="index-item {% if request.endpoint == 'settings' %}active{% endif %}">기타 설정</a>
+    </div>
+
+    <div class="container mx-auto p-4 admin-content">
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold">선수 관리</h2>
+                <button id="save-all-btn" class="bg-main button">모든 변경사항 저장</button>
             </div>
-            <table class="w-full border-collapse border border-gray-300 text-left">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border border-gray-300 p-2 text-center">
-                            <input type="checkbox" id="select-all">
-                        </th>
-                        <th class="border border-gray-300 p-2">제목</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr>
-                        <td class="border border-gray-300 p-2 text-center">
-                            <input type="checkbox" class="log-checkbox" value="{{ log.id }}">
-                        </td>
-                        <td class="border border-gray-300 p-2 cursor-pointer" onclick="showLogDetail({{ log.id }})">
-                            {{ log.title }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div id="log-detail" class="log-detail hidden">
-                <h2 id="log-title" class="text-xl font-bold mb-4"></h2>
-                <div id="log-table-container" class="bg-white"></div>
-                <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded mt-4 button" onclick="closeLogDetail()">목록으로</button>
+            <div class="flex space-x-2 mb-4">
+                <input type="text" id="player-search-input" placeholder="이름으로 검색...">
+                <button id="player-search-btn" class="bg-main button">검색</button>
+                <button id="show-all-players-btn" class="bg-gray-200 text-gray-800 button">전체보기</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table-modern">
+                    <thead><tr><th>이름</th><th>업적</th><th>베팅</th><th>부수</th></tr></thead>
+                    <tbody id="assignment-player-list-body"></tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <script src="../static/js/script.js"></script>
-    <script src="../static/js/assignment.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/assignment.js') }}"></script>
 </body>
 </html>

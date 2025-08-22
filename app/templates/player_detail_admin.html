@@ -17,13 +17,20 @@
     <header class="flex justify-between items-center p-4 bg-white shadow">
         <button class="text-xl" onclick="history.back()">&larr;</button>
         <h1 class="text-xl font-bold">{{ player.name }}</h1>
+
+        <div class="flex items-center gap-4">
+           {% if current_user.is_authenticated %}
+                <span class="text-sm font-semibold">{{ current_user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+            {% endif %}
+        </div>
         <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
     </header>
 
     <div class="container mx-auto p-4">
         <div class="bg-white shadow p-6 rounded">
             <h2 class="text-lg font-bold mb-4">{{ player.rank or '무' }}부</h2>
-            <table class="w-full border-collapse text-center mb-6">
+            <table class="table-modern">
                 <tr>
                     <td class="bg-gray-100 border p-2">승리</td>
                     <td class="border p-2">{{ player.win_count }}</td>
@@ -62,7 +69,7 @@
             </table>
 
             <h2 class="text-lg font-bold mb-4">업적 달성 보드</h2>
-            <table class="w-full border-collapse text-center mb-4">
+            <table class="table-modern">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">날이 좋아서</td>
                     <td class="bg-gray-100 border p-2 font-bold">5점</td>
@@ -121,7 +128,7 @@
                 </tr>
             </table>
 
-            <table class="w-full border-collapse text-center mb-4">
+            <table class="table-modern">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">내가 나가</td>
                     <td class="bg-gray-100 border p-2 font-bold">10점</td>
@@ -166,7 +173,7 @@
                 </tr>
             </table>
 
-            <table class="w-full border-collapse text-center mb-4">
+            <table class="table-modern">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">숨 참고 Scutta Dive~</td>
                     <td class="bg-gray-100 border p-2 font-bold">10점</td>
@@ -211,7 +218,7 @@
                 </tr>
             </table>
 
-            <table class="w-full border-collapse text-center mb-4">
+            <table class="table-modern">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">단어장 마스터</td>
                     <td class="bg-gray-100 border p-2 font-bold">10점</td>
@@ -255,7 +262,53 @@
                     </td>
                 </tr>
             </table>
-        </div>
+
+            <section class="pt-6">
+                <h3 class="text-xl font-bold mb-4">포인트 변경 기록</h3>
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="py-2 px-4 border-b">시간</th>
+                                <th class="py-2 px-4 border-b">변경 사유</th>
+                                <th class="py-2 px-4 border-b">업적 포인트</th>
+                                <th class="py-2 px-4 border-b">베팅 포인트</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in point_logs %}
+                            <tr class="text-center text-sm">
+                                <td class="py-2 px-4 border-b">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td class="py-2 px-4 border-b">{{ log.reason }}</td>
+                                <td class="py-2 px-4 border-b font-semibold">
+                                    {% if log.achieve_change > 0 %}
+                                        <span class="text-blue-600">+{{ log.achieve_change }}</span>
+                                    {% elif log.achieve_change < 0 %}
+                                        <span class="text-red-600">{{ log.achieve_change }}</span>
+                                    {% else %}
+                                        <span class="text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-2 px-4 border-b font-semibold">
+                                    {% if log.betting_change > 0 %}
+                                        <span class="text-blue-600">+{{ log.betting_change }}</span>
+                                    {% elif log.betting_change < 0 %}
+                                        <span class="text-red-600">{{ log.betting_change }}</span>
+                                    {% else %}
+                                        <span class="text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="py-4 px-4 text-center text-gray-500">포인트 변경 기록이 없습니다.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            </div>
     </div>
 </body>
 </html>

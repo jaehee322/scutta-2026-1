@@ -1,240 +1,186 @@
-function resetPartner() {
-    fetch('/reset_partner', {
-        method: 'POST',
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("오늘의 상대가 초기화되었습니다.");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            alert("초기화에 실패했습니다. 다시 시도해주세요.");
-        }
-    })
-    .catch(error => {
-        console.error("초기화 요청 중 오류:", error);
-        alert("초기화 요청에 실패했습니다.");
-    });
-}
+// static/js/settings.js 파일의 기존 내용을 모두 지우고 아래 코드로 교체해주세요.
 
-function registerPartner() {
-    const resetPartnerButton = document.getElementById('reset-partner-button');
-    const oldPlayerInput = document.getElementById('old-player-input');
-    const newPlayerInput = document.getElementById('new-player-input');
-    const registerPartnerButton1 = document.getElementById('register-partner-button-1');
-    const settingPartnerTable = document.getElementById('setting-partner-table');
-    const registerPartnerButton2 = document.getElementById('register-partner-button-2');
+document.addEventListener('DOMContentLoaded', () => {
+    // --- 새 회원 일괄 등록 관련 로직 ---
+    const registrationQueue = [];
+    const addToQueueBtn = document.getElementById('add-to-queue-btn');
+    const queueBody = document.getElementById('registration-queue-body');
+    const batchRegisterBtn = document.getElementById('batch-register-btn');
 
-    if (!oldPlayerInput || !newPlayerInput) {
-        alert("기존 부원 이름과 신입 부원 이름을 모두 입력해주세요.");
-        return;
+    function renderQueue() {
+        queueBody.innerHTML = '';
+        registrationQueue.forEach((user, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${user.name}</td>
+                <td>${user.gender === 'M' ? '남자' : '여자'}</td>
+                <td>${user.freshman === 'Y' ? '신입' : '기존'}</td>
+                <td>${user.is_admin ? '✔️' : '❌'}</td>
+                <td><button class="text-red-500 font-bold" onclick="removeFromQueue(${index})">X</button></td>
+            `;
+            queueBody.appendChild(tr);
+        });
     }
 
-    resetPartnerButton.classList.add('hidden');
-    oldPlayerInput.classList.add('hidden');
-    newPlayerInput.classList.add('hidden');
-    registerPartnerButton1.classList.add('hidden');
+    window.removeFromQueue = (index) => {
+        registrationQueue.splice(index, 1);
+        renderQueue();
+    };
 
-    settingPartnerTable.classList.remove('hidden');
-    registerPartnerButton2.classList.remove('hidden');
+    addToQueueBtn.addEventListener('click', () => {
+        const name = document.getElementById('name').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const gender = document.getElementById('gender').value;
+        const freshman = document.getElementById('freshman').value;
+        const isAdmin = document.getElementById('is_admin').checked;
 
-    const oldPlayers = oldPlayerInput.value.trim().split(" ");
-    const newPlayers = newPlayerInput.value.trim().split(" ").reverse();
+        if (!name || !password || !gender || !freshman) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
 
-    fetch('/register_partner', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ old_players: oldPlayers, new_players: newPlayers, }),
-    })
-        .then(response => response.json())
-        .then(pairs => {
-            const tbody = document.getElementById('setting-partner-body');
-            tbody.innerHTML = '';
-            pairs.forEach(pair => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><input class="partner1-input w-24 text-center" value="${pair.p1_name}"></td>
-                    <td><input class="partner2-input w-24 text-center" value="${pair.p2_name}"></td>
-                `;
-                tbody.appendChild(row);
-            });
+        registrationQueue.push({ name, password, gender, freshman, is_admin: isAdmin });
+        renderQueue();
+
+        // 입력 필드 초기화
+        document.getElementById('name').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('gender').value = '';
+        document.getElementById('freshman').value = '';
+        document.getElementById('is_admin').checked = false;
+    });
+
+    batchRegisterBtn.addEventListener('click', () => {
+        if (registrationQueue.length === 0) {
+            alert('등록할 사용자가 대기열에 없습니다.');
+            return;
+        }
+        
+        fetch('/admin/batch_add_users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: registrationQueue })
         })
-        .catch(error => console.error("등록 요청 중 오류:", error));
-}
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                window.location.reload();
+            }
+        });
+    });
 
-function submitPartner() {
-    const settingPartnerTable = document.getElementById('setting-partner-table');
-    const rows = settingPartnerTable.querySelectorAll('tbody tr');
-    const pairs = [];
+    // --- 선수 삭제 관련 로직 ---
+    const deletePlayersBtn = document.getElementById('delete-players-btn');
+    const selectAllCheckbox = document.getElementById('select-all-players');
+    const playerCheckboxes = document.querySelectorAll('.player-checkbox');
 
-    rows.forEach(row => {
-        const p1Input = row.querySelector('.partner1-input').value.trim();
-        const p2Input = row.querySelector('.partner2-input').value.trim();
+    selectAllCheckbox.addEventListener('change', (e) => {
+        playerCheckboxes.forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
 
-        if (p1Input && p2Input) {
-            pairs.push({ p1_name: p1Input, p2_name: p2Input });
+    deletePlayersBtn.addEventListener('click', () => {
+        const selectedIds = Array.from(playerCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+
+        if (selectedIds.length === 0) {
+            alert('삭제할 선수를 선택해주세요.');
+            return;
+        }
+
+        if (confirm(`선택된 ${selectedIds.length}명의 선수를 정말로 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며, 관련된 모든 경기, 베팅, 로그 기록이 영구적으로 삭제됩니다.`)) {
+            fetch('/admin/delete_players', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ player_ids: selectedIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else if (data.success) {
+                    window.location.reload();
+                }
+            });
         }
     });
 
-    fetch('/submit_partner', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ pairs: pairs }),
-    })
-        .then(response => {
-            if (response.ok) {
-                alert("오늘의 상대가 저장되었습니다.");
-                window.location.href = '/partner.html';
-            } else {
-                alert("저장 중 문제가 발생했습니다.");
-            }
-        })
-        .catch(error => {
-            console.error("저장 요청 중 오류:", error);
-            alert("저장 요청에 실패했습니다.");
-        });
-}
+    // --- 오늘의 상대 관련 로직 ---
+    const resetPartnerBtn = document.getElementById('reset-partner-button');
+    const registerPartnerBtn1 = document.getElementById('register-partner-button-1');
+    const registerPartnerBtn2 = document.getElementById('register-partner-button-2');
+    const partnerTable = document.getElementById('setting-partner-table');
+    const partnerBody = document.getElementById('setting-partner-body');
+    let generatedPairs = [];
 
-function registerPlayers() {
-    const input = document.getElementById('player-input');
-    const players = input.value.trim().split(' ');
-
-    if (players.length > 0 && players[0] !== "") {
-        fetch('/register_players', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ players })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`${data.added_count}명의 선수가 등록되었습니다.`);
-                    input.value = "";
+    resetPartnerBtn.addEventListener('click', () => {
+        if (confirm('오늘의 상대 목록을 정말로 초기화하시겠습니까?')) {
+            fetch('/reset_partner', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    alert('초기화되었습니다.');
                     location.reload();
                 } else {
-                    alert('오류가 발생했습니다. 다시 시도해주세요.');
-                }
-            })
-            .catch(error => console.error('Error registering players:', error));
-    } else {
-        alert("선수를 입력해주세요.");
-    }
-}
-
-function toggleValidity() {
-    const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
-
-    if (selectedIds.length === 0) {
-        alert('유효/무효 상태를 변경할 항목을 선택해주세요.');
-        return;
-    }
-
-    fetch('/toggle_validity', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedIds })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('유효/무효 상태 변경 중 문제가 발생했습니다:', data.error);
-            }
-        })
-        .catch(error => console.error('Error toggling validity:', error));
-}
-
-function deleteSelectedPlayers() {
-    const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
-
-    if (selectedIds.length === 0) {
-        alert('삭제할 선수를 선택해주세요.');
-        return;
-    }
-
-    if (!confirm('정말 삭제하시겠습니까?')) {
-        return;
-    }
-
-    fetch('/delete_players', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedIds })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('오류가 발생했습니다. 다시 시도해주세요.');
-            }
-        })
-        .catch(error => console.error('Error deleting players:', error));
-}
-
-function toggleSelectAll(checkbox) {
-    const checkboxes = document.querySelectorAll('.row-checkbox');
-    checkboxes.forEach(cb => cb.checked = checkbox.checked);
-}
-
-function addForSelected(type) {
-    let playerIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
-
-    if (playerIds.length === 0) {
-        const names = prompt('선수 이름을 입력하세요 (공백으로 구분):');
-        if (!names) return;
-        const playerNames = names.split(' ');
-        fetch('/get_player_ids', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ names: playerNames })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    playerIds = data.player_ids;
-                    sendAddRequest(playerIds, type);
-                } else {
-                    alert(`오류 발생: ${data.error}`);
+                    alert('초기화에 실패했습니다.');
                 }
             });
-    } else {
-        sendAddRequest(playerIds, type);
-    }
-}
+        }
+    });
 
-function sendAddRequest(playerIds, type) {
-    const points = prompt('추가할 점수를 입력하세요:');
-    const additionalPoints = parseInt(points, 10);
+    // ▼▼▼ 이 부분이 빠져있었습니다! ▼▼▼
+    registerPartnerBtn1.addEventListener('click', () => {
+        const oldPlayers = document.getElementById('old-player-input').value.trim().split(/\s+/);
+        const newPlayers = document.getElementById('new-player-input').value.trim().split(/\s+/);
 
-    if (isNaN(additionalPoints) || additionalPoints === 0) {
-        alert('올바른 숫자를 입력해주세요.');
-        return;
-    }
+        if (oldPlayers.length === 0 || newPlayers.length === 0 || oldPlayers[0] === '' || newPlayers[0] === '') {
+            alert('기존 부원과 신입 부원 이름을 모두 입력해주세요.');
+            return;
+        }
 
-    const body = { player_ids: playerIds };
-    if (type === 'achieve') body.achieve = additionalPoints;
-    else if (type === 'betting') body.betting = additionalPoints;
-    else body.achieve = body.betting = additionalPoints;
-
-    fetch('/update_achievement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    })
+        fetch('/register_partner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_players: oldPlayers, new_players: newPlayers })
+        })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(`오류 발생: ${data.error}`);
+            if(data.error) {
+                alert('오류: ' + data.error);
+                return;
             }
+            generatedPairs = data;
+            partnerBody.innerHTML = '';
+            data.forEach(pair => {
+                const row = `<tr><td>${pair.p1_name}</td><td>${pair.p2_name}</td></tr>`;
+                partnerBody.innerHTML += row;
+            });
+            partnerTable.classList.remove('hidden');
+            registerPartnerBtn2.classList.remove('hidden');
+        });
+    });
+
+    registerPartnerBtn2.addEventListener('click', () => {
+        if (generatedPairs.length === 0) {
+            alert('먼저 매칭을 진행해주세요.');
+            return;
+        }
+
+        fetch('/submit_partner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pairs: generatedPairs })
         })
-        .catch(error => console.error('Error:', error));
-}
+        .then(response => {
+             if (response.ok) {
+                alert('오늘의 상대가 확정되었습니다.');
+                window.location.href = '/partner.html';
+            } else {
+                response.json().then(data => alert('확정 실패: ' + data.error));
+            }
+        });
+    });
+});

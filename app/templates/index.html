@@ -3,95 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="SCUTTA {{ config['GLOBAL_TEXTS']['semester'] }} | 서울시립대학교 중앙 탁구 동아리">
-    <meta property="og:description" content="경기 결과를 제출하고 내 순위를 확인하세요.">
-    <meta property="og:image" content="../static/images/thumbnail.png">
-    <title>SCUTTA {{ config['GLOBAL_TEXTS']['semester'] }}</title>
+    <title>SCUTTA {{ config.GLOBAL_TEXTS.semester }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        .container {
-            margin-top: 80px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="bg-gray-100">
-    <header class="flex justify-between items-center p-4 bg-white shadow">
-        <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
-        <h1 class="text-xl font-bold">SCUTTA</h1>
-        <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
+<body class="bg-white text-gray-800">
+
+    <header>
+        <div class="flex items-center gap-4">
+            <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
+            <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
+        </div>
+        <div class="flex items-center gap-4">
+           {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="text-sm font-semibold hover:underline">로그인</a>
+           {% endif %}
+        </div>
     </header>
 
-    <div id="menu-overlay" class="menu-overlay" onclick="toggleMenu(false)"></div>
+    <div id="menu-overlay" class="menu-overlay"></div>
     <div id="menu" class="menu">
         <div class="menu-header">메뉴</div>
-        <div class="menu-item" onclick="navigateTo('submitment.html')">제출 현황</div>
-        <div class="menu-item" onclick="navigateTo('partner.html')">오늘의 상대</div>
-        <div class="menu-item" onclick="navigateTo('league.html')">팀내 리그전</div>
-        <div class="menu-item" onclick="navigateTo('betting.html')">베팅</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('mypage') }}'">마이페이지</div>
+        <hr class="my-4" />
+        <div class="menu-item" onclick="location.href='{{ url_for('submit_match_page') }}'">경기 결과 제출</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('submitment') }}'">제출 현황</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('partner') }}'">오늘의 상대</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('league_or_tournament') }}'">리그전 및 토너먼트</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('betting') }}'">베팅</div>
         <hr class="mt-10" />
         <div class="menu-item mt-10">
             <a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank" rel="noopener noreferrer">NOTION</a>
         </div>
-        <div class="menu-item" onclick="navigateTo('password.html')">관리 페이지로 이동</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('password') }}'">관리 페이지로 이동</div>
     </div>
 
-    <div class="container mx-auto p-4">
-        <section class="bg-white shadow p-4 mb-6 rounded">
-            <h2 class="text-lg font-bold mb-4">경기 결과 제출</h2>
-            <div id="match-list">
-                <div id="match-1" class="match-row flex items-center justify-between mb-2">
-                    <input type="text" placeholder="승리" class="winner-input border rounded w-1/3 p-1 text-center mr-2">
-                    <div class="flex gap-2">
-                        <button class="score-input px-4 py-1 border rounded" onclick="toggleScore(this, 'match-1')">3:0</button>
-                        <button class="score-input px-4 py-1 border rounded" onclick="toggleScore(this, 'match-1')">2:1</button>
-                    </div>
-                    <input type="text" placeholder="패배" class="loser-input border rounded w-1/3 p-1 text-center ml-2">
+    <main class="container mx-auto p-4 md:p-6 lg:p-8">
+        
+        <section class="mb-12">
+            <h2 class="text-2xl md:text-3xl font-light mb-4">SCUTTA</h2>
+            <p class="text-gray-600 leading-relaxed">
+                서울시립대학교 중앙 탁구 동아리 SCUTTA의 공식 기록 페이지입니다.<br>
+                자신의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.
+            </p>
+        </section>
+        
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+            <a href="{{ url_for('submit_match_page') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
+                <h3 class="text-xl font-semibold mb-2">경기 결과 제출</h3>
+                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
+            </a>
+            <a href="{{ url_for('mypage') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
+                <h3 class="text-xl font-semibold mb-2">마이페이지</h3>
+                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
+            </a>
+            <a href="{{ url_for('partner') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
+                <h3 class="text-xl font-semibold mb-2">오늘의 상대</h3>
+                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
+            </a>
+            <a href="{{ url_for('betting') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
+                <h3 class="text-xl font-semibold mb-2">베팅</h3>
+                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
+            </a>
+            <a href="{{ url_for('rankings_page') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
+                <h3 class="text-xl font-semibold mb-2">전체 랭킹</h3>
+                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
+            </a>
+            <a href="{{ url_for('league_or_tournament') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
+                <h3 class="text-xl font-semibold mb-2">리그전 및 토너먼트</h3>
+                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
+            </a>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-center mb-6">랭킹 요약</h2>
+            <div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">
+                {% for title, players in rankings.items() %}
+                <div class="bg-white rounded-lg shadow-sm p-4 flex-shrink-0" style="width: 280px;">
+                    <h3 class="font-bold text-lg text-center mb-4">{{ title }}</h3>
+                    <ul>
+                        {% for player in players %}
+                        <li class="flex items-center justify-between py-2 border-b last:border-b-0">
+                            <div class="flex items-center">
+                                <span class="font-bold w-6">{{ loop.index }}.</span>
+                                <span>{{ player.name }} ({{ player.rank or '무' }})</span>
+                            </div>
+                            <span class="font-bold text-gray-700">
+                                {{ player.value }}
+                                {% if title == '승률' %}%{% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
+                {% endfor %}
             </div>
-            <div class="flex gap-2">
-                <button class="w-1/2 bg-gray-200 text-gray-700 rounded p-2 button" onclick="addMatch()">+ 경기 추가</button>
-                <button class="w-1/2 bg-main text-white rounded p-2 button" onclick="submitMatches()">결과 제출</button>
-            </div>
-        </section>
-
-        <section class="bg-white shadow p-4 rounded">
-            <h2 class="text-lg font-bold mb-4">부문별 순위</h2>
-            <div class="category-buttons flex gap-2 py-2 mb-4 overflow-x-auto whitespace-nowrap">
-                <button class="px-4 py-1 border rounded text-sm selected" onclick="selectCategory(this, 'win_order')">승리</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'loss_order')">패배</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'rate_order')">승률</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'match_order')">경기</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'opponent_order')">상대</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'achieve_order')">업적</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'betting_order')">베팅</button>
-            </div>
-            <table class="w-full border-collapse border border-gray-300 text-center">
-                <thead id="table-header" class="bg-gray-100">
-                    <tr>
-                        <th class="border border-gray-300 p-2">순위</th>
-                        <th class="border border-gray-300 p-2">이름</th>
-                        <th class="border border-gray-300 p-2 cursor-pointer" id="dynamic-column" onclick="toggleSortOrder()">승리</th>
-                        <th class="border border-gray-300 p-2 text-gray-500" id="dynamic-column-2">경기</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-            </table>
-            <div class="flex justify-between items-center mt-4">
-                <button class="bg-gray-200 text-gray-700 rounded p-2 button" onclick="loadMore()">더 보기</button>
-                <input type="text" placeholder="이름 검색" class="border rounded p-2 w-1/2" oninput="searchByName(this.value)">
+            <div class="mt-6">
+                <a href="{{ url_for('rankings_page') }}" class="block w-full bg-gray-200 text-gray-800 font-bold text-center py-3 px-6 rounded-lg hover:bg-gray-100 border">
+                    전체 랭킹 더보기
+                </a>
             </div>
         </section>
-    </div>
+    </main>
 
-    <footer class="text-center text-gray-500 text-sm p-4">
-        SCUTTA 37기 김서영 &copy; 2025
-    </footer>
-
-    <script src="../static/js/script.js"></script>
-    <script src="../static/js/index.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
