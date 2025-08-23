@@ -375,32 +375,26 @@ def init_routes(app):
 
     @app.route('/')
     @login_required
-
     def index():
         categories = [
-        ('승리', Player.win_count.desc(), 'win_count'),
-        ('승률', Player.rate_count.desc(), 'rate_count'),
-        ('경기', Player.match_count.desc(), 'match_count'),
-        ('베팅', Player.betting_count.desc(), 'betting_count'),
+            ('승리', Player.win_count.desc(), 'win_count'),
+            ('승률', Player.rate_count.desc(), 'rate_count'),
+            ('경기', Player.match_count.desc(), 'match_count'),
+            ('베팅', Player.betting_count.desc(), 'betting_count'),
         ]
-
-        rankings_data={}
-
+        rankings_data = {}
         for title, order_criteria, value_attr in categories:
-            top_players=Player.query.filter(Player.is_valid==True, User,is_admin==False)\
-                                    .order_by(order_criteria, Player.name)\
-                                    .limit(4).all()
+            # ▼▼▼ 이 부분을 수정된 코드로 교체합니다. ▼▼▼
+            top_players = Player.query.join(Player.user).filter(
+                Player.is_valid == True,
+                User.is_admin == False
+            ).order_by(order_criteria, Player.name).limit(4).all()
             
-            rankings_data[title]=[
-                {
-                    'name': player.name,
-                    'rank': player.rank,
-                    'value': getattr(player, value_attr)
-                }
+            rankings_data[title] = [
+                {'name': player.name, 'rank': player.rank, 'value': getattr(player, value_attr)}
                 for player in top_players
             ]
-
-        return render_template('index.html',global_texts=current_app.config['GLOBAL_TEXTS'], rankings=rankings_data)
+        return render_template('index.html', global_texts=current_app.config['GLOBAL_TEXTS'], rankings=rankings_data)
 
     @app.route('/submitment.html')
     @login_required
@@ -992,7 +986,7 @@ def init_routes(app):
         secondary_order = secondary_criteria.get(category)
         attribute_name_2 = dynamic_column_2.get(category)
         
-        players = Player.query.filter(Player.is_valid == True, User.is_admin==False).order_by(primary_order, secondary_order, Player.id).offset(offset).limit(limit).all()
+        players = Player.query.join(Player.user).filter(Player.is_valid == True, User.is_admin==False).order_by(primary_order, secondary_order, Player.id).offset(offset).limit(limit).all()
 
         response = []
         for player in players:
@@ -1048,7 +1042,7 @@ def init_routes(app):
         secondary_order = secondary_criteria.get(category)
         attribute_name_2 = dynamic_column_2.get(category)
 
-        players = Player.query.filter(Player.name.ilike(f"%{query}%"), Player.is_valid == True, User.is_admin==False).order_by(primary_order, secondary_order).all()
+        players = Player.query.join(Player.user).filter(Player.name.ilike(f"%{query}%"), Player.is_valid == True, User.is_admin==False).order_by(primary_order, secondary_order).all()
 
         response = []
         for player in players:
