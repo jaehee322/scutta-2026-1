@@ -34,3 +34,12 @@ def register_commands(app):
         
         db.session.commit()
         print(f">>> 성공: 관리자 '{username}' 계정이 생성되었습니다.")
+
+        # app/commands.py 파일 맨 아래에 이 함수를 추가하세요.
+
+    @app.cli.command("init-db")
+    @with_appcontext
+    def init_db_command():
+        """데이터베이스 테이블을 모두 생성합니다."""
+        db.create_all()
+        print("Database tables created successfully.")
