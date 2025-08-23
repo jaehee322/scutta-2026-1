@@ -8,6 +8,14 @@ class Config:
     if db_url and db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
 
+    print("--- DEBUG: DATABASE_URL 확인 ---")
+    if db_url:
+        print(f"  - 실제 읽어온 값 (Raw): {db_url}")
+        print(f"  - 숨겨진 문자 확인 (Repr): {repr(db_url)}")
+    else:
+        print("  - !!! DATABASE_URL 환경 변수를 찾을 수 없습니다 !!!")
+    print("-----------------------------------")
+
     SQLALCHEMY_DATABASE_URI = db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get('SECRET_KEY', 'a-very-secret-key')
@@ -26,4 +34,5 @@ class Config:
     # 로컬 환경에서는 SSL 설정을 적용하지 않음
     else:
         SQLALCHEMY_ENGINE_OPTIONS = {}
+    # ▲▲▲▲▲ 여기까지 수정 ▲▲▲▲▲
     # ▲▲▲▲▲ 여기까지 수정 ▲▲▲▲▲
