@@ -40,7 +40,7 @@
             </div>
 
             <div class="mb-8">
-                <h3 class="text-lg font-bold mb-4">최근 10경기 상대 전적</h3>
+                <h3 class="text-lg font-bold mb-4">상대 전적</h3>
                 <div class="overflow-x-auto">
                     <table class="table-modern w-full">
                         <thead>
@@ -51,24 +51,26 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% if recent_matches %}
                             <tr class="bg-gray-50">
                                 <td class="text-left font-bold {% if win_rate.p1_wins > win_rate.p2_wins %}text-green-600{% endif %}">{{ win_rate.p1_wins }}승</td>
-                                <td class="text-center text-sm text-gray-500">전체</td>
+                                <td class="text-center text-sm text-gray-500">종합</td>
                                 <td class="text-right font-bold {% if win_rate.p2_wins > win_rate.p1_wins %}text-green-600{% endif %}">{{ win_rate.p2_wins }}승</td>
                             </tr>
                             {% for match in recent_matches %}
                             <tr>
-                                <td class="text-left">{% if match.winner_name == betting.p1_name %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}</td>
+                                <td class="text-left">
+                                    {% if match.winner == betting.p1_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
+                                </td>
                                 <td class="text-center">{{ match.score }}</td>
-                                <td class="text-right">{% if match.winner_name == betting.p2_name %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}</td>
+                                <td class="text-right">
+                                    {% if match.winner == betting.p2_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
+                                </td>
                             </tr>
-                            {% endfor %}
                             {% else %}
                             <tr>
-                                <td colspan="3" class="text-center text-gray-500 py-4">최근 상대 전적이 없습니다.</td>
+                                <td colspan="3" class="text-center text-gray-500 py-4">상대 전적이 없습니다.</td>
                             </tr>
-                            {% endif %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
