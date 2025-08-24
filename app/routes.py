@@ -1510,16 +1510,16 @@ def init_routes(app):
                 
             if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 16:
                 if winner.gender == GenderEnum.MALE:
-                    winner.rank = 5
+                    winner.rank = 4
                 elif winner.gender == GenderEnum.FEMALE:
-                    winner.rank = 7
+                    winner.rank = 6
             
             
             if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 16:
                 if loser.gender == GenderEnum.MALE:
-                    loser.rank = 5
+                    loser.rank = 4
                 elif loser.gender == GenderEnum.FEMALE:
-                    loser.rank = 7
+                    loser.rank = 6
             
         db.session.commit()
         update_player_orders_by_match()
@@ -2077,9 +2077,9 @@ def init_routes(app):
                 # 2. 부수 계산
                 initial_rank = None
                 if gender_enum == GenderEnum.MALE:
-                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 5
+                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 4
                 elif gender_enum == GenderEnum.FEMALE:
-                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 7
+                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 6
 
                 # 3. 모든 것이 준비된 상태에서 Player 객체 생성
                 new_player = Player(
