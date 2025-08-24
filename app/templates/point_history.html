@@ -11,43 +11,49 @@
 </head>
 <body class="bg-gray-100">
 
-    <header class="flex justify-between items-center p-4 bg-white shadow">
-        <button class="text-xl" onclick="history.back()">&larr;</button>
-        <h1 class="text-xl font-bold">포인트 변동 내역</h1>
-        <div class="flex items-center gap-4">
+    <header>
+        <div class="flex-shrink-0 w-1/4">
+            <button class="text-2xl p-4 -ml-4" onclick="history.back()">&larr;</button>
+        </div>
+        <div class="flex-grow min-w-0 text-center">
+            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">포인트 변동 내역</a>
+        </div>
+        <div class="flex-shrink-0 w-1/4 flex justify-end items-center gap-2">
            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
             {% endif %}
         </div>
     </header>
 
-    <div class="container mx-auto p-4">
+    <div class="container mx-auto p-4" style="margin-top:0;">
         <div class="bg-white rounded-lg shadow-md p-6">
-            <table class="w-full text-left">
-                <thead class="border-b-2 border-gray-200">
-                    <tr>
-                        <th class="py-2">일시</th>
-                        <th class="py-2">내용</th>
-                        <th class="py-2 text-center">업적</th>
-                        <th class="py-2 text-center">베팅</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr class="border-b last:border-b-0">
-                        <td class="py-3 text-sm text-gray-600">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td class="py-3">{{ log.reason }}</td>
-                        <td class="py-3 text-center font-semibold {% if log.achieve_change > 0 %}text-green-600{% elif log.achieve_change < 0 %}text-red-600{% endif %}">
-                            {{ '%+d'|format(log.achieve_change) if log.achieve_change != 0 else '-' }}
-                        </td>
-                        <td class="py-3 text-center font-semibold {% if log.betting_change > 0 %}text-green-600{% elif log.betting_change < 0 %}text-red-600{% endif %}">
-                            {{ '%+d'|format(log.betting_change) if log.betting_change != 0 else '-' }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="rankings-table-container">
+                <table class="w-full text-left table-modern min-w-full">
+                    <thead class="border-b-2 border-gray-200">
+                        <tr>
+                            <th class="py-2 whitespace-nowrap">일시</th>
+                            <th class="py-2">내용</th>
+                            <th class="py-2 text-center whitespace-nowrap">업적</th>
+                            <th class="py-2 text-center whitespace-nowrap">베팅</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="border-b last:border-b-0">
+                            <td class="py-3 text-sm text-gray-600 whitespace-nowrap">{{ log.timestamp.strftime('%m.%d %H:%M') }}</td>
+                            <td class="py-3">{{ log.reason }}</td>
+                            <td class="py-3 text-center font-semibold {% if log.achieve_change > 0 %}text-green-600{% elif log.achieve_change < 0 %}text-red-600{% endif %}">
+                                {{ '%+d'|format(log.achieve_change) if log.achieve_change != 0 else '-' }}
+                            </td>
+                            <td class="py-3 text-center font-semibold {% if log.betting_change > 0 %}text-green-600{% elif log.betting_change < 0 %}text-red-600{% endif %}">
+                                {{ '%+d'|format(log.betting_change) if log.betting_change != 0 else '-' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

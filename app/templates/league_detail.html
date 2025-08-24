@@ -20,36 +20,31 @@
 <body class="bg-gray-100">
 
     <header>
-        <div class="w-1/3"><button class="text-2xl p-4" onclick="history.back()">&larr;</button></div>
-        <div class="w-1/3 text-center"><a href="{{ url_for('index') }}" class="text-xl font-bold">리그전</a></div>
-        <div class="w-1/3 flex justify-end items-center gap-4 p-4">
-           {% if current_user.is_authenticated %}<a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a><a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>{% endif %}
+        <div class="flex-shrink-0 w-1/4">
+            <button class="text-2xl p-4 -ml-4" onclick="history.back()">&larr;</button>
+        </div>
+        <div class="flex-grow min-w-0 text-center">
+            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">리그전</a>
+        </div>
+        <div class="flex-shrink-0 w-1/4 flex justify-end items-center gap-2">
+           {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
+            {% endif %}
         </div>
     </header>
     
-    <div id="menu-overlay" class="menu-overlay"></div>
-    <div id="menu" class="menu">
-        <div class="menu-header">메뉴</div>
-        <a href="{{ url_for('mypage') }}" class="menu-item">마이페이지</a><hr class="my-4" />
-        <a href="{{ url_for('submit_match_page') }}" class="menu-item">경기 결과 제출</a>
-        <a href="{{ url_for('submitment') }}" class="menu-item">제출 현황</a>
-        <a href="{{ url_for('partner') }}" class="menu-item">오늘의 상대</a>
-        <a href="{{ url_for('league_or_tournament') }}" class="menu-item">리그전 및 토너먼트</a>
-        <a href="{{ url_for('betting') }}" class="menu-item">베팅</a><hr class="mt-10" />
-        <div class="menu-item mt-10"><a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank" rel="noopener noreferrer">NOTION</a></div>
-        <a href="{{ url_for('password') }}" class="menu-item">관리 페이지로 이동</a>
-    </div>
-
-    <main class="container mx-auto p-4 md:p-6 lg:p-8">
+    <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top:0;">
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-lg font-bold mb-4 text-center">{{ league.p1 }}, {{ league.p2 }}, {{ league.p3 }}, {{ league.p4 }}, {{ league.p5 }}</h2>
-            <div class="overflow-x-auto">
+            
+            <div class="rankings-table-container">
                 <table class="table-modern w-full" style="min-width: 600px;">
                     <thead>
                         <tr>
                             <th class="w-24"></th>
                             {% for p_data in players %}
-                                <th class="player-name text-center">
+                                <th class="player-name text-center whitespace-nowrap">
                                     <a href="/player/{{ p_data.player_id }}">{{ p_data.player }}</a>
                                 </th>
                             {% endfor %}
@@ -58,7 +53,7 @@
                     <tbody>
                         {% for row_data in players %}
                         <tr>
-                            <td class="font-bold text-center">
+                            <td class="font-bold text-center whitespace-nowrap">
                                 <a href="/player/{{ row_data.player_id }}">{{ row_data.player }} ({{ row_data.player_rank or '무' }})</a>
                             </td>
                             {% for col_data in players %}

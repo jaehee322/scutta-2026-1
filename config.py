@@ -8,13 +8,7 @@ class Config:
     if db_url and db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-    print("--- DEBUG: DATABASE_URL 확인 ---")
-    if db_url:
-        print(f"  - 실제 읽어온 값 (Raw): {db_url}")
-        print(f"  - 숨겨진 문자 확인 (Repr): {repr(db_url)}")
-    else:
-        print("  - !!! DATABASE_URL 환경 변수를 찾을 수 없습니다 !!!")
-    print("-----------------------------------")
+    
 
     SQLALCHEMY_DATABASE_URI = db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False

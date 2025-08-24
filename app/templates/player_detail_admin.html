@@ -6,28 +6,26 @@
     <title>{{ player.name }} - 상세 정보</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        .container {
-            margin-top: 80px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-gray-100">
-    <header class="flex justify-between items-center p-4 bg-white shadow">
-        <button class="text-xl" onclick="history.back()">&larr;</button>
-        <h1 class="text-xl font-bold">{{ player.name }}</h1>
 
-        <div class="flex items-center gap-4">
+    <header>
+        <div class="flex-shrink-0 w-1/4">
+            <button class="text-2xl p-4 -ml-4" onclick="history.back()">&larr;</button>
+        </div>
+        <div class="flex-grow min-w-0 text-center">
+            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">{{ player.name }}</a>
+        </div>
+        <div class="flex-shrink-0 w-1/4 flex justify-end items-center gap-2">
            {% if current_user.is_authenticated %}
-                <span class="text-sm font-semibold">{{ current_user.username }}</span>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
             {% endif %}
         </div>
-        <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
     </header>
 
-    <div class="container mx-auto p-4">
+    <div class="container mx-auto p-4" style="margin-top:0;">
         <div class="bg-white shadow p-6 rounded">
             <h2 class="text-lg font-bold mb-4">{{ player.rank or '무' }}부</h2>
             <table class="table-modern">
@@ -68,7 +66,7 @@
                 </tr>
             </table>
 
-            <h2 class="text-lg font-bold mb-4">업적 달성 보드</h2>
+            <h2 class="text-lg font-bold my-4">업적 달성 보드</h2>
             <table class="table-modern">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">날이 좋아서</td>
@@ -128,7 +126,7 @@
                 </tr>
             </table>
 
-            <table class="table-modern">
+            <table class="table-modern mt-4">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">내가 나가</td>
                     <td class="bg-gray-100 border p-2 font-bold">10점</td>
@@ -173,7 +171,7 @@
                 </tr>
             </table>
 
-            <table class="table-modern">
+            <table class="table-modern mt-4">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">숨 참고 Scutta Dive~</td>
                     <td class="bg-gray-100 border p-2 font-bold">10점</td>
@@ -218,7 +216,7 @@
                 </tr>
             </table>
 
-            <table class="table-modern">
+            <table class="table-modern mt-4">
                 <tr>
                     <td class="bg-gray-100 border p-2 font-bold">단어장 마스터</td>
                     <td class="bg-gray-100 border p-2 font-bold">10점</td>
@@ -278,37 +276,27 @@
                         <tbody>
                             {% for log in point_logs %}
                             <tr class="text-center text-sm">
-                                <td class="py-2 px-4 border-b">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td class="py-2 px-4 border-b whitespace-nowrap">{{ log.timestamp.strftime('%m.%d %H:%M') }}</td>
                                 <td class="py-2 px-4 border-b">{{ log.reason }}</td>
                                 <td class="py-2 px-4 border-b font-semibold">
-                                    {% if log.achieve_change > 0 %}
-                                        <span class="text-blue-600">+{{ log.achieve_change }}</span>
-                                    {% elif log.achieve_change < 0 %}
-                                        <span class="text-red-600">{{ log.achieve_change }}</span>
-                                    {% else %}
-                                        <span class="text-gray-400">-</span>
-                                    {% endif %}
+                                    {% if log.achieve_change > 0 %}<span class="text-blue-600">+{{ log.achieve_change }}</span>
+                                    {% elif log.achieve_change < 0 %}<span class="text-red-600">{{ log.achieve_change }}</span>
+                                    {% else %}<span class="text-gray-400">-</span>{% endif %}
                                 </td>
                                 <td class="py-2 px-4 border-b font-semibold">
-                                    {% if log.betting_change > 0 %}
-                                        <span class="text-blue-600">+{{ log.betting_change }}</span>
-                                    {% elif log.betting_change < 0 %}
-                                        <span class="text-red-600">{{ log.betting_change }}</span>
-                                    {% else %}
-                                        <span class="text-gray-400">-</span>
-                                    {% endif %}
+                                    {% if log.betting_change > 0 %}<span class="text-blue-600">+{{ log.betting_change }}</span>
+                                    {% elif log.betting_change < 0 %}<span class="text-red-600">{{ log.betting_change }}</span>
+                                    {% else %}<span class="text-gray-400">-</span>{% endif %}
                                 </td>
                             </tr>
                             {% else %}
-                            <tr>
-                                <td colspan="4" class="py-4 px-4 text-center text-gray-500">포인트 변경 기록이 없습니다.</td>
-                            </tr>
+                            <tr><td colspan="4" class="py-4 px-4 text-center text-gray-500">포인트 변경 기록이 없습니다.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </section>
-            </div>
+        </div>
     </div>
 </body>
 </html>

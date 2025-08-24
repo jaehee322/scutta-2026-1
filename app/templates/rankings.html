@@ -12,16 +12,16 @@
 <body class="bg-gray-100">
 
     <header>
-        <div class="w-1/3">
+        <div class="flex-shrink-0 w-1/4">
             <button class="text-2xl p-4 -ml-4" onclick="history.back()">&larr;</button>
         </div>
-        <div class="w-1/3 text-center">
-            <a href="{{ url_for('index') }}" class="text-xl font-bold">전체 랭킹</a>
+        <div class="flex-grow min-w-0 text-center">
+            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">전체 랭킹</a>
         </div>
-        <div class="w-1/3 flex justify-end items-center gap-4">
+        <div class="flex-shrink-0 w-1/4 flex justify-end items-center gap-2">
            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
             {% endif %}
         </div>
     </header>
@@ -29,33 +29,21 @@
     <div class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
         <div class="bg-white shadow-sm rounded-lg p-6">
             <h2 class="text-2xl font-bold mb-4">부문별 순위</h2>
-            <div class="category-buttons flex gap-2 py-2 mb-4 overflow-x-auto whitespace-nowrap">
-                <button class="px-4 py-1 border rounded text-sm selected" onclick="selectCategory(this, 'win_order')">승리</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'loss_order')">패배</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'rate_order')">승률</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'match_order')">경기</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'opponent_order')">상대</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'achieve_order')">업적</button>
-                <button class="px-4 py-1 border rounded text-sm" onclick="selectCategory(this, 'betting_order')">베팅</button>
-            </div>
+            <div class="category-buttons flex gap-2 py-2 mb-4 overflow-x-auto whitespace-nowrap no-scrollbar">
+                </div>
             
-            <div class="overflow-x-auto">
-                <table class="table-modern">
+            <div class="rankings-table-container">
+                <table class="table-modern min-w-full">
                     <thead id="table-header">
-                        <tr>
-                            <th>순위</th>
-                            <th>이름</th>
-                            <th class="cursor-pointer" id="dynamic-column" onclick="toggleSortOrder()">승리</th>
-                            <th id="dynamic-column-2">경기</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body"></tbody>
+                        </thead>
+                    <tbody id="table-body">
+                        </tbody>
                 </table>
             </div>
 
-            <div class="flex justify-between items-center mt-6">
-                <button id="load-more-btn" class="bg-gray-200 text-gray-700 rounded py-2 px-4 whitespace-nowrap" onclick="loadMore()">더보기</button>
-                <input type="text" placeholder="이름 검색" class="border rounded p-2 w-full md:w-1/2" oninput="searchByName(this.value)">
+            <div class="flex flex-col md:flex-row justify-between items-center mt-6 gap-4">
+                <button id="load-more-btn" class="w-full md:w-auto bg-gray-200 text-gray-800 rounded py-2 px-4 whitespace-nowrap">더보기</button>
+                <input type="text" id="player-search-input" placeholder="이름으로 검색 (두 글자 이상)" class="border rounded p-2 w-full md:w-1/2">
             </div>
         </div>
     </div>

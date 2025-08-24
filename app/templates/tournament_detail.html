@@ -11,16 +11,16 @@
 <body class="bg-gray-100">
 
     <header>
-        <div class="w-1/3">
+        <div class="flex-shrink-0 w-1/4">
             <button class="text-2xl p-4 -ml-4" onclick="history.back()">&larr;</button>
         </div>
-        <div class="w-1/3 text-center">
-            <a href="{{ url_for('index') }}" class="text-xl font-bold">토너먼트</a>
+        <div class="flex-grow min-w-0 text-center">
+            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">토너먼트</a>
         </div>
-        <div class="w-1/3 flex justify-end items-center gap-4">
+        <div class="flex-shrink-0 w-1/4 flex justify-end items-center gap-2">
            {% if current_user.is_authenticated %}
-               <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
-               <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+               <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate">{{ current_user.username }}</a>
+               <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
            {% endif %}
         </div>
     </header>
@@ -87,7 +87,6 @@
         </div>
     </main>
     
-    {# ▼▼▼ 이 부분이 추가되었습니다 ▼▼▼ #}
     <script src="{{ url_for('static', filename='js/tournament_detail.js') }}"></script>
 </body>
 </html>

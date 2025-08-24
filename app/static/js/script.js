@@ -1,50 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 랭킹이 있는 페이지에서만 loadRankings를 호출하도록 수정
-    if (document.getElementById('table-body')) {
-        loadRankings(currentCategory);
-    }
+// static/js/script.js 파일의 전체 내용입니다.
 
-    // 메뉴 토글 이벤트 리스너
-    const menuToggle = document.getElementById('menu-toggle');
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => toggleMenu(true));
-    }
-});
-
-function toggleMenu(show) {
-    const menu = document.getElementById('menu');
-    const overlay = document.getElementById('menu-overlay');
-    if (show) {
-        menu.classList.add('active');
-        overlay.classList.add('active');
-    } else {
-        menu.classList.remove('active');
-        overlay.classList.remove('active');
-    }
-}
-
-let inputFocused = false;
-
-document.addEventListener('focusin', (event) => {
-    if (event.target.tagName === 'INPUT') {
-        inputFocused = true;
-        document.addEventListener('click', handleOutsideClick);
-    }
-});
-
-document.addEventListener('focusout', (event) => {
-    if (event.target.tagName === 'INPUT') {
-        inputFocused = false;
-        document.removeEventListener('click', handleOutsideClick);
-    }
-});
-
-function handleOutsideClick(event) {
-    const inputs = document.querySelectorAll('input');
-    if (!event.target.closest('input') && inputFocused) {
-        inputs.forEach(input => input.blur());
-    }
-}
+// --- Global helper functions (HTML onclick에서 직접 호출) ---
 
 function navigateTo(page) {
     window.location.href = page;
@@ -56,37 +12,99 @@ function confirmNavigation() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('menu')?.classList.remove('active');
-  document.getElementById('menu-overlay')?.classList.remove('active');
-});
+// --- DOMContentLoaded: 페이지 로드가 완료된 후 실행 ---
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- 스크롤에 따라 헤더 숨기기/보이기 (최종 수정본) ---
-    const header = document.querySelector('header');
+    // ===================================
+    // 메뉴 관련 기능 (수정/추가된 부분)
+    // ===================================
+    const menuToggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    const menuOverlay = document.getElementById('menu-overlay');
 
-    // 헤더가 없는 페이지에서는 실행하지 않음
-    if (!header) {
-        return;
+    function openMenu() {
+        if (menu && menuOverlay) {
+            menu.classList.add('active');
+            menuOverlay.classList.add('active');
+        }
     }
 
-    // 헤더의 실제 높이를 동적으로 측정합니다 (3번 문제 해결)
-    const headerHeight = header.offsetHeight;
-    let lastScrollTop = 0;
-
-    window.addEventListener('scroll', function() {
-        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        // 아래로 스크롤하고, 스크롤 위치가 헤더 높이보다 클 때만 숨김
-        if (scrollTop > lastScrollTop && scrollTop > headerHeight) {
-            // Scrolling Down -> Hide
-            header.style.top = `-${headerHeight}px`;
-        } else {
-            // Scrolling Up -> Show
-            header.style.top = '0';
+    function closeMenu() {
+        if (menu && menuOverlay) {
+            menu.classList.remove('active');
+            menuOverlay.classList.remove('active');
         }
-        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }
+
+    // 페이지 로드 시 혹시 메뉴가 열려있으면 닫기
+    closeMenu();
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            if (menu.classList.contains('active')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+    }
+
+    if (menuOverlay) {
+        // 메뉴 바깥의 어두운 배경 클릭 시 닫기 (요청하신 기능)
+        menuOverlay.addEventListener('click', closeMenu);
+    }
+    
+    if (menu) {
+        // 메뉴 자체를 클릭했을 때는 닫히지 않도록 이벤트 전파 중단
+        menu.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    }
+
+    // ===================================
+    // 헤더 스크롤 기능 (기존 기능 보존)
+    // ===================================
+    const header = document.querySelector('header');
+    if (header) {
+        const headerHeight = header.offsetHeight;
+        let lastScrollTop = 0;
+
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > headerHeight) {
+                header.style.top = `-${headerHeight}px`; // Hide
+            } else {
+                header.style.top = '0'; // Show
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        });
+    }
+
+    // ===================================
+    // 외부 클릭 시 Input 포커스 해제 기능 (기존 기능 보존)
+    // ===================================
+    let inputFocused = false;
+
+    function handleOutsideClick(event) {
+        const inputs = document.querySelectorAll('input');
+        if (!event.target.closest('input') && inputFocused) {
+            inputs.forEach(input => input.blur());
+        }
+    }
+
+    document.addEventListener('focusin', (event) => {
+        if (event.target.tagName === 'INPUT') {
+            inputFocused = true;
+            document.addEventListener('click', handleOutsideClick);
+        }
     });
 
+    document.addEventListener('focusout', (event) => {
+        if (event.target.tagName === 'INPUT') {
+            inputFocused = false;
+            document.removeEventListener('click', handleOutsideClick);
+        }
+    });
 });

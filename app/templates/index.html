@@ -32,7 +32,7 @@
         <div class="menu-item" onclick="location.href='{{ url_for('mypage') }}'">마이페이지</div>
         <hr class="my-4" />
         <div class="menu-item" onclick="location.href='{{ url_for('submit_match_page') }}'">경기 결과 제출</div>
-        <div class="menu-item" onclick="location.href='{{ url_for('submitment') }}'">제출 현황</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('my_submissions') }}'">나의 제출 현황</div>
         <div class="menu-item" onclick="location.href='{{ url_for('partner') }}'">오늘의 상대</div>
         <div class="menu-item" onclick="location.href='{{ url_for('league_or_tournament') }}'">리그전 및 토너먼트</div>
         <div class="menu-item" onclick="location.href='{{ url_for('betting') }}'">베팅</div>
@@ -45,6 +45,10 @@
 
     <main class="container mx-auto p-4 md:p-6 lg:p-8">
         
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}<div class="mb-4">{% for category, message in messages %}<div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}" role="alert"><span class="font-medium">{{ message }}</span></div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+
         <section class="mb-12">
             <h2 class="text-2xl md:text-3xl font-light mb-4">SCUTTA</h2>
             <p class="text-gray-600 leading-relaxed">
@@ -54,10 +58,32 @@
         </section>
         
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-            <a href="{{ url_for('submit_match_page') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
-                <h3 class="text-xl font-semibold mb-2">경기 결과 제출</h3>
-                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
-            </a>
+            
+            <div class="group block bg-gray-100 p-6 rounded-lg">
+                <h3 class="text-xl font-semibold mb-4 border-b pb-2">경기 결과 제출</h3>
+                <form action="{{ url_for('submit_match_direct') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="text-sm font-bold text-gray-600">승리자</label>
+                        <input type="text" name="winner_name" placeholder="승리자 이름 입력" class="w-full mt-1" required>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-gray-600">패배자</label>
+                        <input type="text" name="loser_name" placeholder="패배자 이름 입력" class="w-full mt-1" required>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-gray-600">스코어</label>
+                        <select name="score" class="w-full mt-1" required>
+                            <option value="3:0">3:0</option>
+                            <option value="2:1">2:1</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-main button mt-4">제출하기</button>
+                </form>
+                <a href="{{ url_for('my_submissions') }}" class="block w-full bg-gray-600 hover:bg-gray-700 text-white font-bold text-center py-2 px-4 rounded-lg transition mt-2">
+                    나의 최근 제출 결과 보기
+                </a>
+            </div>
+
             <a href="{{ url_for('mypage') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
                 <h3 class="text-xl font-semibold mb-2">마이페이지</h3>
                 <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>

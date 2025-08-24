@@ -1,124 +1,160 @@
+// static/js/index.js 파일의 전체 내용입니다.
+
 document.addEventListener('DOMContentLoaded', () => {
-    let currentCategory = 'win_order';
-    let sortOrder = 'asc';
+    // --- 상태 관리 변수 ---
     let offset = 0;
     const limit = 30;
     let isLoading = false;
-    let isSearching = false;
+    let currentCategory = 'win_count'; // _order 접미사 없이 사용
     let searchTimer;
 
+    // --- DOM 요소 ---
+    const tableHeader = document.getElementById('table-header');
     const tableBody = document.getElementById('table-body');
     const loadMoreBtn = document.getElementById('load-more-btn');
+    const searchInput = document.getElementById('player-search-input');
+    const categoryButtonsContainer = document.querySelector('.category-buttons');
 
-    // 데이터를 받아서 테이블 행으로 변환하는 함수
-    function createPlayerRow(player) {
-        const category_value_formatted = currentCategory.includes('rate') ? `${player.category_value}%` : player.category_value;
-        const category_value_2_formatted = currentCategory === 'match_order' ? `${player.category_value_2}%` : player.category_value_2;
+    // --- 데이터 및 설정 ---
+    const columnConfig = {
+        win_count: { name: '승리', suffix: '' },
+        loss_count: { name: '패배', suffix: '' },
+        rate_count: { name: '승률', suffix: '%' },
+        match_count: { name: '경기', suffix: '' },
+        opponent_count: { name: '상대', suffix: '' },
+        achieve_count: { name: '업적', suffix: '' },
+        betting_count: { name: '베팅', suffix: '' },
+    };
+    let columnOrder = Object.keys(columnConfig);
 
-        return `
-            <tr>
-                <td class="text-center font-semibold">${player.current_rank}</td>
-                <td><a href="/player/${player.id}" class="hover:underline font-semibold">${player.name} (${player.rank})</a></td>
-                <td class="text-center">${category_value_formatted}</td>
-                <td class="text-center">${category_value_2_formatted}</td>
-                <td class="text-center text-sm text-gray-600">${player.last_10_record || ''}</td>
-            </tr>
+    /**
+     * 테이블 헤더를 다시 그리는 함수
+     */
+    // static/js/index.js 파일에서 이 함수를 찾아 아래 내용으로 교체해주세요.
+
+/**
+ * 테이블 헤더를 현재 열 순서에 맞게 다시 그리는 함수
+ */
+    function renderHeader() {
+        if (!tableHeader) return;
+        tableHeader.innerHTML = '';
+        const tr = document.createElement('tr');
+        
+        // ▼▼▼ '순위'와 '이름' 헤더를 먼저 추가하도록 수정했습니다. ▼▼▼
+        let headerHTML = `
+            <th class="whitespace-nowrap px-4 py-2">순위</th>
+            <th class="whitespace-nowrap px-4 py-2">이름</th>
         `;
+
+        // 그 다음에 동적인 랭킹 지표 헤더들을 추가합니다.
+        columnOrder.forEach(key => {
+            const isCurrent = key === currentCategory;
+            headerHTML += `<th class="whitespace-nowrap px-4 py-2 cursor-pointer ${isCurrent ? 'text-blue-600 font-bold' : ''}" onclick="selectCategory('${key}')">${columnConfig[key].name}</th>`;
+        });
+        
+        tr.innerHTML = headerHTML;
+        tableHeader.appendChild(tr);
     }
 
-    // 테이블에 데이터를 표시하는 함수
-    function displayData(players, clear) {
+    /**
+     * 테이블 본문을 다시 그리는 함수
+     */
+    function renderBody(players, clear = false) {
+        if (!tableBody) return;
         if (clear) {
             tableBody.innerHTML = '';
         }
         if (players.length === 0 && clear) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">검색 결과가 없습니다.</td></tr>';
+            tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">표시할 데이터가 없습니다.</td></tr>`;
             return;
         }
+
         players.forEach(player => {
-            tableBody.insertAdjacentHTML('beforeend', createPlayerRow(player));
+            const tr = document.createElement('tr');
+            let rowHTML = `
+                <td class="text-center font-semibold whitespace-nowrap">${player.current_rank}</td>
+                <td class="whitespace-nowrap"><a href="/player/${player.id}" class="hover:underline font-semibold">${player.name} (${player.rank})</a></td>
+            `;
+
+            columnOrder.forEach(key => {
+                const isCurrent = key === currentCategory;
+                const value = player.stats[key] + (columnConfig[key].suffix || '');
+                rowHTML += `<td class="text-center whitespace-nowrap ${isCurrent ? 'font-bold' : ''}">${value}</td>`;
+            });
+            
+            tr.innerHTML = rowHTML;
+            tableBody.appendChild(tr);
         });
     }
 
-    // 랭킹 데이터를 서버에서 불러오는 함수
+    /**
+     * 서버에서 랭킹 데이터를 불러오는 함수
+     */
     async function loadRankings(isNew = false) {
-        if (isLoading || isSearching) return;
+        if (isLoading) return;
         isLoading = true;
-        loadMoreBtn.textContent = '불러오는 중...';
+        if(loadMoreBtn) loadMoreBtn.textContent = '불러오는 중...';
+        if (isNew) offset = 0;
 
-        if (isNew) {
-            offset = 0; // 새 카테고리 로드 시 offset 초기화
-        }
-
-        const response = await fetch(`/rankings?category=${currentCategory}&sort=${sortOrder}&offset=${offset}&limit=${limit}`);
-        const players = await response.json();
+        const query = searchInput.value.trim();
+        // JS는 win_count, 서버는 win_order를 사용하므로 맞춰서 보냅니다.
+        const categoryForURL = currentCategory.replace('_count', '_order');
+        const url = query.length >= 2 
+            ? `/search_players?query=${encodeURIComponent(query)}&category=${categoryForURL}&offset=${offset}&limit=${limit}`
+            : `/rankings?category=${categoryForURL}&offset=${offset}&limit=${limit}`;
         
-        displayData(players, isNew);
-        
-        offset += players.length; // offset을 올바르게 증가시킴
-        isLoading = false;
-        loadMoreBtn.textContent = '더보기';
-
-        if (players.length < limit) {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'block';
+        try {
+            const response = await fetch(url);
+            const players = await response.json();
+            renderBody(players, isNew);
+            offset += players.length;
+            if(loadMoreBtn) loadMoreBtn.style.display = (players.length < limit || query.length >= 2) ? 'none' : 'block';
+        } catch (error) {
+            console.error("Error loading rankings:", error);
+            if(tableBody) tableBody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-red-500">데이터를 불러오는 데 실패했습니다.</td></tr>';
+        } finally {
+            isLoading = false;
+            if(loadMoreBtn) loadMoreBtn.textContent = '더보기';
         }
     }
-
-    // 전역(window) 객체에 함수를 할당하여 HTML onclick에서 호출 가능하게 함
-    window.selectCategory = (button, category) => {
-        document.querySelectorAll('.category-buttons button').forEach(btn => btn.classList.remove('selected'));
-        button.classList.add('selected');
-        
-        currentCategory = category;
-        sortOrder = 'asc';
-        isSearching = false;
-        document.querySelector('input[type="text"]').value = '';
-
-        const headers = {
-            'win_order': ['승리', '경기'], 'loss_order': ['패배', '경기'], 'rate_order': ['승률', '경기'],
-            'match_order': ['경기', '승률'], 'opponent_order': ['상대', '경기'], 'achieve_order': ['업적', '베팅'],
-            'betting_order': ['베팅', '업적']
-        };
-        document.getElementById('dynamic-column').textContent = headers[category][0];
-        document.getElementById('dynamic-column-2').textContent = headers[category][1];
-        
-        loadRankings(true); // isNew 플래그를 true로 전달
-    };
-
-    window.toggleSortOrder = () => {
-        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-        loadRankings(true); // isNew 플래그를 true로 전달
-    };
-
-    window.loadMore = () => {
-        loadRankings(false); // isNew 플래그를 false로 전달
-    };
-
-    window.searchByName = (query) => {
-        clearTimeout(searchTimer);
-
-        if (query.length < 2) {
-            isSearching = false;
-            loadMoreBtn.style.display = 'block';
-            if (tableBody.innerHTML.includes('검색 결과가 없습니다')) {
-                loadRankings(true);
+    
+    /**
+     * 카테고리 버튼을 생성하는 함수
+     */
+    function createCategoryButtons() {
+        if (!categoryButtonsContainer) return;
+        categoryButtonsContainer.innerHTML = '';
+        Object.keys(columnConfig).forEach(key => {
+            const button = document.createElement('button');
+            button.className = `px-4 py-1 border rounded text-sm`;
+            if (key === currentCategory) {
+                button.classList.add('selected');
             }
-            return;
-        }
+            button.textContent = columnConfig[key].name;
+            button.onclick = () => selectCategory(key);
+            categoryButtonsContainer.appendChild(button);
+        });
+    }
+    
+    /**
+     * 카테고리 선택 시 실행되는 함수
+     */
+    function selectCategory(categoryKey) {
+        currentCategory = categoryKey;
+        columnOrder = [categoryKey, ...Object.keys(columnConfig).filter(k => k !== categoryKey)];
         
-        isSearching = true;
-        loadMoreBtn.style.display = 'none';
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">검색 중...</td></tr>';
-        
-        searchTimer = setTimeout(async () => {
-            const response = await fetch(`/search_players?query=${encodeURIComponent(query)}&category=${currentCategory}`);
-            const players = await response.json();
-            displayData(players, true);
-        }, 300);
-    };
+        createCategoryButtons();
+        renderHeader();
+        loadRankings(true);
+};
 
-    // 페이지 로드 시 초기 데이터 로딩
-    loadRankings(true);
+    // --- 이벤트 리스너 ---
+    if(loadMoreBtn) loadMoreBtn.addEventListener('click', () => loadRankings(false));
+    if(searchInput) searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadRankings(true), 300);
+    });
+
+    // --- 페이지 초기화 ---
+    selectCategory('win_count');
 });
