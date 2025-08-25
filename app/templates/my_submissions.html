@@ -28,15 +28,15 @@
     <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-2xl font-bold mb-6 border-b pb-4">나의 최근 제출 10경기</h2>
-            <div class="overflow-x-auto">
-                <table class="table-modern">
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="table-modern min-w-full">
                     <thead>
                         <tr>
                             <th>결과</th>
                             <th>상대</th>
                             <th>스코어</th>
-                            <th>승인 상태</th>
-                            <th>제출일</th>
+                            <th class="whitespace-nowrap">승인 상태</th>
+                            <th class="whitespace-nowrap">제출일</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,10 +50,10 @@
                                     {% if match.winner == current_user.player_id %}{{ match.loser_name }}{% else %}{{ match.winner_name }}{% endif %}
                                 </td>
                                 <td class="text-center">{{ match.score }}</td>
-                                <td class="text-center">
+                                <td class="text-center whitespace-nowrap">
                                     {% if match.approved %}<span class="text-sm font-semibold bg-green-100 text-green-700 py-1 px-3 rounded-full">승인 완료</span>{% else %}<span class="text-sm font-semibold bg-yellow-100 text-yellow-700 py-1 px-3 rounded-full">승인 대기</span>{% endif %}
                                 </td>
-                                <td class="text-sm text-gray-500">{{ match.timestamp.strftime('%Y-%m-%d') }}</td>
+                                <td class="text-sm text-gray-500 whitespace-nowrap">{{ match.timestamp.strftime('%Y-%m-%d') }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}

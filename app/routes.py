@@ -332,9 +332,9 @@ def init_routes(app):
                 
                 initial_rank = None
                 if gender_enum == GenderEnum.MALE:
-                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 5
+                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 4
                 elif gender_enum == GenderEnum.FEMALE:
-                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 7
+                    initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 6
                 
                 new_player = Player(
                     name=name,
