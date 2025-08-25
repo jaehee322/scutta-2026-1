@@ -1739,6 +1739,12 @@ def init_routes(app):
         matches = Match.query.filter_by(approved=False).all()
         result = [match.id for match in matches]
         return jsonify({'ids': result})
+    
+    @app.route('/select_all_bettings', methods=['GET'])
+    def select_all_bettings():
+        bettings = Betting.query.filter_by(approved=False).all()
+        result = [betting.id for betting in bettings]
+        return jsonify({'ids : result'})
 
 
     # assignment.js

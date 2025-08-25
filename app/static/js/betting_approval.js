@@ -27,15 +27,16 @@ function loadBettings(append = false) {
             data.forEach(betting => {
                 const row = document.createElement('tr');
                 const approvedText = betting.approved ? '✔️' : '❌';
+                // ▼▼▼ 모든 td 태그에 whitespace-nowrap 클래스를 추가했습니다. ▼▼▼
                 row.innerHTML = `
-                    <td><input type="checkbox" class="betting-checkbox" value="${betting.id}"></td>
-                    <td>${approvedText}</td>
-                    <td>${betting.match.winner_name}</td>
-                    <td>${betting.match.score}</td>
-                    <td>${betting.match.loser_name}</td>
-                    <td>${betting.win_participants.join(', ') || '없음'}</td>
-                    <td>${betting.lose_participants.join(', ') || '없음'}</td>
-                    <td>${betting.point}</td>
+                    <td class="whitespace-nowrap"><input type="checkbox" class="betting-checkbox" value="${betting.id}"></td>
+                    <td class="whitespace-nowrap">${approvedText}</td>
+                    <td class="whitespace-nowrap">${betting.match.winner_name}</td>
+                    <td class="whitespace-nowrap">${betting.match.score}</td>
+                    <td class="whitespace-nowrap">${betting.match.loser_name}</td>
+                    <td class="whitespace-nowrap">${betting.win_participants.join(', ') || '없음'}</td>
+                    <td class="whitespace-nowrap">${betting.lose_participants.join(', ') || '없음'}</td>
+                    <td class="whitespace-nowrap">${betting.point}</td>
                 `;
                 tableBody.appendChild(row);
             });

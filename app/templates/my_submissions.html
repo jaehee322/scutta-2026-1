@@ -29,12 +29,12 @@
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-2xl font-bold mb-6 border-b pb-4">나의 최근 제출 10경기</h2>
             <div class="overflow-x-auto no-scrollbar">
-                <table class="table-modern min-w-full">
+                <table class="table-modern min-w-full table-auto">
                     <thead>
                         <tr>
-                            <th>결과</th>
-                            <th>상대</th>
-                            <th>스코어</th>
+                            <th class="whitespace-nowrap">결과</th>
+                            <th class="whitespace-nowrap">상대</th>
+                            <th class="whitespace-nowrap">스코어</th>
                             <th class="whitespace-nowrap">승인 상태</th>
                             <th class="whitespace-nowrap">제출일</th>
                         </tr>
@@ -43,13 +43,13 @@
                         {% if matches %}
                             {% for match in matches %}
                             <tr>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     {% if match.winner == current_user.player_id %}<span class="font-bold text-green-600">승</span>{% else %}<span class="font-bold text-red-600">패</span>{% endif %}
                                 </td>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     {% if match.winner == current_user.player_id %}{{ match.loser_name }}{% else %}{{ match.winner_name }}{% endif %}
                                 </td>
-                                <td class="text-center">{{ match.score }}</td>
+                                <td class="text-center whitespace-nowrap">{{ match.score }}</td>
                                 <td class="text-center whitespace-nowrap">
                                     {% if match.approved %}<span class="text-sm font-semibold bg-green-100 text-green-700 py-1 px-3 rounded-full">승인 완료</span>{% else %}<span class="text-sm font-semibold bg-yellow-100 text-yellow-700 py-1 px-3 rounded-full">승인 대기</span>{% endif %}
                                 </td>
@@ -57,7 +57,7 @@
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <tr><td colspan="5" class="text-center py-8 text-gray-500">최근에 제출한 경기 결과가 없습니다.</td></tr>
+                            <tr><td colspan="5" class="text-center py-8 text-gray-500 whitespace-nowrap">최근에 제출한 경기 결과가 없습니다.</td></tr>
                         {% endif %}
                     </tbody>
                 </table>

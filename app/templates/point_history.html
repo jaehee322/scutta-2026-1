@@ -29,11 +29,11 @@
     <div class="container mx-auto p-4" style="margin-top:0;">
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="overflow-x-auto no-scrollbar">
-                <table class="w-full text-left table-modern min-w-full">
+                <table class="w-full text-left table-modern min-w-full table-auto">
                     <thead class="border-b-2 border-gray-200">
                         <tr>
                             <th class="py-2 whitespace-nowrap">일시</th>
-                            <th class="py-2">내용</th>
+                            <th class="py-2 whitespace-nowrap">내용</th>
                             <th class="py-2 text-center whitespace-nowrap">업적</th>
                             <th class="py-2 text-center whitespace-nowrap">베팅</th>
                         </tr>
@@ -42,11 +42,11 @@
                         {% for log in logs %}
                         <tr class="border-b last:border-b-0">
                             <td class="py-3 text-sm text-gray-600 whitespace-nowrap">{{ log.timestamp.strftime('%m.%d %H:%M') }}</td>
-                            <td class="py-3">{{ log.reason }}</td>
-                            <td class="py-3 text-center font-semibold {% if log.achieve_change > 0 %}text-green-600{% elif log.achieve_change < 0 %}text-red-600{% endif %}">
+                            <td class="py-3 whitespace-nowrap">{{ log.reason }}</td>
+                            <td class="py-3 text-center font-semibold whitespace-nowrap {% if log.achieve_change > 0 %}text-green-600{% elif log.achieve_change < 0 %}text-red-600{% endif %}">
                                 {{ '%+d'|format(log.achieve_change) if log.achieve_change != 0 else '-' }}
                             </td>
-                            <td class="py-3 text-center font-semibold {% if log.betting_change > 0 %}text-green-600{% elif log.betting_change < 0 %}text-red-600{% endif %}">
+                            <td class="py-3 text-center font-semibold whitespace-nowrap {% if log.betting_change > 0 %}text-green-600{% elif log.betting_change < 0 %}text-red-600{% endif %}">
                                 {{ '%+d'|format(log.betting_change) if log.betting_change != 0 else '-' }}
                             </td>
                         </tr>
