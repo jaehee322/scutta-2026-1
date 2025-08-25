@@ -72,7 +72,7 @@ function loadMatches(append = false) {
                 const row = document.createElement('tr');
                 const approvedText = match.approved ? '✔️' : '❌';
                 
-                // ▼▼▼ 모든 td 태그에 whitespace-nowrap 클래스를 추가하여 줄바꿈 방지 ▼▼▼
+                // ▼▼▼ HTML 헤더에 맞춰 6개의 데이터만 생성하도록 수정했습니다 ▼▼▼
                 row.innerHTML = `
                     <td class="whitespace-nowrap"><input type="checkbox" class="match-checkbox" value="${match.id}"></td>
                     <td class="whitespace-nowrap">${approvedText}</td>

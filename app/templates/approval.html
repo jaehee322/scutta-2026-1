@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/l10n/ko.min.js"></script>
 </head>
 <body class="bg-gray-100">
 
@@ -40,31 +38,31 @@
     </div>
 
     <div class="index-bar">
-        <a href="{{ url_for('betting_approval') }}" class="index-item {% if request.endpoint == 'betting_approval' %}active{% endif %}">베팅 승인</a>
-        <a href="{{ url_for('approval') }}" class="index-item {% if request.endpoint == 'approval' %}active{% endif %}">경기 승인</a>
-        <a href="{{ url_for('assignment') }}" class="index-item {% if request.endpoint == 'assignment' %}active{% endif %}">부수/포인트</a>
-        <a href="{{ url_for('settings') }}" class="index-item {% if request.endpoint == 'settings' %}active{% endif %}">기타 설정</a>
+        <a href="{{ url_for('betting_approval') }}" class="index-item">베팅 승인</a>
+        <a href="{{ url_for('approval') }}" class="index-item active">경기 승인</a>
+        <a href="{{ url_for('assignment') }}" class="index-item">부수/포인트</a>
+        <a href="{{ url_for('settings') }}" class="index-item">기타 설정</a>
     </div>
 
     <div class="container mx-auto p-4 admin-content">
         <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="flex flex-wrap items-center gap-4 mb-4">
-                <div class="tabs flex items-center space-x-2">
+            <div class="mb-4">
+                <div class="tabs flex items-center space-x-2 mb-4">
                     <div id="tab-all" class="tab text-sm active" onclick="selectTab(this, 'all')">전체</div>
                     <div id="tab-pending" class="tab text-sm" onclick="selectTab(this, 'pending')">승인 대기</div>
                     <div id="tab-approved" class="tab text-sm" onclick="selectTab(this, 'approved')">승인 완료</div>
                 </div>
-                <div class="flex items-center">
-                    <input type="text" id="date-filter" class="form-input rounded-md text-sm" placeholder="기간 검색" style="width: 200px;">
-                    <button onclick="filterByDate()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded-md ml-1 text-sm">검색</button>
-                </div>
-            </div>
-
-            <div class="flex justify-end mb-4">
-                <div class="flex space-x-2">
-                    <button class="bg-main button text-sm whitespace-nowrap" onclick="approveAll()">전체 승인</button>
-                    <button class="bg-main button text-sm whitespace-nowrap" onclick="approveSelected()">선택 승인</button>
-                    <button class="bg-gray-200 text-gray-800 button text-sm whitespace-nowrap" onclick="deleteSelected()">선택 삭제</button>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center">
+                        <input type="text" id="date-filter" class="form-input rounded-md text-sm" placeholder="기간으로 검색..." style="width: 200px;">
+                        <button id="search-by-date-btn" class="bg-gray-700 text-white button text-sm ml-2">검색</button>
+                        <button id="reset-date-btn" class="bg-gray-200 text-gray-800 button text-sm ml-2">초기화</button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="bg-main button text-sm whitespace-nowrap" onclick="approveAllMatches()">전체 승인</button>
+                        <button class="bg-main button text-sm whitespace-nowrap" onclick="approveMatches()">선택 승인</button>
+                        <button class="bg-gray-200 text-gray-800 button text-sm whitespace-nowrap" onclick="deleteMatches()">선택 삭제</button>
+                    </div>
                 </div>
             </div>
             
@@ -74,11 +72,9 @@
                         <tr>
                             <th class="whitespace-nowrap"><input type="checkbox" onclick="toggleSelectAll(this)"></th>
                             <th class="whitespace-nowrap">승인</th>
-                            <th class="whitespace-nowrap">신청자</th>
-                            <th class="whitespace-nowrap">결과</th>
                             <th class="whitespace-nowrap">승리자</th>
-                            <th class="whitespace-nowrap">패배자</th>
                             <th class="whitespace-nowrap">점수</th>
+                            <th class="whitespace-nowrap">패배자</th>
                             <th class="whitespace-nowrap">신청 시간</th>
                         </tr>
                     </thead>
@@ -89,15 +85,10 @@
             <div class="flex justify-center items-center mt-6"><button id="load-more" class="bg-gray-200 text-gray-800 rounded py-2 px-4">더 보기</button></div>
         </div>
     </div>
-
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/l10n/ko.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/approval.js') }}"></script>
-    <script>
-        flatpickr("#date-filter", {
-            mode: "range",
-            dateFormat: "Y-m-d",
-            locale: "ko"
-        });
-    </script>
 </body>
 </html>
