@@ -77,29 +77,29 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
             <h3 class="text-xl font-bold mb-4 border-b pb-2">최근 10경기</h3>
-            <div class="overflow-x-auto">
-                <table class="table-modern">
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="table-modern min-w-full table-auto">
                     <thead>
                         <tr>
-                            <th>번호</th>
-                            <th>결과</th>
-                            <th>상대</th>
-                            <th>스코어</th>
-                            <th>일시</th>
+                            <th class="whitespace-nowrap">번호</th>
+                            <th class="whitespace-nowrap">결과</th>
+                            <th class="whitespace-nowrap">상대</th>
+                            <th class="whitespace-nowrap">스코어</th>
+                            <th class="whitespace-nowrap">일시</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for match in matches %}
                         <tr>
-                            <td class="font-semibold">{{ loop.index }}</td>
-                            <td>
+                            <td class="font-semibold whitespace-nowrap">{{ loop.index }}</td>
+                            <td class="whitespace-nowrap">
                                 {% if match.winner == player.id %}<span class="text-green-600 font-bold">승</span>{% else %}<span class="text-red-600 font-bold">패</span>{% endif %}
                             </td>
-                            <td>
+                            <td class="whitespace-nowrap">
                                 {% if match.winner == player.id %}{{ match.loser_name }}{% else %}{{ match.winner_name }}{% endif %}
                             </td>
-                            <td>{{ match.score }}</td>
-                            <td class="text-gray-500">{{ match.timestamp.strftime('%y-%m-%d') }}</td>
+                            <td class="whitespace-nowrap">{{ match.score }}</td>
+                            <td class="text-gray-500 whitespace-nowrap">{{ match.timestamp.strftime('%y-%m-%d') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

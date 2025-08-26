@@ -2403,12 +2403,14 @@ def init_routes(app):
             return jsonify({'success': False, 'message': '승인할 베팅이 선택되지 않았습니다.'}), 400
         
         bettings = Betting.query.filter(Betting.id.in_(ids), Betting.approved == False).all()
+        
+        from sqlalchemy import func
+        today = datetime.now(ZoneInfo("Asia/Seoul")).date()
 
         for betting in bettings:
             match = Match.query.get(betting.result)
             if not match: continue
             
-            # ▼▼▼ 경기 결과에서 실제 승리한 선수의 'ID'를 명확하게 가져옵니다. ▼▼▼
             actual_winner_id = match.winner
             
             winner_player = Player.query.get(actual_winner_id)
@@ -2446,6 +2448,22 @@ def init_routes(app):
             add_point_log(winner_player.id, betting_change=share, reason=f"{betting_reason} 경기 승리")
             
             betting.approved = True
+
+            if today.weekday() == 4:
+                all_involved_players = [winner_player, loser_player] + [Player.query.get(p.participant_id) for p in participants]
+                
+                for player in all_involved_players:
+                    if not player : continue
+
+                    bonus_awarded_today = PlayerPointLog.query.filter(
+                        PlayerPointLog.plyer.id == player.id,
+                        PlayerPointLog.reason == "베팅 데이",
+                        func.date(PlayerPointLog.timestamp) == today
+                    ).first()
+
+                    if not bonus_awarded_today:
+                        player.betting_count += 10
+                        add_point_log(player.id, betting_change=10, reason = "베팅 데이")
 
         db.session.commit()
         update_player_orders_by_point()
