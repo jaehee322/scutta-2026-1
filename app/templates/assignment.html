@@ -37,22 +37,22 @@
     </div>
 
     <div class="index-bar">
-        <a href="{{ url_for('betting_approval') }}" class="index-item {% if request.endpoint == 'betting_approval' %}active{% endif %}">베팅 승인</a>
-        <a href="{{ url_for('approval') }}" class="index-item {% if request.endpoint == 'approval' %}active{% endif %}">경기 승인</a>
-        <a href="{{ url_for('assignment') }}" class="index-item {% if request.endpoint == 'assignment' %}active{% endif %}">부수/포인트</a>
-        <a href="{{ url_for('settings') }}" class="index-item {% if request.endpoint == 'settings' %}active{% endif %}">기타 설정</a>
+        <a href="{{ url_for('betting_approval') }}" class="index-item">베팅 승인</a>
+        <a href="{{ url_for('approval') }}" class="index-item">경기 승인</a>
+        <a href="{{ url_for('assignment') }}" class="index-item active">부수/포인트</a>
+        <a href="{{ url_for('settings') }}" class="index-item">기타 설정</a>
     </div>
 
     <div class="container mx-auto p-4 admin-content">
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">선수 관리</h2>
+                <h2 id="player-count-title" class="text-lg font-bold">선수 관리</h2>
                 <button id="save-all-btn" class="bg-main button">모든 변경사항 저장</button>
             </div>
             <div class="flex space-x-2 mb-4">
-                <input type="text" id="player-search-input" placeholder="이름으로 검색...">
-                <button id="player-search-btn" class="bg-main button">검색</button>
-                <button id="show-all-players-btn" class="bg-gray-200 text-gray-800 button">전체보기</button>
+                <input type="text" id="player-search-input" placeholder="이름으로 검색..." class="form-input rounded-md w-full">
+                <button id="player-search-btn" class="bg-main button whitespace-nowrap">검색</button>
+                <button id="show-all-players-btn" class="bg-gray-200 text-gray-800 button whitespace-nowrap">전체보기</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="table-modern">

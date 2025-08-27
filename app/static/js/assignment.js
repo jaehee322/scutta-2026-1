@@ -22,6 +22,12 @@ function loadPlayers(searchQuery = '', showAll = false) {
         .then(data => {
             const tableBody = document.getElementById('assignment-player-list-body');
             tableBody.innerHTML = '';
+
+            const titleElement = document.getElementById('player-count-title');
+            if (titleElement) {
+                titleElement.textContent = '선수 관리 (${data.length}명)';
+            }
+            
             data.forEach(player => {
                 const row = document.createElement('tr');
                 // 각 행에 player-id를 저장해 둡니다.
