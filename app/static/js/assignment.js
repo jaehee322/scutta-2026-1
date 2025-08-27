@@ -25,9 +25,9 @@ function loadPlayers(searchQuery = '', showAll = false) {
 
             const titleElement = document.getElementById('player-count-title');
             if (titleElement) {
-                titleElement.textContent = '선수 관리 (${data.length}명)';
+                titleElement.textContent = `선수 관리 (${data.length}명)`;
             }
-            
+
             data.forEach(player => {
                 const row = document.createElement('tr');
                 // 각 행에 player-id를 저장해 둡니다.
