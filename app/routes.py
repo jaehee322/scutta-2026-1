@@ -684,6 +684,10 @@ def init_routes(app):
 
     @app.route('/betting/<int:betting_id>', methods=['GET'])
     def betting_detail(betting_id):
+        if not current_user.is_admin:
+            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            return redirect(url_for('index'))
+        
         betting = Betting.query.get_or_404(betting_id)
     
         p1 = Player.query.get_or_404(betting.p1_id)
@@ -1744,7 +1748,7 @@ def init_routes(app):
     def select_all_bettings():
         bettings = Betting.query.filter_by(approved=False).all()
         result = [betting.id for betting in bettings]
-        return jsonify({'ids : result'})
+        return jsonify({'ids':result})
 
 
     # assignment.js
@@ -2456,7 +2460,7 @@ def init_routes(app):
                     if not player : continue
 
                     bonus_awarded_today = PlayerPointLog.query.filter(
-                        PlayerPointLog.plyer.id == player.id,
+                        PlayerPointLog.player_id == player.id,
                         PlayerPointLog.reason == "베팅 데이",
                         func.date(PlayerPointLog.timestamp) == today
                     ).first()
@@ -2469,6 +2473,83 @@ def init_routes(app):
         update_player_orders_by_point()
         return jsonify({"success": True, "message": "선택한 베팅이 승인되었습니다."})
 
+    # routes.py 파일에 이 두 함수를 추가해 주세요.
+
+    @app.route('/add_participants', methods=['POST'])
+    @login_required
+    def add_participants():
+        # 관리자만 이 기능을 사용할 수 있도록 제한합니다.
+        if not current_user.is_admin:
+            return jsonify({'success': False, 'error': '권한이 없습니다.'}), 403
+
+        data = request.get_json()
+        betting_id = data.get('bettingId')
+        player_ids = data.get('playerIds', [])
+
+        if not betting_id or not player_ids:
+            return jsonify({'success': False, 'error': '필수 정보가 누락되었습니다.'}), 400
+
+        betting = Betting.query.get(betting_id)
+        if not betting:
+            return jsonify({'success': False, 'error': '해당 베팅을 찾을 수 없습니다.'}), 404
+        
+        # 이미 결과가 제출된 베팅에는 추가할 수 없습니다.
+        if betting.submitted:
+            return jsonify({'success': False, 'error': '이미 결과가 제출된 베팅입니다.'}), 400
+
+        added_count = 0
+        for player_id in player_ids:
+            # 이미 참가한 선수인지 확인
+            is_existing = BettingParticipant.query.filter_by(betting_id=betting_id, participant_id=player_id).first()
+            player_info = Player.query.get(player_id)
+            
+            if not is_existing and player_info:
+                new_participant = BettingParticipant(
+                    betting_id=betting_id,
+                    participant_name=player_info.name,
+                    participant_id=player_id
+                )
+                db.session.add(new_participant)
+                added_count += 1
+                
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'{added_count}명의 참가자가 추가되었습니다.'})
+
+
+    @app.route('/remove_participants', methods=['POST'])
+    @login_required
+    def remove_participants():
+        # 관리자만 이 기능을 사용할 수 있도록 제한합니다.
+        if not current_user.is_admin:
+            return jsonify({'success': False, 'error': '권한이 없습니다.'}), 403
+            
+        data = request.get_json()
+        betting_id = data.get('bettingId')
+        player_ids = data.get('playerIds', [])
+
+        if not betting_id or not player_ids:
+            return jsonify({'success': False, 'error': '필수 정보가 누락되었습니다.'}), 400
+
+        betting = Betting.query.get(betting_id)
+        if not betting:
+            return jsonify({'success': False, 'error': '해당 베팅을 찾을 수 없습니다.'}), 404
+        
+        # 이미 결과가 제출된 베팅에서는 삭제할 수 없습니다.
+        if betting.submitted:
+            return jsonify({'success': False, 'error': '이미 결과가 제출된 베팅입니다.'}), 400
+
+        num_deleted = BettingParticipant.query.filter(
+            BettingParticipant.betting_id == betting_id,
+            BettingParticipant.participant_id.in_(player_ids)
+        ).delete(synchronize_session=False)
+
+        db.session.commit()
+        
+        if num_deleted > 0:
+            return jsonify({'success': True, 'message': f'{num_deleted}명의 참가자가 삭제되었습니다.'})
+        else:
+            return jsonify({'success': False, 'error': '삭제할 참가자를 찾지 못했습니다.'})
+    
     @app.route('/betting/<int:betting_id>/delete', methods=['POST'])
     @login_required
     def delete_betting(betting_id):
@@ -2493,68 +2574,64 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': f'삭제 중 오류가 발생했습니다: {str(e)}'}), 500
-        
-    @app.route('/remove_participants', methods=['POST'])
-    def remove_participants():
-        data = request.get_json()
-        player_ids = data.get('playerIds', [])
-        betting_id = data.get('bettingId')
-
-        if not player_ids:
-            return jsonify({'success': False, 'error': '제거할 참가자를 찾을 수 없습니다.'}), 400
-        if not betting_id:
-            return jsonify({'success': False, 'error': '해당 베팅을 찾을 수 없습니다.'}), 400
-
-        betting = Betting.query.get(betting_id)
-        if not betting:
-            return jsonify({'success': False, 'error': '해당 베팅을 찾을 수 없습니다.'}), 404
-
-        removed_participants = []
-
-        for player_id in player_ids:
-            participant = BettingParticipant.query.filter_by(
-                betting_id=betting_id, participant_id=player_id
-            ).first()
-
-            if participant:
-                removed_participants.append(participant.participant_name)
-                db.session.delete(participant)
-
-        db.session.commit()
-        
-        participant_names_str = ', '.join(removed_participants) if removed_participants else '0명'
-        
-        return jsonify({'success': True, 'message': f'참가자 {participant_names_str} (이)가 제거되었습니다.'})
 
     @app.route('/betting/<int:betting_id>/update', methods=['POST'])
     def update_betting(betting_id):
-        data = request.get_json()
-        participants = data.get('participants', [])
+        if not current_user.is_admin:
+            return jsonify({'error': '권한이 없습니다.'}), 403
 
-        if not participants:
-            return jsonify({'error': '참가자 데이터가 제공되지 않았습니다.'}), 400
+        betting = Betting.query.get_or_404(betting_id)
+
+        if betting.submitted:
+            return jsonify({'error': '이미 경기 결과가 제출된 베팅은 수정할 수 없습니다.'}), 400
+
+        data = request.get_json()
+        new_participants_data = data.get('participants', [])
 
         try:
-            participants = sorted(participants, key=lambda x: x.get('id'))
-            
-            for participant_data in participants:
-                participant_id = participant_data.get('id')
-                winner_id = participant_data.get('winner')
+            existing_participant_ids = {p.participant_id for p in betting.participants}
+            new_participant_ids = {p_data.get('id') for p_data in new_participants_data}
 
-                betting_participant = BettingParticipant.query.filter_by(
-                    betting_id=betting_id, participant_id=participant_id
-                ).first()
+            participants_to_delete_ids = existing_participant_ids - new_participant_ids
+            if participants_to_delete_ids:
+                BettingParticipant.query.filter(
+                    BettingParticipant.betting_id == betting_id,
+                    BettingParticipant.participant_id.in_(participants_to_delete_ids)
+                ).delete(synchronize_session=False)
 
-                if betting_participant:
-                    betting_participant.winner_id = winner_id
+            existing_participants_map = {p.participant_id: p.winner_id for p in betting.participants}
+
+            for p_data in new_participants_data:
+                p_id = p_data.get('id')
+                new_winner_id = p_data.get('winner')
             
+                if p_id in existing_participants_map:
+                    if existing_participants_map[p_id] is not None and existing_participants_map[p_id] != new_winner_id:
+                        db.session.rollback()
+                        player_name = Player.query.get(p_id).name
+                        return jsonify({'error': f'이미 저장된 베팅은 수정할 수 없습니다. ({player_name}님의 예측)'}), 400
+                    else:
+                        participant_to_update = BettingParticipant.query.filter_by(betting_id=betting.id, participant_id=p_id).first()
+                        if participant_to_update and participant_to_update.winner_id is None:
+                            participant_to_update.winner_id = new_winner_id
+
+                else:
+                    player = Player.query.get(p_id)
+                    if player:
+                        new_participant = BettingParticipant(
+                            betting_id=betting.id,
+                            participant_name=player.name,
+                            participant_id=player.id,
+                            winner_id=new_winner_id
+                        )
+                        db.session.add(new_participant)
+
             db.session.commit()
-            return jsonify({'success': True, 'message': '베팅 데이터가 성공적으로 저장되었습니다!'})
+            return jsonify({'success': True, 'message': '베팅 참가자가 업데이트되었습니다!'})
 
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'서버 오류가 발생했습니다: {str(e)}'}), 500
-        
     
     def submit_match_internal(match_data):
         winner_name = match_data.get("winner")
