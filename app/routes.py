@@ -1514,16 +1514,16 @@ def init_routes(app):
                 
             if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 16:
                 if winner.gender == GenderEnum.MALE:
-                    winner.rank = 4
+                    winner.rank = 5
                 elif winner.gender == GenderEnum.FEMALE:
-                    winner.rank = 6
+                    winner.rank = 7
             
             
             if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 16:
                 if loser.gender == GenderEnum.MALE:
-                    loser.rank = 4
+                    loser.rank = 5
                 elif loser.gender == GenderEnum.FEMALE:
-                    loser.rank = 6
+                    loser.rank = 7
             
         db.session.commit()
         update_player_orders_by_match()
