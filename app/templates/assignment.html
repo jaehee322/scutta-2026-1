@@ -47,7 +47,11 @@
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="player-count-title" class="text-lg font-bold">선수 관리</h2>
-                <button id="save-all-btn" class="bg-main button">모든 변경사항 저장</button>
+
+                <div class="flex items-center space-x-2">
+                    <a href="{{ url_for('admin_reset_password')}}" class="bg-gray-200 test-gray-800 button">비밀번호 초기화</a>
+                    <button id="save-all-btn" class="bg-main button">모든 변경사항 저장</button>
+                </div>
             </div>
             <div class="flex space-x-2 mb-4">
                 <input type="text" id="player-search-input" placeholder="이름으로 검색..." class="form-input rounded-md w-full">

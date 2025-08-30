@@ -2668,5 +2668,47 @@ def init_routes(app):
         db.session.commit()
 
         return {"match_id": new_match.id}
-
     
+    # routes.py 파일 맨 아래쪽에 추가
+
+    @app.route('/admin/reset_password', methods=['GET', 'POST'])
+    @login_required
+    def admin_reset_password():
+        # 관리자가 아니면 접근을 차단합니다.
+        if not current_user.is_admin:
+            flash('권한이 없습니다.', 'error')
+            return redirect(url_for('index'))
+
+        # POST 요청 (폼 제출 시)
+        if request.method == 'POST':
+            player_id = request.form.get('player_id')
+            new_password = request.form.get('new_password')
+
+            # 입력 값 유효성 검사
+            if not player_id or not new_password:
+                flash('부원을 선택하고, 새로운 비밀번호를 입력해주세요.', 'error')
+                return redirect(url_for('admin_reset_password'))
+
+            if len(new_password) < 4:
+                flash('비밀번호는 4자 이상이어야 합니다.', 'error')
+                return redirect(url_for('admin_reset_password'))
+            
+            # 해당 player_id를 가진 User를 찾습니다.
+            user_to_update = User.query.filter_by(player_id=player_id).first()
+            
+            if user_to_update:
+                # User 모델의 set_password 메서드를 사용해 비밀번호를 변경하고 저장합니다.
+                user_to_update.set_password(new_password)
+                db.session.commit()
+                flash(f"'{user_to_update.username}' 님의 비밀번호가 성공적으로 초기화되었습니다.", 'success')
+            else:
+                flash('해당하는 사용자 계정을 찾을 수 없습니다.', 'error')
+            
+            return redirect(url_for('admin_reset_password'))
+
+        # GET 요청 (페이지 첫 방문 시)
+        # 드롭다운에 표시할 모든 부원 목록을 불러옵니다 (관리자 제외).
+        all_players = Player.query.join(User).filter(User.is_admin == False).order_by(Player.name).all()
+        return render_template('admin_reset_password.html', players=all_players)
+
+        
