@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCUTTA {{ config.GLOBAL_TEXTS.semester }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body { padding-top: 64px; padding-bottom: 56px; }
+        header { position: fixed; top: 0; left: 0; width: 100%; z-index: 20; }
+    </style>
 </head>
 <body class="bg-white text-gray-800">
 
-    <header>
+    <header class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-4">
             <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
             <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
@@ -46,96 +51,194 @@
     <main class="container mx-auto p-4 md:p-6 lg:p-8">
         
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}<div class="mb-4">{% for category, message in messages %}<div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}" role="alert"><span class="font-medium">{{ message }}</span></div>{% endfor %}</div>{% endif %}
+            {% if messages %}
+                <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}" role="alert">
+                        <span class="font-medium">{{ message }}</span>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
         {% endwith %}
 
         <section class="mb-12">
             <h2 class="text-2xl md:text-3xl font-light mb-4">SCUTTA</h2>
             <p class="text-gray-600 leading-relaxed">
-                서울시립대학교 중앙 탁구 동아리 SCUTTA의 공식 기록 페이지입니다.<br>
-                자신의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.
+                SCUTTA의 공식 기록 페이지입니다.<br>
+                {% if current_user.is_authenticated %}
+                    <strong>{{ current_user.username }}</strong>님의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.
+                {% else %}
+                    자신의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.
+                {% endif %}
             </p>
         </section>
         
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-            
-            <div class="group block bg-gray-100 p-6 rounded-lg">
-                <h3 class="text-xl font-semibold mb-4 border-b pb-2">경기 결과 제출</h3>
-                <form action="{{ url_for('submit_match_direct') }}" method="POST" class="space-y-4">
-                    <div>
-                        <label class="text-sm font-bold text-gray-600">승리자</label>
-                        <input type="text" name="winner_name" placeholder="승리자 이름 입력" class="w-full mt-1" required>
-                    </div>
-                    <div>
-                        <label class="text-sm font-bold text-gray-600">패배자</label>
-                        <input type="text" name="loser_name" placeholder="패배자 이름 입력" class="w-full mt-1" required>
-                    </div>
-                    <div>
-                        <label class="text-sm font-bold text-gray-600">스코어</label>
-                        <select name="score" class="w-full mt-1" required>
-                            <option value="3:0">3:0</option>
-                            <option value="2:1">2:1</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full bg-main button mt-4">제출하기</button>
-                </form>
-                <a href="{{ url_for('my_submissions') }}" class="block w-full bg-gray-600 hover:bg-gray-700 text-white font-bold text-center py-2 px-4 rounded-lg transition mt-2">
-                    최근 제출된 내 경기 보기
-                </a>
-            </div>
-
-            <a href="{{ url_for('mypage') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
-                <h3 class="text-xl font-semibold mb-2">마이페이지</h3>
-                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
-            </a>
-            <a href="{{ url_for('partner') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
-                <h3 class="text-xl font-semibold mb-2">오늘의 상대</h3>
-                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
-            </a>
-            <a href="{{ url_for('betting') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
-                <h3 class="text-xl font-semibold mb-2">베팅</h3>
-                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
-            </a>
-            <a href="{{ url_for('rankings_page') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
-                <h3 class="text-xl font-semibold mb-2">전체 랭킹</h3>
-                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
-            </a>
-            <a href="{{ url_for('league_or_tournament') }}" class="group block bg-gray-100 hover:bg-gray-200 p-6 rounded-lg transition">
-                <h3 class="text-xl font-semibold mb-2">리그전 및 토너먼트</h3>
-                <span class="text-gray-500 group-hover:text-gray-700">바로가기 &rarr;</span>
-            </a>
+        <section class="mb-12">
+            <h3 class="text-xl font-semibold mb-4">경기 결과 제출</h3>
+            <form action="{{ url_for('submit_match_direct') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="text-sm font-bold text-gray-600">승리자</label>
+                    <input type="text" name="winner_name" placeholder="승리자 이름 입력" class="w-full mt-1" required>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-gray-600">패배자</label>
+                    <input type="text" name="loser_name" placeholder="패배자 이름 입력" class="w-full mt-1" required>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-gray-600">스코어</label>
+                    <select name="score" class="w-full mt-1" required>
+                        <option value="3:0">3:0</option>
+                        <option value="2:1">2:1</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-main button mt-4">제출하기</button>
+            </form>
         </section>
 
-        <section>
-            <h2 class="text-2xl font-bold text-center mb-6">랭킹 요약</h2>
-            <div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">
-                {% for title, players in rankings.items() %}
-                <div class="bg-white rounded-lg shadow-sm p-4 flex-shrink-0" style="width: 280px;">
-                    <h3 class="font-bold text-lg text-center mb-4">{{ title }}</h3>
-                    <ul>
-                        {% for player in players %}
-                        <li class="flex items-center justify-between py-2 border-b last:border-b-0">
-                            <div class="flex items-center">
-                                <span class="font-bold w-6">{{ loop.index }}.</span>
-                                <span>{{ player.name }} ({{ player.rank or '무' }})</span>
-                            </div>
-                            <span class="font-bold text-gray-700">
-                                {{ player.value }}
-                                {% if title == '승률' %}%{% endif %}
-                            </span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endfor %}
+        {% if current_user.is_authenticated %}
+        <section class="mb-12">
+            <h3 class="text-xl font-semibold mb-4">나의 오늘의 상대</h3>
+            <div class="border rounded-lg p-4 flex justify-between items-center">
+                {% if today_partner_info %}
+                    <div>
+                        <span class="text-sm text-gray-500">{{ today_partner_info.date }}</span>
+                        <p class="text-lg font-bold">{{ today_partner_info.opponent_name }}</p>
+                    </div>
+                    <div>
+                        {% if not today_partner_info.submitted %}
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">미제출</span>
+                        {% elif today_partner_info.approval_status == 'pending' %}
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">승인 대기</span>
+                        {% elif today_partner_info.approval_status == 'approved' %}
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">승인 완료</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-sm text-gray-500">오늘의 상대가 지정되지 않았습니다.</p>
+                {% endif %}
             </div>
-            <div class="mt-6">
-                <a href="{{ url_for('rankings_page') }}" class="block w-full bg-gray-200 text-gray-800 font-bold text-center py-3 px-6 rounded-lg hover:bg-gray-100 border">
-                    전체 랭킹 더보기
+        </section>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+        <section class="mb-12">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">최근 내 경기 기록</h3>
+                <a href="{{ url_for('my_submissions') }}" class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
+                    더보기 &gt;
                 </a>
+            </div>
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg no-scrollbar">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">시간</th>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">승자</th>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">패자</th>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">스코어</th>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for match in my_recent_matches %}
+                            <tr class="{% if loop.index is even %}bg-gray-50{% else %}bg-white{% endif %}">
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ match.timestamp|datetimeformat('%m.%d %H:%M') }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{{ match.winner_name }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ match.loser_name }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ match.score }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-center">
+                                    {% if match.approved %}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">승인</span>
+                                    {% else %}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">대기</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    최근 제출한 경기가 없습니다.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">나의 랭킹</h3>
+                <a href="{{ url_for('rankings_page') }}" class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
+                    더보기 &gt;
+                </a>
+            </div>
+            <div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">
+                {% for title, data in rankings.items() %}
+                    <div class="bg-white rounded-lg shadow-sm p-4 flex-shrink-0" style="width: 280px;">
+                        <h3 class="font-bold text-lg text-center mb-4">{{ title }}</h3>
+                        
+                        {% if data.my_rank %}
+                        <div class="mb-4 text-left">
+                            <p class="text-lg text-gray-800">
+                                <span class="font-semibold">내 순위:</span> 
+                                <span class="font-bold text-indigo-600">{{ data.my_rank.rank or 'N/A' }}위</span>
+                                ({{ data.my_rank.value }}{% if title == '승률' %}%{% endif %})
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <ul>
+                            {% for player in data.players %}
+                                <li class="flex items-center py-2 border-b last:border-b-0">
+                                    <span class="w-8 text-xl">
+                                        {% if data.top_ranks and player.actual_rank == data.top_ranks[0] %}🥇
+                                        {% elif data.top_ranks|length > 1 and player.actual_rank == data.top_ranks[1] %}🥈
+                                        {% elif data.top_ranks|length > 2 and player.actual_rank == data.top_ranks[2] %}🥉
+                                        {% endif %}
+                                    </span>
+                                    <div class="flex-grow">
+                                        <span>{{ player.name }} ({{ player.rank or '무' }})</span>
+                                    </div>
+                                    <span class="font-bold text-gray-700">
+                                        {{ player.value }}
+                                        {% if title == '승률' %}%{% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
             </div>
         </section>
     </main>
+    
+    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
+        <nav class="flex h-full">
+            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-home fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">홈</span>
+            </a>
+            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-trophy fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">랭킹</span>
+            </a>
+            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">리그전</span>
+            </a>
+            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-coins fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">베팅</span>
+            </a>
+            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">마이페이지</span>
+            </a>
+        </nav>
+    </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>

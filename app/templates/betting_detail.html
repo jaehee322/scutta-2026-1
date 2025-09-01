@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>베팅 상세 - SCUTTA</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -37,43 +38,42 @@
                 {% endif %}
             </div>
 
-            <div class="mb-8">
-                <h3 class="text-lg font-bold mb-4">상대 전적</h3>
-                <div class="overflow-x-auto">
-                    <table class="table-modern w-full">
-                        <thead>
-                            <tr>
-                                <th class="text-left"><a href="/player/{{ betting.p1_id }}" class="hover:underline">{{ betting.p1_name }}</a></th>
-                                <th class="text-center">스코어</th>
-                                <th class="text-right"><a href="/player/{{ betting.p2_id }}" class="hover:underline">{{ betting.p2_name }}</a></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="bg-gray-50">
-                                <td class="text-left font-bold {% if win_rate.p1_wins > win_rate.p2_wins %}text-green-600{% endif %}">{{ win_rate.p1_wins }}승</td>
-                                <td class="text-center text-sm text-gray-500">종합</td>
-                                <td class="text-right font-bold {% if win_rate.p2_wins > win_rate.p1_wins %}text-green-600{% endif %}">{{ win_rate.p2_wins }}승</td>
-                            </tr>
-                            {% for match in recent_matches %}
-                            <tr>
-                                <td class="text-left">
-                                    {% if match.winner == betting.p1_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
-                                </td>
-                                <td class="text-center">{{ match.score }}</td>
-                                <td class="text-right">
-                                    {% if match.winner == betting.p2_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="3" class="text-center text-gray-500 py-4">상대 전적이 없습니다.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+    <div class="mb-8">
+        <h3 class="text-lg font-bold mb-4">상대 전적 (최근 5경기)</h3>
+        <div class="overflow-x-auto">
+            <table class="table-modern w-full">
+                <thead>
+                    <tr>
+                        <th class="text-left"><a href="/player/{{ betting.p1_id }}" class="hover:underline">{{ betting.p1_name }}</a></th>
+                        <th class="text-center">스코어</th>
+                        <th class="text-right"><a href="/player/{{ betting.p2_id }}" class="hover:underline">{{ betting.p2_name }}</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-gray-50">
+                        <td class="text-left font-bold {% if win_rate.p1_wins > win_rate.p2_wins %}text-green-600{% endif %}">{{ win_rate.p1_wins }}승</td>
+                        <td class="text-center text-sm text-gray-500">종합</td>
+                        <td class="text-right font-bold {% if win_rate.p2_wins > win_rate.p1_wins %}text-green-600{% endif %}">{{ win_rate.p2_wins }}승</td>
+                    </tr>
+                    {% for match in recent_matches[:5] %}
+                    <tr>
+                        <td class="text-left">
+                            {% if match.winner == betting.p1_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
+                        </td>
+                        <td class="text-center">{{ match.score }}</td>
+                        <td class="text-right">
+                            {% if match.winner == betting.p2_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-gray-500 py-4">상대 전적이 없습니다.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
             <div class="mb-8">
                 <h3 class="text-lg font-bold mb-4">베팅 참가자 현황</h3>
                 <div id="participants-table" class="space-y-2">
@@ -139,6 +139,31 @@
              {% endif %}
         </div>
     </main>
+
+    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
+        <nav class="flex h-full">
+            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-home fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">홈</span>
+            </a>
+            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-trophy fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">랭킹</span>
+            </a>
+            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">리그전</span>
+            </a>
+            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-coins fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">베팅</span>
+            </a>
+            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">마이페이지</span>
+            </a>
+        </nav>
+    </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/betting_detail.js') }}"></script>

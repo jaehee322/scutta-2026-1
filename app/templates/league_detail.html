@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>팀내 리그전 상세</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        body { padding-bottom: 56px; } /* 하단 네비게이션 바 공간 확보 */
         .league-input {
             width: 40px;
             border: 1px solid #d1d5db;
@@ -75,14 +77,41 @@
                 </table>
             </div>
             <div class="flex justify-between items-center mt-6">
+                {% if current_user.is_admin %}
                 <button onclick="deleteLeague({{ league.id }})" class="bg-red-500 hover:bg-red-700 text-white button">리그 삭제</button>
                 <div class="flex gap-4">
                     <button onclick="saveLeague({{ league.id }})" class="bg-gray-500 text-white button">중간 저장</button>
                     <button onclick="submitLeague({{ league.id }})" class="bg-main button">최종 제출</button>
                 </div>
+                {% endif %}
             </div>
         </div>
     </main>
+
+    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
+        <nav class="flex h-full">
+            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
+                <i class="fas fa-home fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">홈</span>
+            </a>
+            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
+                <i class="fas fa-trophy fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">랭킹</span>
+            </a>
+            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-900 font-bold">
+                <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">리그전</span>
+            </a>
+            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
+                <i class="fas fa-coins fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">베팅</span>
+            </a>
+            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
+                <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">마이페이지</span>
+            </a>
+        </nav>
+    </footer>
     
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/league_detail.js') }}"></script>

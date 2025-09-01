@@ -1,4 +1,5 @@
 from flask import Flask
+from . import commands
 from config import Config
 from .extensions import db, migrate, login_manager
 from .models import User
@@ -22,7 +23,7 @@ def create_app():
 
     # ▼▼▼▼▼ 이 부분이 수정되었습니다 ▼▼▼▼▼
     # routes와 함께 commands를 import하고, 앱에 명령어를 등록합니다.
-    from . import routes, commands
+    from . import routes
     routes.init_routes(app)
     commands.register_commands(app)
     # ▲▲▲▲▲ 여기까지 입니다 ▲▲▲▲▲

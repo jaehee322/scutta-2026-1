@@ -9,8 +9,71 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import random
 
-def init_routes(app):
+def format_datetime(value, fmt='%Y-%m-%d'):
+    """Jinja2 템플릿에서 datetime 객체를 원하는 형식의 문자열로 변환하는 필터."""
+    if value is None:
+        return ""
+        # 한국 시간(KST)으로 변환합니다.
+    korea_time = value.astimezone(ZoneInfo("Asia/Seoul"))
+    return korea_time.strftime(fmt)
 
+def init_routes(app):
+    app.jinja_env.filters['datetimeformat'] = format_datetime
+
+    @app.context_processor
+    def inject_active_page():
+        return dict(active_page=request.endpoint)
+
+    def _get_summary_rankings_data(current_player):
+        categories = [
+            ('승리', Player.win_order.asc(), 'win_count', 'win_order'),
+            ('승률', Player.rate_order.asc(), 'rate_count', 'rate_order'),
+            ('경기', Player.match_order.asc(), 'match_count', 'match_order'),
+            ('베팅', Player.betting_order.asc(), 'betting_count', 'betting_order'),
+        ]
+        rankings_data = {}
+
+        for title, order_criteria, value_attr, rank_attr in categories:
+            # 상위 5명의 선수 정보를 가져옵니다.
+            top_5_players = Player.query.join(Player.user).filter(
+                Player.is_valid == True,
+                User.is_admin == False
+            ).order_by(order_criteria, Player.name).limit(5).all()
+
+            final_player_list = []
+            is_user_in_top_5 = False
+
+            # 상위 5명 리스트를 완전한 정보로 변환합니다.
+            for p in top_5_players:
+                final_player_list.append({
+                    'id': p.id,
+                    'name': p.name,
+                    'rank': p.rank,
+                    'value': getattr(p, value_attr),
+                    'actual_rank': getattr(p, rank_attr)
+                })
+                if current_player and p.id == current_player.id:
+                    is_user_in_top_5 = True
+            
+            # 만약 로그인한 유저가 상위 5명 안에 없고, 유저 정보가 있다면
+            if current_player and not is_user_in_top_5:
+                # 5번째 선수를 제거하고
+                if len(final_player_list) >= 5:
+                    final_player_list.pop()
+                
+                # 현재 유저 정보를 리스트의 마지막에 추가합니다.
+                final_player_list.append({
+                    'id': current_player.id,
+                    'name': current_player.name,
+                    'rank': current_player.rank,
+                    'value': getattr(current_player, value_attr),
+                    'actual_rank': getattr(current_player, rank_attr)
+                })
+
+            rankings_data[title] = final_player_list
+        
+        return rankings_data
+    
     def add_point_log(player_id, achieve_change=0, betting_change=0, reason=""):
         """플레이어 포인트 변경 로그를 기록하는 헬퍼 함수"""
         if achieve_change == 0 and betting_change == 0:
@@ -377,25 +440,100 @@ def init_routes(app):
     @app.route('/')
     @login_required
     def index():
-        all_players= Player.query.join(User).filter(Player.is_valid ==True, User.is_admin == False).order_by(Player.name).all()
+        # 1. 랭킹 요약 데이터 조회
         categories = [
-            ('승리', Player.win_count.desc(), 'win_count'),
-            ('승률', Player.rate_count.desc(), 'rate_count'),
-            ('경기', Player.match_count.desc(), 'match_count'),
-            ('베팅', Player.betting_count.desc(), 'betting_count'),
+            ('승리', 'win_order', 'win_count'),
+            ('승률', 'rate_order', 'rate_count'),
+            ('경기', 'match_order', 'match_count'),
+            ('베팅', 'betting_order', 'betting_count'),
         ]
         rankings_data = {}
-        for title, order_criteria, value_attr in categories:
+        for title, order_field, value_field in categories:
             top_players = Player.query.join(Player.user).filter(
                 Player.is_valid == True,
                 User.is_admin == False
-            ).order_by(order_criteria, Player.name).limit(4).all()
+            ).order_by(
+                getattr(Player, order_field).asc(),
+                Player.name.asc()
+            ).limit(3).all()
+
+            top_ranks = sorted(list(set(getattr(p, order_field) for p in top_players if getattr(p, order_field) is not None)))
             
-            rankings_data[title] = [
-                {'name': player.name, 'rank': player.rank, 'value': getattr(player, value_attr)}
-                for player in top_players
-            ]
-        return render_template('index.html', global_texts=current_app.config['GLOBAL_TEXTS'], rankings=rankings_data)
+            current_player = current_user.player
+            my_rank_info = { 
+                'rank': getattr(current_player, order_field), 
+                'value': getattr(current_player, value_field) 
+            }
+
+            rankings_data[title] = {
+                'players': [{'name': p.name, 'rank': p.rank, 'value': getattr(p, value_field), 'actual_rank': getattr(p, order_field)} for p in top_players],
+                'my_rank': my_rank_info,
+                'top_ranks': top_ranks
+            }
+
+        # 2. 최근 내 경기 기록 조회
+        my_recent_matches = Match.query.filter(
+            (Match.winner == current_user.player_id) | (Match.loser == current_user.player_id)
+        ).order_by(Match.timestamp.desc()).limit(5).all()
+
+        # 3. 나의 오늘의 상대 정보 조회 (사용자님이 제시한 최종 로직)
+        today_partner_info = None
+        today_match = TodayPartner.query.filter(
+            (TodayPartner.p1_id == current_user.player_id) | (TodayPartner.p2_id == current_user.player_id)
+        ).order_by(TodayPartner.id.desc()).first()
+
+        if today_match:
+            if today_match.p1_id == current_user.player_id:
+                opponent_id = today_match.p2_id
+                opponent_name = today_match.p2_name
+            else:
+                opponent_id = today_match.p1_id
+                opponent_name = today_match.p1_name
+            
+            approval_status = None
+            if today_match.submitted:
+                most_recent_match = Match.query.filter(
+                    (
+                        (Match.winner == current_user.player_id) & (Match.loser == opponent_id)
+                    ) | (
+                        (Match.winner == opponent_id) & (Match.loser == current_user.player_id)
+                    )
+                ).order_by(Match.timestamp.desc()).first()
+
+                seoul_tz = ZoneInfo("Asia/Seoul")
+                today = datetime.now(seoul_tz).date()
+
+                # 가장 최근 경기가 오늘 경기인지 확인
+                if most_recent_match and most_recent_match.timestamp.astimezone(seoul_tz).date() == today:
+                    # 오늘 경기라면, 승인 상태를 그대로 보여줌
+                    if most_recent_match.approved:
+                        approval_status = 'approved'
+                    else:
+                        approval_status = 'pending'
+                else:
+                    # 오늘 경기가 아니라면 (어제 경기거나, 삭제됐다면), '미제출'로 되돌림
+                    today_match.submitted = False
+                    db.session.commit()
+                    approval_status = None
+
+            today_date_str = datetime.now(ZoneInfo("Asia/Seoul")).strftime('%m.%d')
+            
+            today_partner_info = {
+                'date': today_date_str,
+                'opponent_name': opponent_name,
+                'submitted': today_match.submitted,
+                'approval_status': approval_status
+            }
+
+        # 4. 최종적으로 모든 데이터를 HTML에 전달
+        return render_template(
+            'index.html', 
+            global_texts=current_app.config['GLOBAL_TEXTS'], 
+            rankings=rankings_data,
+            my_recent_matches=my_recent_matches,
+            today_partner_info=today_partner_info
+        )
+            
 
     @app.route('/submitment.html')
     @login_required
@@ -405,7 +543,6 @@ def init_routes(app):
     @app.route('/submit_match_direct', methods=['POST'])
     @login_required
     def submit_match_direct():
-        # ID가 아닌 이름(name)을 직접 받도록 수정합니다.
         winner_name = request.form.get('winner_name')
         loser_name = request.form.get('loser_name')
         score = request.form.get('score')
@@ -418,7 +555,6 @@ def init_routes(app):
             flash('승리자와 패배자는 다른 사람이어야 합니다.', 'error')
             return redirect(url_for('index'))
 
-        # 이름으로 선수 정보가 유효한지 확인합니다.
         winner = Player.query.filter_by(name=winner_name, is_valid=True).first()
         loser = Player.query.filter_by(name=loser_name, is_valid=True).first()
 
@@ -428,6 +564,20 @@ def init_routes(app):
             if not loser: unknown.append(loser_name)
             flash(f'등록되지 않은 선수 이름이 있습니다: {", ".join(unknown)}', 'error')
             return redirect(url_for('index'))
+
+        # 1. index 함수와 동일하게, 가장 최신(id가 가장 높은) 파트너 기록을 찾습니다.
+        today_partner = TodayPartner.query.filter(
+            (
+                (TodayPartner.p1_id == winner.id) & (TodayPartner.p2_id == loser.id)
+            ) | (
+                (TodayPartner.p1_id == loser.id) & (TodayPartner.p2_id == winner.id)
+            )
+        ).order_by(TodayPartner.id.desc()).first()
+
+        if today_partner:
+            today_partner.submitted = True
+            # 2. 수정된 정보를 DB 세션에 확실하게 추가합니다.
+            db.session.add(today_partner)
 
         # Match 객체 생성
         new_match = Match(
@@ -439,11 +589,13 @@ def init_routes(app):
             approved=False
         )
         db.session.add(new_match)
+        
+        # 3. 모든 변경사항(파트너 상태, 새 경기)을 한번에 저장합니다.
         db.session.commit()
 
         flash('경기 결과가 성공적으로 제출되었습니다. 관리자 승인 대기 중입니다.', 'success')
         return redirect(url_for('index'))
-
+    
     @app.route('/submit_match')
     @login_required
     def submit_match_page():
@@ -482,18 +634,45 @@ def init_routes(app):
         p2_ranks = []
         for partner in partners:
             p1 = Player.query.filter_by(id=partner.p1_id).first()
-            p1_ranks.append(p1.rank)
+            # p1이 없을 경우를 대비하여 None 추가
+            p1_ranks.append(p1.rank if p1 else None)
             p2 = Player.query.filter_by(id=partner.p2_id).first()
-            p2_ranks.append(p2.rank)
+            # p2가 없을 경우를 대비하여 None 추가
+            p2_ranks.append(p2.rank if p2 else None)
         
         indexed_partners = [{'index': idx, 'partner': partner, 'p1_rank': p1_rank, 'p2_rank': p2_rank} for idx, (partner, p1_rank, p2_rank) in enumerate(zip(partners, p1_ranks, p2_ranks))]
         return render_template('partner.html', partners=indexed_partners, global_texts=current_app.config['GLOBAL_TEXTS'])
-   
+
     @app.route('/rankings_page')
     @login_required
     def rankings_page():
-        return render_template('rankings.html')
+        current_player = current_user.player if current_user.is_authenticated else None
+        summary_rankings = _get_summary_rankings_data(current_player)
+        return render_template('rankings.html', summary_rankings=summary_rankings)
 
+    @app.route('/get_my_rank', methods=['GET'])
+    @login_required
+    def get_my_rank():
+        if not current_user.is_authenticated or not current_user.player:
+            return jsonify(None)
+        category_from_req = request.args.get('category', 'win_order')
+        category = category_from_req.replace('_count', '')
+        valid_categories = ['win_order', 'loss_order', 'match_order', 'rate_order', 'opponent_order', 'achieve_order', 'betting_order']
+        if category not in valid_categories:
+            return jsonify({'error': 'Invalid category'}), 400
+        player = current_user.player
+        response = {
+            'id': player.id, 'current_rank': getattr(player, category), 'rank': player.rank or '무',
+            'name': player.name,
+            'stats': {
+                'win_count': player.win_count, 'loss_count': player.loss_count,
+                'rate_count': player.rate_count, 'match_count': player.match_count,
+                'opponent_count': player.opponent_count, 'achieve_count': player.achieve_count,
+                'betting_count': player.betting_count,
+            }
+        }
+        return jsonify(response)
+    
     @app.route('/mypage')
     @login_required
     def mypage():
@@ -1538,20 +1717,20 @@ def init_routes(app):
         
         matches_to_delete = Match.query.filter(Match.id.in_(ids)).all()
         
-        approved_matches_count=0
-        pending_matches_count=0
+        approved_matches_count = 0
+        pending_matches_count = 0
 
         for match in matches_to_delete:
             if match.approved:
-                approved_matches_count+=1
-                winner=Player.query.get(match.winner)
-                loser=Player.query.get(match.loser)
+                approved_matches_count += 1
+                winner = Player.query.get(match.winner)
+                loser = Player.query.get(match.loser)
 
                 if not winner or not loser:
+                    db.session.delete(match)
                     continue
                 
-                match.approved = False
-                
+                # --- 승인된 경기의 모든 스탯 되돌리기 ---
                 winner.match_count -= 1
                 winner.win_count -= 1
                 winner.rate_count = round((winner.win_count / winner.match_count) * 100, 2) if winner.match_count > 0 else 0
@@ -1575,129 +1754,102 @@ def init_routes(app):
                     winner.achieve_count -= 5
                     add_point_log(winner.id, betting_change=-10, reason='누적 30경기 달성 취소')
                     add_point_log(winner.id, achieve_change=-5, reason='누적 30경기 달성 취소')
-
                 if winner.match_count == 49: 
                     winner.betting_count -= 20
                     winner.achieve_count -= 10
                     add_point_log(winner.id, betting_change=-20, reason='누적 50경기 달성 취소')
                     add_point_log(winner.id, achieve_change=-10, reason='누적 50경기 달성 취소')
-
                 if winner.match_count == 69: 
                     winner.betting_count -= 40
                     winner.achieve_count -= 20
                     add_point_log(winner.id, betting_change=-40, reason='누적 70경기 달성 취소')
                     add_point_log(winner.id, achieve_change=-20, reason='누적 70경기 달성 취소')
-
                 if winner.match_count == 99: 
                     winner.betting_count -= 60
                     winner.achieve_count -= 30
                     add_point_log(winner.id, betting_change=-60, reason='누적 100경기 달성 취소')
                     add_point_log(winner.id, achieve_change=-30, reason='누적 100경기 달성 취소')
-
                 if winner.win_count == 19: 
                     winner.betting_count -= 20
                     winner.achieve_count -= 10
                     add_point_log(winner.id, betting_change=-20, reason='누적 20승 달성 취소')
                     add_point_log(winner.id, achieve_change=-10, reason='누적 20승 달성 취소')
-
                 if winner.win_count == 34: 
                     winner.betting_count -= 40
                     winner.achieve_count -= 20
                     add_point_log(winner.id, betting_change=-40, reason='누적 35승 달성 취소')
                     add_point_log(winner.id, achieve_change=-20, reason='누적 35승 달성 취소')
-
                 if winner.win_count == 49: 
                     winner.betting_count -= 60
                     winner.achieve_count -= 30
                     add_point_log(winner.id, betting_change=-60, reason='누적 50승 달성 취소')
                     add_point_log(winner.id, achieve_change=-30, reason='누적 50승 달성 취소')
-                
                 if winner_previous_opponent == 10 and winner.opponent_count == 9: 
                     winner.betting_count -= 10
                     winner.achieve_count -= 5
                     add_point_log(winner.id, betting_change=-10, reason='누적 상대 10명 달성 취소')
                     add_point_log(winner.id, achieve_change=-5, reason='누적 상대 10명 달성 취소')
-
                 if winner_previous_opponent == 25 and winner.opponent_count == 24: 
                     winner.betting_count -= 40
                     winner.achieve_count -= 20
                     add_point_log(winner.id, betting_change=-40, reason='누적 상대 25명 달성 취소')
                     add_point_log(winner.id, achieve_change=-20, reason='누적 상대 25명 달성 취소')
-
                 if winner_previous_opponent == 40 and winner.opponent_count == 39: 
                     winner.betting_count -= 60
                     winner.achieve_count -= 30
                     add_point_log(winner.id, betting_change=-60, reason='누적 상대 40명 달성 취소')
                     add_point_log(winner.id, achieve_change=-30, reason='누적 상대 40명 달성 취소')
-                
                 if loser.match_count == 29: 
                     loser.betting_count -= 10
                     loser.achieve_count -= 5
                     add_point_log(loser.id, betting_change=-10, reason='누적 30경기 달성 취소')
                     add_point_log(loser.id, achieve_change=-5, reason='누적 30경기 달성 취소')
-
                 if loser.match_count == 49: 
                     loser.betting_count -= 20
                     loser.achieve_count -= 10
                     add_point_log(loser.id, betting_change=-10, reason='누적 50경기 달성 취소')
                     add_point_log(loser.id, achieve_change=-5, reason='누적 50경기 달성 취소')
-
                 if loser.match_count == 69: 
                     loser.betting_count -= 40
                     loser.achieve_count -= 20
                     add_point_log(loser.id, betting_change=-40, reason='누적 70경기 달성 취소')
                     add_point_log(loser.id, achieve_change=-20, reason='누적 70경기 달성 취소')
-
                 if loser.match_count == 99: 
                     loser.betting_count -= 60
                     loser.achieve_count -= 30
                     add_point_log(loser.id, betting_change=-60, reason='누적 100경기 달성 취소')
                     add_point_log(loser.id, achieve_change=-30, reason='누적 100경기 달성 취소')
-
                 if loser.loss_count == 19: 
                     loser.betting_count -= 10
                     loser.achieve_count -= 10
                     add_point_log(loser.id, betting_change=-10, reason='누적 20패 달성 취소')
                     add_point_log(loser.id, achieve_change=-10, reason='누적 20패 달성 취소')
-
                 if loser.loss_count == 34: 
                     loser.betting_count -= 20
                     loser.achieve_count -= 20
                     add_point_log(loser.id, betting_change=-20, reason='누적 35패 달성 취소')
                     add_point_log(loser.id, achieve_change=-20, reason='누적 35패 달성 취소')
-
                 if loser.loss_count == 49: 
                     loser.betting_count -= 30
                     loser.achieve_count -= 30
-                    add_point_log(loser.id, betting_change=-30, reason='누적 50경기 달성 취소')
-                    add_point_log(loser.id, achieve_change=-30, reason='누적 50경기 달성 취소')
-
+                    add_point_log(loser.id, betting_change=-30, reason='누적 50패 달성 취소')
+                    add_point_log(loser.id, achieve_change=-30, reason='누적 50패 달성 취소')
                 if loser_previous_opponent == 10 and loser.opponent_count == 9: 
                     loser.betting_count -= 10
                     loser.achieve_count -= 5
                     add_point_log(loser.id, betting_change=-10, reason='누적 상대수 10명 달성 취소')
                     add_point_log(loser.id, achieve_change=-5, reason='누적 상대수 10명 달성 취소')
-
                 if loser_previous_opponent == 25 and loser.opponent_count == 24: 
                     loser.betting_count -= 40
                     loser.achieve_count -= 20
                     add_point_log(loser.id, betting_change=-40, reason='누적 상대수 25명 달성 취소')
                     add_point_log(loser.id, achieve_change=-20, reason='누적 상대수 25명 달성 취소')
-
                 if loser_previous_opponent == 40 and loser.opponent_count == 39: 
                     loser.betting_count -= 60
                     loser.achieve_count -= 30
                     add_point_log(loser.id, betting_change=-60, reason='누적 상대수 40명 달성 취소')
                     add_point_log(loser.id, achieve_change=-30, reason='누적 상대수 40명 달성 취소')
                 
-                # if winner.rank is not None and loser.rank is not None:
-                #     if winner.rank - loser.rank == 8:
-                #         winner.betting_count -= 30
-                #         winner.achieve_count -= 30
-                #     if loser.rank - winner.rank == 8:
-                #         loser.betting_count -= 3
-                #         loser.achieve_count -= 3  
-
                 today_partner = TodayPartner.query.filter_by(p1_id=match.winner, p2_id=match.loser, submitted=True).first()
                 if not today_partner:
                     today_partner = TodayPartner.query.filter_by(p1_id=match.loser, p2_id=match.winner, submitted=True).first()
@@ -1717,27 +1869,34 @@ def init_routes(app):
                     add_point_log(loser.id, betting_change=-3, reason='안 쉬세요?? 취소')
                 
                 if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 15:
-                    if winner.gender == GenderEnum.MALE:
-                        winner.rank = 8
-                    elif winner.gender == GenderEnum.FEMALE:
+                    if winner.gender == GenderEnum.MALE or winner.gender == GenderEnum.FEMALE:
                         winner.rank = 8
                 if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 15:
-                    if loser.gender == GenderEnum.MALE:
-                        loser.rank = 8
-                    elif loser.gender == GenderEnum.FEMALE:
+                    if loser.gender == GenderEnum.MALE or loser.gender == GenderEnum.FEMALE:
                         loser.rank = 8
             else:
-                pending_matches_count+=1
-        
-        if matches_to_delete:
-            Match.query.filter(Match.id.in_(ids)).delete(synchronize_session=False)
-            db.session.commit()
+                today_partner = TodayPartner.query.filter(
+                    (
+                        (TodayPartner.p1_id == match.winner) & (TodayPartner.p2_id == match.loser)
+                    ) | (
+                        (TodayPartner.p1_id == match.loser) & (TodayPartner.p2_id == match.winner)
+                    ),
+                    TodayPartner.submitted == True
+                ).order_by(TodayPartner.id.desc()).first()
+
+                if today_partner:
+                    today_partner.submitted = False
+                    pending_matches_count += 1
+            
+            db.session.delete(match)
+
+        db.session.commit()
 
         update_player_orders_by_match()
         update_player_orders_by_point()
         
         return jsonify({'success': True, 'message': f'{approved_matches_count}개의 승인된 경기와 {pending_matches_count}개의 미승인된 경기가 삭제되었습니다.'})
-
+   
     @app.route('/select_all_matches', methods=['GET'])
     def select_all_matches():
         matches = Match.query.filter_by(approved=False).all()

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>새 토너먼트 생성 - SCUTTA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-gray-100">
@@ -44,6 +44,29 @@
             </form>
         </div>
     </main>
-
+    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
+        <nav class="flex h-full">
+            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-home fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">홈</span>
+            </a>
+            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-trophy fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">랭킹</span>
+            </a>
+            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">리그전</span>
+            </a>
+            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-coins fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">베팅</span>
+            </a>
+            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">마이페이지</span>
+            </a>
+        </nav>
+    </footer>
 </body>
 </html>
