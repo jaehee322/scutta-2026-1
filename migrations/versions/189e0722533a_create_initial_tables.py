@@ -134,21 +134,21 @@ def upgrade():
     # with op.batch_alter_table('user', schema=None) as batch_op:
     #     batch_op.create_index(batch_op.f('ix_user_username'), ['username'], unique=True)
 
-    op.create_table('betting',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('p1_id', sa.Integer(), nullable=False),
-    sa.Column('p1_name', sa.String(length=100), nullable=False),
-    sa.Column('p2_id', sa.Integer(), nullable=False),
-    sa.Column('p2_name', sa.String(length=100), nullable=False),
-    sa.Column('point', sa.Integer(), nullable=False),
-    sa.Column('approved', sa.Boolean(), nullable=True),
-    sa.Column('submitted', sa.Boolean(), nullable=True),
-    sa.Column('result', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['p1_id'], ['player.id'], ),
-    sa.ForeignKeyConstraint(['p2_id'], ['player.id'], ),
-    sa.ForeignKeyConstraint(['result'], ['match.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
+    # op.create_table('betting',
+    # sa.Column('id', sa.Integer(), nullable=False),
+    # sa.Column('p1_id', sa.Integer(), nullable=False),
+    # sa.Column('p1_name', sa.String(length=100), nullable=False),
+    # sa.Column('p2_id', sa.Integer(), nullable=False),
+    # sa.Column('p2_name', sa.String(length=100), nullable=False),
+    # sa.Column('point', sa.Integer(), nullable=False),
+    # sa.Column('approved', sa.Boolean(), nullable=True),
+    # sa.Column('submitted', sa.Boolean(), nullable=True),
+    # sa.Column('result', sa.Integer(), nullable=True),
+    # sa.ForeignKeyConstraint(['p1_id'], ['player.id'], ),
+    # sa.ForeignKeyConstraint(['p2_id'], ['player.id'], ),
+    # sa.ForeignKeyConstraint(['result'], ['match.id'], ),
+    # sa.PrimaryKeyConstraint('id')
+    # )
     op.create_table('betting_participant',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('betting_id', sa.Integer(), nullable=False),
