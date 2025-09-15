@@ -3,33 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>팀내 리그전 상세</title>
+    <title>{{ league.name }} 상세</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body { padding-bottom: 56px; } /* 하단 네비게이션 바 공간 확보 */
-        .league-input {
-            width: 40px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            text-align: center;
-            padding: 0.25rem;
-        }
-    </style>
+    <style> body { padding-bottom: 56px; } </style>
 </head>
 <body class="bg-gray-100">
 
-   <header>
+    <header>
         <div class="flex items-center gap-2 min-w-0">
-            <button class="text-2xl p-4 -ml-4 flex-shrink-0" onclick="history.back()">&larr;</button>
-            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
-                리그전
+             <a href="{{ url_for('league') }}" class="text-xl font-bold truncate">
+                {{ league.name }}
             </a>
         </div>
         <div class="flex-shrink-0 flex items-center gap-2">
-        {% if current_user.is_authenticated %}
+            {% if current_user.is_authenticated %}
                 <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{ current_user.username }}</a>
                 <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
             {% endif %}
@@ -37,55 +27,107 @@
     </header>
         
     <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top:0;">
+        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+            <h2 class="text-xl font-bold mb-4">리그 멤버</h2>
+            <div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">
+                {% for player in players_info %}
+                <div class="bg-gray-50 rounded-lg p-4 flex-shrink-0 border" style="width: 220px;">
+                    <h4 class="font-bold text-md text-center mb-3">{{ player.name }} ({{ player.rank or '무' }})</h4>
+                    <ul class="space-y-1">
+                        <li class="flex justify-between items-center text-sm border-t pt-2">
+                            <span>전체 승수</span>
+                            <span class="font-bold">{{ player.win_count }}승</span>
+                        </li>
+                        <li class="flex justify-between items-center text-sm">
+                            <span>전체 승률</span>
+                            <span class="font-bold">{{ player.rate_count }}%</span>
+                        </li>
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if is_participant %}
+        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+            <h3 class="text-xl font-bold mb-4">진행할 경기</h3>
+            <div class="space-y-4">
+                {% for match in my_matches %}
+                    {% if match.status == 'Submitted' %}
+                        <div class="border rounded-lg p-4 flex justify-between items-center bg-gray-50 opacity-70">
+                            <div>
+                                <p class="text-lg font-bold">vs {{ match.opponent_name }}</p>
+                            </div>
+                            <div>
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">제출 완료</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('league_submit_match_page', league_id=league.id, opponent_id=match.opponent_id) }}" class="border rounded-lg p-4 flex justify-between items-center hover:bg-gray-50 transition">
+                            <div>
+                                <p class="text-lg font-bold">vs {{ match.opponent_name }}</p>
+                            </div>
+                            <div>
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">미제출</span>
+                            </div>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-lg font-bold mb-4 text-center">{{ league.p1 }}, {{ league.p2 }}, {{ league.p3 }}, {{ league.p4 }}, {{ league.p5 }}</h2>
-            
+            <h2 class="text-xl font-bold mb-4 text-center">리그 순위표</h2>
             <div class="rankings-table-container">
-                <table class="table-modern w-full" style="min-width: 600px;">
+                <table class="table-modern w-full">
                     <thead>
                         <tr>
-                            <th class="w-24"></th>
-                            {% for p_data in players %}
-                                <th class="player-name text-center whitespace-nowrap">
-                                    <a href="/player/{{ p_data.player_id }}">{{ p_data.player }}</a>
-                                </th>
-                            {% endfor %}
+                            <th>순위</th>
+                            <th>이름</th>
+                            <th>승</th>
+                            <th>패</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row_data in players %}
-                        <tr>
-                            <td class="font-bold text-center whitespace-nowrap">
-                                <a href="/player/{{ row_data.player_id }}">{{ row_data.player }} ({{ row_data.player_rank or '무' }})</a>
-                            </td>
-                            {% for col_data in players %}
-                                {% if row_data.index == col_data.index %}
-                                    <td class="text-center bg-gray-100">X</td>
-                                {% else %}
-                                    <td class="text-center">
-                                        <input class="league-input"
-                                               data-row="{{ row_data.index }}" 
-                                               data-col="{{ col_data.index }}" 
-                                               value="{{ scores['p' ~ (row_data.index + 1) ~ 'p' ~ (col_data.index + 1)] if scores['p' ~ (row_data.index + 1) ~ 'p' ~ (col_data.index + 1)] is not none else '' }}"
-                                               inputmode="numeric">
-                                    </td>
-                                {% endif %}
-                            {% endfor %}
+                        {% for player in standings %}
+                        <tr class="{% if player.name == current_user.player.name %} bg-sky-50 font-bold {% endif %}">
+                            <td>{{ player.rank }}</td>
+                            <td>{{ player.name }}</td>
+                            <td>{{ player.wins }}</td>
+                            <td>{{ player.losses }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <div class="flex justify-between items-center mt-6">
-                {% if current_user.is_admin %}
-                <button onclick="deleteLeague({{ league.id }})" class="bg-red-500 hover:bg-red-700 text-white button">리그 삭제</button>
-                <div class="flex gap-4">
-                    <button onclick="saveLeague({{ league.id }})" class="bg-gray-500 text-white button">중간 저장</button>
-                    <button onclick="submitLeague({{ league.id }})" class="bg-main button">최종 제출</button>
+        </div>
+
+        {% if current_user.is_admin %}
+        <div class="mt-6 bg-white p-6 rounded-lg shadow-sm flex justify-end">
+            <button onclick="deleteLeague({{ league.id }})" class="bg-red-500 hover:bg-red-700 text-white button">리그 삭제</button>
+        </div>
+        <div class="mt-6 bg-white p-6 rounded-lg shadow-sm">
+            <h2 class="text-xl font-bold mb-4">경기 기록 되돌리기 (관리자)</h2>
+            <div class="space-y-2">
+                {% for match in match_history %}
+                <div class="flex justify-between items-center p-2 {% if loop.index is even %}bg-gray-50{% endif %}">
+                    <p class="text-sm">
+                        <span class="font-bold text-green-600">{{ match.winner }}</span> (이)가 <span class="font-bold text-red-600">{{ match.loser }}</span> 에게 승리
+                    </p>
+                    <form action="{{ url_for('revert_league_match', league_id=league.id) }}" method="POST" onsubmit="return confirm('이 경기 결과를 정말로 되돌리시겠습니까?')">
+                        <input type="hidden" name="winner" value="{{ match.winner }}">
+                        <input type="hidden" name="loser" value="{{ match.loser }}">
+                        <button type="submit" class="text-xs bg-gray-500 text-white font-semibold py-1 px-3 rounded-md hover:bg-gray-700">되돌리기</button>
+                    </form>
                 </div>
-                {% endif %}
+                {% else %}
+                <p class="text-center text-gray-500 py-4">아직 제출된 경기 기록이 없습니다.</p>
+                {% endfor %}
             </div>
         </div>
+        {% endif %}
+
     </main>
 
     <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">

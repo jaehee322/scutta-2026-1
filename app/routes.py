@@ -1,7 +1,6 @@
-from flask import render_template, jsonify, current_app, request, flash, redirect, url_for
+from flask import render_template, jsonify, current_app, request, flash, redirect, url_for, session
 from flask_login import login_user, logout_user, current_user, login_required
 from sqlalchemy import distinct, case, func
-from sqlalchemy.orm import session
 from .extensions import db
 from sqlalchemy.orm.attributes import flag_modified
 from .models import Match, Player, UpdateLog, League, Betting, BettingParticipant, TodayPartner, GenderEnum, FreshmanEnum, PlayerPointLog, User, Tournament
@@ -362,10 +361,10 @@ def init_routes(app):
 
     @app.route('/logout')
     def logout():
+        session.pop('_flashes', None)
         logout_user()
         return redirect(url_for('index'))
     
-    # app/routes.py의 init_routes(app) 함수 내부에 추가
 
     @app.route('/admin/batch_add_users', methods=['POST'])
     @login_required
@@ -440,101 +439,101 @@ def init_routes(app):
     @app.route('/')
     @login_required
     def index():
-        # 1. 랭킹 요약 데이터 조회
+        # --- 1. 기본 정보 조회 (랭킹, 최근 경기, 오늘의 상대) ---
         categories = [
-            ('승리', 'win_order', 'win_count'),
-            ('승률', 'rate_order', 'rate_count'),
-            ('경기', 'match_order', 'match_count'),
-            ('베팅', 'betting_order', 'betting_count'),
+            ('승리', 'win_order', 'win_count'), ('승률', 'rate_order', 'rate_count'),
+            ('경기', 'match_order', 'match_count'), ('베팅', 'betting_order', 'betting_count'),
         ]
         rankings_data = {}
         for title, order_field, value_field in categories:
-            top_players = Player.query.join(Player.user).filter(
-                Player.is_valid == True,
-                User.is_admin == False
-            ).order_by(
-                getattr(Player, order_field).asc(),
-                Player.name.asc()
-            ).limit(3).all()
-
+            top_players = Player.query.join(Player.user).filter(Player.is_valid == True, User.is_admin == False).order_by(getattr(Player, order_field).asc(), Player.name.asc()).limit(3).all()
             top_ranks = sorted(list(set(getattr(p, order_field) for p in top_players if getattr(p, order_field) is not None)))
-            
             current_player = current_user.player
-            my_rank_info = { 
-                'rank': getattr(current_player, order_field), 
-                'value': getattr(current_player, value_field) 
-            }
-
+            my_rank_info = {'rank': getattr(current_player, order_field), 'value': getattr(current_player, value_field)}
             rankings_data[title] = {
                 'players': [{'name': p.name, 'rank': p.rank, 'value': getattr(p, value_field), 'actual_rank': getattr(p, order_field)} for p in top_players],
                 'my_rank': my_rank_info,
                 'top_ranks': top_ranks
             }
-
-        # 2. 최근 내 경기 기록 조회
-        my_recent_matches = Match.query.filter(
-            (Match.winner == current_user.player_id) | (Match.loser == current_user.player_id)
-        ).order_by(Match.timestamp.desc()).limit(5).all()
-
-        # 3. 나의 오늘의 상대 정보 조회 (사용자님이 제시한 최종 로직)
+        my_recent_matches = Match.query.filter((Match.winner == current_user.player_id) | (Match.loser == current_user.player_id)).order_by(Match.timestamp.desc()).limit(5).all()
         today_partner_info = None
-        today_match = TodayPartner.query.filter(
-            (TodayPartner.p1_id == current_user.player_id) | (TodayPartner.p2_id == current_user.player_id)
-        ).order_by(TodayPartner.id.desc()).first()
-
+        today_match = TodayPartner.query.filter((TodayPartner.p1_id == current_user.player_id) | (TodayPartner.p2_id == current_user.player_id)).order_by(TodayPartner.id.desc()).first()
         if today_match:
-            if today_match.p1_id == current_user.player_id:
-                opponent_id = today_match.p2_id
-                opponent_name = today_match.p2_name
-            else:
-                opponent_id = today_match.p1_id
-                opponent_name = today_match.p1_name
-            
+            opponent_id = today_match.p2_id if today_match.p1_id == current_user.player_id else today_match.p1_id
+            opponent_name = today_match.p2_name if today_match.p1_id == current_user.player_id else today_match.p1_name
             approval_status = None
             if today_match.submitted:
-                most_recent_match = Match.query.filter(
-                    (
-                        (Match.winner == current_user.player_id) & (Match.loser == opponent_id)
-                    ) | (
-                        (Match.winner == opponent_id) & (Match.loser == current_user.player_id)
-                    )
-                ).order_by(Match.timestamp.desc()).first()
-
+                most_recent_match = Match.query.filter(((Match.winner == current_user.player_id) & (Match.loser == opponent_id)) | ((Match.winner == opponent_id) & (Match.loser == current_user.player_id))).order_by(Match.timestamp.desc()).first()
                 seoul_tz = ZoneInfo("Asia/Seoul")
                 today = datetime.now(seoul_tz).date()
-
-                # 가장 최근 경기가 오늘 경기인지 확인
                 if most_recent_match and most_recent_match.timestamp.astimezone(seoul_tz).date() == today:
-                    # 오늘 경기라면, 승인 상태를 그대로 보여줌
-                    if most_recent_match.approved:
-                        approval_status = 'approved'
-                    else:
-                        approval_status = 'pending'
+                    approval_status = 'approved' if most_recent_match.approved else 'pending'
                 else:
-                    # 오늘 경기가 아니라면 (어제 경기거나, 삭제됐다면), '미제출'로 되돌림
                     today_match.submitted = False
                     db.session.commit()
-                    approval_status = None
+            today_partner_info = {'date': datetime.now(ZoneInfo("Asia/Seoul")).strftime('%m.%d'), 'opponent_name': opponent_name, 'submitted': today_match.submitted, 'approval_status': approval_status}
 
-            today_date_str = datetime.now(ZoneInfo("Asia/Seoul")).strftime('%m.%d')
+
+        # --- 2. 베팅 정보 조회 ---
+        ongoing_bettings = Betting.query.filter_by(is_closed=False).order_by(Betting.id.desc()).all()
+        betting_data = []
+        for bet in ongoing_bettings:
+            if current_user.player_id not in [bet.p1_id, bet.p2_id]:
+                betting_data.append(bet)
+
+        # --- 3. 나의 리그 정보 조회 (요일 체크 삭제) ---
+        my_league_info = None
+        my_name = current_user.player.name
+        my_league = League.query.filter(
+            (League.p1 == my_name) | (League.p2 == my_name) | (League.p3 == my_name) |
+            (League.p4 == my_name) | (League.p5 == my_name)
+        ).order_by(League.id.desc()).first()
+        
+        if my_league:
+            player_names = [my_league.p1, my_league.p2, my_league.p3, my_league.p4, my_league.p5]
+            standings_data = []
+            for i, name in enumerate(player_names):
+                wins, losses = 0, 0
+                for j in range(5):
+                    if i == j: continue
+                    if getattr(my_league, f'p{i+1}p{j+1}') is not None: wins += 1
+                    if getattr(my_league, f'p{j+1}p{i+1}') is not None: losses += 1
+                total_games = wins + losses
+                win_rate = (wins / total_games) * 100 if total_games > 0 else 0.0
+                standings_data.append({'name': name, 'wins': wins, 'losses': losses, 'win_rate': win_rate})
             
-            today_partner_info = {
-                'date': today_date_str,
-                'opponent_name': opponent_name,
-                'submitted': today_match.submitted,
-                'approval_status': approval_status
+            sorted_standings = sorted(standings_data, key=lambda x: (x['wins'], x['win_rate'], -x['losses']), reverse=True)
+            
+            my_rank, my_wins, my_losses = 0, 0, 0
+            last_criteria, current_rank = (-1,-1,-1), 0
+            for i, stats in enumerate(sorted_standings):
+                current_criteria = (stats['wins'], stats['win_rate'], stats['losses'])
+                if current_criteria != last_criteria:
+                    current_rank = i + 1
+                last_criteria = current_criteria
+
+                if stats['name'] == my_name:
+                    my_rank = current_rank
+                    my_wins = stats['wins']
+                    my_losses = stats['losses']
+                    break
+            
+            my_league_info = {
+                'league': my_league, 'wins': my_wins, 
+                'losses': my_losses, 'rank': my_rank
             }
 
-        # 4. 최종적으로 모든 데이터를 HTML에 전달
+        # --- 4. 최종 렌더링 ---
         return render_template(
             'index.html', 
             global_texts=current_app.config['GLOBAL_TEXTS'], 
             rankings=rankings_data,
             my_recent_matches=my_recent_matches,
-            today_partner_info=today_partner_info
+            today_partner_info=today_partner_info,
+            ongoing_bettings=betting_data,
+            my_league_info=my_league_info
         )
             
-
     @app.route('/submitment.html')
     @login_required
     def submitment():
@@ -737,32 +736,54 @@ def init_routes(app):
     def league():
         leagues = League.query.order_by(League.id.desc()).all()
         
-        p1_ranks = []; p2_ranks = []; p3_ranks = []; p4_ranks = []; p5_ranks = []; 
-        for league in leagues:
-            p1 = Player.query.filter_by(name=league.p1).first(); p1_ranks.append(p1.rank)
-            p2 = Player.query.filter_by(name=league.p2).first(); p2_ranks.append(p2.rank)
-            p3 = Player.query.filter_by(name=league.p3).first(); p3_ranks.append(p3.rank)
-            p4 = Player.query.filter_by(name=league.p4).first(); p4_ranks.append(p4.rank)
-            p5 = Player.query.filter_by(name=league.p5).first(); p5_ranks.append(p5.rank)
-        
-        indexed_leagues = [{'index': idx, 'league': league, 'p1_rank': p1_rank, 'p2_rank': p2_rank, 'p3_rank': p3_rank, 'p4_rank': p4_rank, 'p5_rank': p5_rank} for idx, (league, p1_rank, p2_rank, p3_rank, p4_rank, p5_rank) in enumerate(zip(leagues, p1_ranks, p2_ranks, p3_ranks, p4_ranks, p5_ranks))]
-        return render_template('league.html', leagues=indexed_leagues, global_texts=current_app.config['GLOBAL_TEXTS'])
+        league_data = []
+        for l in leagues:
+            player_names = [l.p1, l.p2, l.p3, l.p4, l.p5]
+            # 현재 유저가 리그에 포함되어 있는지 확인
+            is_participant = current_user.player.name in player_names
+            league_data.append({
+                'league': l,
+                'is_participant': is_participant
+            })
+
+        return render_template('league.html', league_data=league_data)
 
     @app.route('/betting.html')
+    @login_required
     def betting():
-        bettings = Betting.query.filter(Betting.submitted == False).order_by(Betting.id.desc()).all()
-        
-        p1_ranks = []
-        p2_ranks = []
-        for betting in bettings:
-            p1 = Player.query.filter_by(id=betting.p1_id).first()
-            p1_ranks.append(p1.rank)
-            p2 = Player.query.filter_by(id=betting.p2_id).first()
-            p2_ranks.append(p2.rank)
-        
-        indexed_bettings = [{'index': idx, 'betting': betting, 'p1_rank': p1_rank, 'p2_rank': p2_rank} for idx, (betting, p1_rank, p2_rank) in enumerate(zip(bettings, p1_ranks, p2_ranks))]
-        return render_template('betting.html', bettings=indexed_bettings, global_texts=current_app.config['GLOBAL_TEXTS'])
+        bettings = Betting.query.order_by(Betting.is_closed, Betting.id.desc()).all()
+    
+        betting_data = []
+        for bet in bettings:
+            p1 = Player.query.get(bet.p1_id)
+            p2 = Player.query.get(bet.p2_id)
+            
+            is_player = current_user.player_id in [bet.p1_id, bet.p2_id]
 
+            betting_data.append({
+                'betting': bet,
+                'p1_rank': p1.rank if p1 else None, # 부수 정보 추가
+                'p2_rank': p2.rank if p2 else None, # 부수 정보 추가
+                'is_player': is_player
+            })
+
+        return render_template('betting.html', betting_data=betting_data)
+    
+    @app.route('/betting/<int:betting_id>/toggle_close', methods=['POST'])
+    @login_required
+    def toggle_betting_status(betting_id):
+        if not current_user.is_admin:
+            flash('권한이 없습니다.', 'error')
+            return redirect(url_for('betting'))
+
+        betting = Betting.query.get_or_404(betting_id)
+        betting.is_closed = not betting.is_closed
+        db.session.commit()
+        
+        status = "마감" if betting.is_closed else "진행중"
+        flash(f"'{betting.p1_name} vs {betting.p2_name}' 베팅이 '{status}' 상태로 변경되었습니다.", 'success')
+        return redirect(url_for('betting'))
+    
     @app.route('/password.html')
     @login_required
     def password():
@@ -838,64 +859,118 @@ def init_routes(app):
     @login_required
     def league_detail(league_id):
         league = League.query.get_or_404(league_id)
-        players = [league.p1, league.p2, league.p3, league.p4, league.p5]
+        player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
         
-        player_ids = []
-        player_ranks = []
-        for player_name in players:
-            player = Player.query.filter_by(name=player_name).first()
-            player_id = player.id if player else None
-            player_rank = player.rank
-            player_ids.append(player_id)
-            player_ranks.append(player_rank)
+        players_info = []
+        player_objects = Player.query.filter(Player.name.in_(player_names)).all()
+        player_map = {p.name: p for p in player_objects}
+        for name in player_names:
+            p = player_map.get(name)
+            if p:
+                players_info.append({
+                    'name': p.name, 'rank': p.rank,
+                    'win_count': p.win_count, 'rate_count': p.rate_count
+                })
 
-        indexed_players = [{'index': idx, 'player': player_name, 'player_id': player_id, 'player_rank': player_rank} for idx, (player_name, player_id, player_rank) in enumerate(zip(players, player_ids, player_ranks))]
+        standings_data = []
+        for i, name in enumerate(player_names):
+            wins, losses = 0, 0
+            for j in range(5):
+                if i == j: continue
+                if getattr(league, f'p{i+1}p{j+1}') is not None: wins += 1
+                if getattr(league, f'p{j+1}p{i+1}') is not None: losses += 1
+            
+            total_games = wins + losses
+            win_rate = (wins / total_games) * 100 if total_games > 0 else 0.0
+            
+            standings_data.append({'name': name, 'wins': wins, 'losses': losses, 'win_rate': win_rate})
         
-        scores = {}
-
-        for row in range(5):
-            for col in range(5):
-                if row != col:
-                    key = f"p{row + 1}p{col + 1}"
-                    scores[key] = getattr(league, key, None)
-
-        return render_template('league_detail.html', league=league, players=indexed_players, scores=scores, global_texts=current_app.config['GLOBAL_TEXTS'])
-
-    @app.route('/betting/<int:betting_id>', methods=['GET'])
-    def betting_detail(betting_id):
-        if not current_user.is_admin:
-            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
-            return redirect(url_for('index'))
+        # ▼▼▼ 정렬 기준 수정: 1.승수(내림) 2.승률(내림) 3.패수(오름) ▼▼▼
+        # -x['losses']는 패배 수가 적은 것을 높은 순위로 처리하기 위함입니다.
+        sorted_standings = sorted(standings_data, key=lambda x: (x['wins'], x['win_rate'], -x['losses']), reverse=True)
         
-        betting = Betting.query.get_or_404(betting_id)
+        # ▼▼▼ 공동 순위 로직 수정: 패배 수도 기준에 추가 ▼▼▼
+        ranked_standings = []
+        current_rank = 0
+        last_criteria = (-1, -1, -1) # (승, 승률, 패)를 저장할 튜플
+        
+        for i, player_stats in enumerate(sorted_standings):
+            current_criteria = (player_stats['wins'], player_stats['win_rate'], player_stats['losses'])
+            if current_criteria != last_criteria:
+                current_rank = i + 1
+            
+            player_stats['rank'] = current_rank
+            ranked_standings.append(player_stats)
+            
+            last_criteria = current_criteria
+        # ▲▲▲ 수정 완료 ▲▲▲
+
+        is_participant = current_user.player.name in player_names
+        
+        my_matches = []
+        if is_participant:
+            my_name = current_user.player.name
+            my_idx = player_names.index(my_name)
+            for opponent_idx, opponent_name in enumerate(player_names):
+                if my_idx == opponent_idx: continue
+                
+                my_score = getattr(league, f'p{my_idx+1}p{opponent_idx+1}')
+                opponent_score = getattr(league, f'p{opponent_idx+1}p{my_idx+1}')
+                
+                status = 'Submitted' if my_score is not None or opponent_score is not None else 'Not Submitted'
+                opponent_player = player_map.get(opponent_name)
+                if opponent_player:
+                    my_matches.append({
+                        'opponent_name': opponent_name, 
+                        'status': status, 
+                        'opponent_id': opponent_player.id
+                    })
+        match_history = []
+        if current_user.is_admin:
+            for i in range(5):
+                for j in range(5):
+                    if i == j : continue
+                    if getattr(league, f'p{i+1}p{j+1}') is not None:
+                        winner_name = player_names[i]
+                        loser_name = player_names[j]
+                        match_history.append({'winner': winner_name, 'loser':loser_name})
+
+        return render_template('league_detail.html', 
+                            league=league,
+                            players_info=players_info,
+                            standings=ranked_standings,
+                            is_participant=is_participant,
+                            my_matches=my_matches,
+                            match_history=match_history)
     
-        p1 = Player.query.get_or_404(betting.p1_id)
-        p2 = Player.query.get_or_404(betting.p2_id)
-        
-        # ▼▼▼ 두 선수 간의 모든(limit 없음) 승인된 경기를 시간순으로 가져옵니다. ▼▼▼
-        all_matches = Match.query.filter(
-            ( (Match.winner == p1.id) & (Match.loser == p2.id) ) |
-            ( (Match.winner == p2.id) & (Match.loser == p1.id) ),
-            Match.approved == True
-        ).order_by(Match.timestamp.desc()).all()
+    @app.route('/league/<int:league_id>/revert', methods=['POST'])
+    @login_required
+    def revert_league_match(league_id):
+        if not current_user.is_admin:
+            flash('권한이 없습니다.', 'error')
+            return redirect(url_for('league_detail', league_id=league_id))
 
-        p1_wins = sum(1 for match in all_matches if match.winner == p1.id)
-        p2_wins = len(all_matches) - p1_wins
-        
-        participants = [{
-            'name': p.participant_name,
-            'id': p.participant_id,
-            'winner_id': p.winner_id
-        } for p in betting.participants]
+        league = League.query.get_or_404(league_id)
+        winner_name = request.form.get('winner')
+        loser_name = request.form.get('loser')
 
-        return render_template(
-            'betting_detail.html', 
-            betting=betting, 
-            participants=participants, 
-            rank={'p1_rank': p1.rank, 'p2_rank': p2.rank},
-            recent_matches=all_matches, # 변수 이름은 유지하되 내용은 모든 경기로 변경
-            win_rate={'p1_wins': p1_wins, 'p2_wins': p2_wins}
-        )
+        player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+
+        try:
+            winner_idx = player_names.index(winner_name) + 1
+            loser_idx = player_names.index(loser_name) + 1
+
+            # 해당 경기 기록을 None으로 만들어 '없던 일'로 처리
+            setattr(league, f'p{winner_idx}p{loser_idx}', None)
+            db.session.commit()
+            flash(f"'{winner_name} vs {loser_name}' 경기가 제출 이전 상태로 되돌아갔습니다.", 'success')
+        except ValueError:
+            flash('선수 이름을 찾을 수 없습니다.', 'error')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'오류 발생: {str(e)}', 'error')
+
+        return redirect(url_for('league_detail', league_id=league_id))
 
     @app.route('/league_or_tournament')
     @login_required
@@ -2336,32 +2411,33 @@ def init_routes(app):
     # league.js
 
     @app.route('/create_league', methods=['POST'])
+    @login_required
     def create_league():
-        data = request.get_json()
-        if not data or 'players' not in data:
-            return jsonify({'error': '올바른 데이터를 제공해주세요.'}), 400
+        if not current_user.is_admin:
+            return jsonify({'success': False, 'error': '관리자만 리그를 생성할 수 있습니다.'}), 403
 
+        data = request.get_json()
         players = data.get('players', [])
         if len(players) != 5:
             return jsonify({'error': '정확히 5명의 선수를 입력해야 합니다.'}), 400
 
         for name in players:
-            player = Player.query.filter_by(name=name).first()
-            if not player or not player.is_valid:
+            player = Player.query.filter_by(name=name, is_valid=True).first()
+            if not player:
                 return jsonify({'success': False, 'error': f'선수 "{name}"를 찾을 수 없습니다.'}), 400
 
+        # 리그 이름 자동 생성 (League A, B, C...)
+        league_count = League.query.count()
+        new_league_name = f"League {chr(ord('A') + league_count)}"
+
         new_league = League(
-            p1=players[0],
-            p2=players[1],
-            p3=players[2],
-            p4=players[3],
-            p5=players[4]
+            name=new_league_name,
+            p1=players[0], p2=players[1], p3=players[2], p4=players[3], p5=players[4]
         )
         db.session.add(new_league)
         db.session.commit()
 
-        return jsonify({'success': True, 'message': '리그전이 생성되었습니다.', 'league_id': new_league.id})
-
+        return jsonify({'success': True, 'message': f'{new_league_name}가 생성되었습니다.', 'league_id': new_league.id})
 
     # league_detail.js
 
@@ -2393,7 +2469,56 @@ def init_routes(app):
             db.session.rollback()
             return jsonify({'success': False, 'error': f'리그 삭제 중 오류 발생: {str(e)}'})
         
+    @app.route('/league/<int:league_id>/submit/<int:opponent_id>')
+    @login_required
+    def league_submit_match_page(league_id, opponent_id):
+        league = League.query.get_or_404(league_id)
+        opponent = Player.query.get_or_404(opponent_id)
         
+        # 본인이 리그 참가자가 아니거나, 상대방이 리그 참가자가 아니면 접근 차단
+        player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+        if current_user.player.name not in player_names or opponent.name not in player_names:
+            flash('잘못된 접근입니다.', 'error')
+            return redirect(url_for('league_detail', league_id=league_id))
+
+        return render_template('league_submit_match.html', league=league, opponent=opponent)
+  
+    @app.route('/league/<int:league_id>/submit', methods=['POST'])
+    @login_required
+    def submit_league_match(league_id):
+        league = League.query.get_or_404(league_id)
+        
+        winner_id = int(request.form.get('winner_id'))
+        score = request.form.get('score')
+        opponent_id = int(request.form.get('opponent_id'))
+
+        me = current_user.player
+        opponent = Player.query.get_or_404(opponent_id)
+
+        winner = me if winner_id == me.id else opponent
+        loser = opponent if winner_id == me.id else me
+
+        # 1. 일반 경기처럼 Match 테이블에 '승인 대기' 상태로 기록 추가
+        new_match = Match(
+            winner=winner.id, winner_name=winner.name,
+            loser=loser.id, loser_name=loser.name,
+            score=score, approved=False
+        )
+        db.session.add(new_match)
+
+        # 2. 리그 순위표에 즉시 반영하기 위해 League 테이블 직접 업데이트
+        player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+        winner_idx = player_names.index(winner.name) + 1
+        loser_idx = player_names.index(loser.name) + 1
+        
+        # 이긴 사람의 점수 칸에 '1'을 기록 (승리했다는 의미)
+        setattr(league, f'p{winner_idx}p{loser_idx}', 1)
+        
+        db.session.commit()
+
+        flash(f'{opponent.name}님과의 리그 경기가 제출되었습니다. 관리자 승인을 기다립니다.', 'success')
+        return redirect(url_for('league_detail', league_id=league_id))
+    
     # betting.js
 
     @app.route('/get_players_ranks', methods=['POST'])
@@ -2502,25 +2627,175 @@ def init_routes(app):
 
 
     # betting_detail.js
-    # routes.py 파일에서 이 함수를 찾아 아래 내용으로 교체해주세요.
+
+    @app.route('/betting/<int:betting_id>/admin')
+    @login_required
+    def betting_detail(betting_id):
+        if not current_user.is_admin:
+            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            return redirect(url_for('index'))
+
+        betting = Betting.query.get_or_404(betting_id)
+        
+        p1 = Player.query.get_or_404(betting.p1_id)
+        p2 = Player.query.get_or_404(betting.p2_id)
+        
+        all_matches = Match.query.filter(
+            ((Match.winner == p1.id) & (Match.loser == p2.id)) |
+            ((Match.winner == p2.id) & (Match.loser == p1.id)),
+            Match.approved == True
+        ).order_by(Match.timestamp.desc()).all()
+
+        p1_wins = sum(1 for match in all_matches if match.winner == p1.id)
+        p2_wins = len(all_matches) - p1_wins
+
+        all_players_objects = Player.query.filter_by(is_valid=True).order_by(Player.name).all()
+        all_players_data = [
+            {'id': player.id, 'name': player.name} 
+            for player in all_players_objects
+        ]
+
+        return render_template(
+            'betting_detail_admin.html', 
+            betting=betting,
+            participants=betting.participants,
+            win_rate={'p1_wins': p1_wins, 'p2_wins': p2_wins},
+            recent_matches=all_matches,
+            all_players=all_players_data
+        )
+    
+    @app.route('/betting/<int:betting_id>/view')
+    @login_required
+    def betting_detail_for_user(betting_id):
+        betting = Betting.query.get_or_404(betting_id)
+        
+        # 관리자용 베팅 상세 로직 재활용
+        p1 = Player.query.get_or_404(betting.p1_id)
+        p2 = Player.query.get_or_404(betting.p2_id)
+        
+        all_matches = Match.query.filter(
+            ( (Match.winner == p1.id) & (Match.loser == p2.id) ) |
+            ( (Match.winner == p2.id) & (Match.loser == p1.id) ),
+            Match.approved == True
+        ).order_by(Match.timestamp.desc()).all()
+
+        p1_wins = sum(1 for match in all_matches if match.winner == p1.id)
+        p2_wins = len(all_matches) - p1_wins
+        
+        participants = betting.participants
+        
+        is_player = current_user.player_id in [betting.p1_id, betting.p2_id]
+        # 현재 유저가 이미 베팅했는지 확인
+        my_choice = BettingParticipant.query.filter_by(
+            betting_id=betting_id, 
+            participant_id=current_user.player_id
+        ).first()
+
+        p1_bettors_count = sum(1 for p in participants if p.winner_id == betting.p1_id)
+        p2_bettors_count = sum(1 for p in participants if p.winner_id == betting.p2_id)
+        total_bettors = p1_bettors_count + p2_bettors_count
+        
+        p1_percent = (p1_bettors_count / total_bettors) * 100 if total_bettors > 0 else 50
+        p2_percent = 100 - p1_percent
+        
+        betting_stats = {
+            'p1_bettors': p1_bettors_count,
+            'p2_bettors': p2_bettors_count,
+            'p1_percent': p1_percent,
+            'p2_percent': p2_percent
+        }
+
+        return render_template(
+            'betting_detail_for_user.html', 
+            betting=betting,
+            participants=participants,
+            win_rate={'p1_wins': p1_wins, 'p2_wins': p2_wins},
+            recent_matches=all_matches,
+            my_choice=my_choice,
+            ranks={'p1_rank': p1.rank, 'p2_rank': p2.rank},
+            is_player=is_player,
+            betting_stats=betting_stats
+        )
+
+
+    @app.route('/bet/place', methods=['POST'])
+    @login_required
+    def place_bet():
+        betting_id = request.form.get('betting_id', type=int)
+        winner_id = request.form.get('winner_id', type=int)
+
+        betting = Betting.query.get_or_404(betting_id)
+
+        # ▼▼▼ 마감 여부 확인 로직 추가 ▼▼▼
+        if betting.is_closed:
+            flash('마감된 베팅에는 참여할 수 없습니다.', 'error')
+            return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
+            
+        if current_user.player_id in [betting.p1_id, betting.p2_id]:
+            flash('자신의 경기에는 베팅할 수 없습니다.', 'error')
+            return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
+
+        if betting.submitted:
+            flash('이미 경기 결과가 제출된 베팅입니다.', 'error')
+            return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
+
+        participant_record = BettingParticipant.query.filter_by(
+            betting_id=betting_id,
+            participant_id=current_user.player_id
+        ).first()
+
+        if participant_record:
+            participant_record.winner_id = winner_id
+            flash('베팅을 성공적으로 변경했습니다.', 'success')
+        else:
+            new_participant = BettingParticipant(
+                betting_id=betting_id,
+                participant_id=current_user.player_id,
+                participant_name=current_user.player.name,
+                winner_id=winner_id
+            )
+            db.session.add(new_participant)
+            flash('베팅에 성공적으로 참여했습니다.', 'success')
+        
+        db.session.commit()
+        return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
+    
+    @app.route('/betting/create')
+    @login_required
+    def create_betting_page():
+        if not current_user.is_admin:
+            flash('권한이 없습니다.', 'error')
+            return redirect(url_for('betting'))
+        
+        # 베팅 생성 시 선수 목록을 선택할 수 있도록 모든 선수 정보를 전달합니다.
+        players = Player.query.filter_by(is_valid=True).order_by(Player.name).all()
+
+        return render_template('create_betting.html', players=players)
 
     @app.route('/submit_betting_result', methods=['POST'])
+    @login_required
     def submit_betting_result():
+        if not current_user.is_admin:
+            return jsonify({"error": "권한이 없습니다."}), 403
+
         data = request.get_json()
         betting_id = data.get('bettingId')
-        p1_name = data.get('p1Name')
-        p2_name = data.get('p2Name')
         winner_name = data.get('winnerName')
         score = data.get('score')
 
-        if not (betting_id and p1_name and p2_name and winner_name):
+        if not (betting_id and winner_name and score):
             return jsonify({"error": "모든 필드를 입력해주세요."}), 400
 
         betting = Betting.query.get_or_404(betting_id)
         if betting.submitted:
             return jsonify({"error": "이미 결과가 제출된 베팅입니다."}), 400
 
-        loser_name = p1_name if winner_name == p2_name else p2_name
+        p1_name = betting.p1_name
+        p2_name = betting.p2_name
+        
+        # [오류 수정] 승자와 패자를 올바르게 지정합니다.
+        loser_name = p2_name if winner_name == p1_name else p1_name
+
         winner = Player.query.filter_by(name=winner_name).first()
         loser = Player.query.filter_by(name=loser_name).first()
         
@@ -2537,19 +2812,21 @@ def init_routes(app):
 
         betting.result = new_match.id
         betting.submitted = True
+        betting.is_closed = True
         
+        # [기능 유지] 포인트 분배 로직을 다시 추가합니다.
         participants = betting.participants
-        # ▼▼▼ 실제 승리한 선수의 'ID'를 기준으로 성공/실패를 명확히 구분합니다. ▼▼▼
         win_participants_names = [p.participant_name for p in participants if p.winner_id == winner.id]
         lose_participants_names = [p.participant_name for p in participants if p.winner_id is not None and p.winner_id != winner.id]
 
         total_sharers = 1 + len(win_participants_names)
-        total_points = betting.point * (2 + len(participants))
-        share = total_points // total_sharers if total_sharers > 0 else 0
+        total_pot = betting.point * (2 + len(participants))
+        share = total_pot // total_sharers if total_sharers > 0 else 0
         
         db.session.commit()
 
         return jsonify({
+            "success": True, # 'success' 키를 추가하여 JS와 호환되도록 합니다.
             "message": "베팅 결과가 성공적으로 처리되었습니다!",
             "results": {
                 "winnerName": winner.name, "loserName": loser.name,

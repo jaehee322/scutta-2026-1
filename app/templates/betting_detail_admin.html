@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>관리자 베팅 상세</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style> 
+        body { padding-bottom: 56px; } 
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <header>
+        <div class="flex items-center gap-2 min-w-0">
+             <a href="{{ url_for('betting') }}" class="text-xl font-bold truncate">
+                {{ betting.p1_name }} vs {{ betting.p2_name }} (관리)
+            </a>
+        </div>
+        <div class="flex-shrink-0 flex items-center gap-2">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{ current_user.username }}</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+            <h3 class="text-xl font-bold mb-4">상대 전적</h3>
+            <div class="overflow-x-auto">
+                <table class="table-modern w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left"><a href="/player/{{ betting.p1_id }}" class="hover:underline">{{ betting.p1_name }}</a></th>
+                            <th class="text-center">스코어</th>
+                            <th class="text-right"><a href="/player/{{ betting.p2_id }}" class="hover:underline">{{ betting.p2_name }}</a></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-gray-50">
+                            <td class="text-left font-bold {% if win_rate.p1_wins > win_rate.p2_wins %}text-green-600{% endif %}">{{ win_rate.p1_wins }}승</td>
+                            <td class="text-center text-sm text-gray-500">종합</td>
+                            <td class="text-right font-bold {% if win_rate.p2_wins > win_rate.p1_wins %}text-green-600{% endif %}">{{ win_rate.p2_wins }}승</td>
+                        </tr>
+                        {% for match in recent_matches[:5] %}
+                        <tr>
+                            <td class="text-left">{% if match.winner == betting.p1_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}</td>
+                            <td class="text-center">{{ match.score }}</td>
+                            <td class="text-right">{% if match.winner == betting.p2_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-gray-500 py-4">상대 전적이 없습니다.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+            <h3 class="text-xl font-bold mb-4">참가자 관리 ({{ participants|length }}명)</h3>
+            <div id="participants-list" class="space-y-2 mb-4">
+                {% for p in participants %}
+                    <div class="flex justify-between items-center p-2 {% if loop.index is even %}bg-gray-50{% endif %} rounded-md">
+                        <span>{{ p.participant_name }}</span>
+                        <span class="text-sm font-semibold">
+                            {% if p.winner_id == betting.p1_id %}{{ betting.p1_name }}
+                            {% elif p.winner_id == betting.p2_id %}{{ betting.p2_name }}
+                            {% else %}<span class="text-gray-400">미예측</span>{% endif %}
+                        </span>
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">참가자가 없습니다.</p>
+                {% endfor %}
+            </div>
+            {% if not betting.submitted %}
+            <div class="flex justify-between mt-4 border-t pt-4">
+                <button onclick="addParticipantsModal({{ betting.id }})" class="bg-gray-200 button text-sm">참가자 추가</button>
+                <button onclick="removeParticipantsModal({{ betting.id }})" class="bg-gray-500 text-white button text-sm">참가자 삭제</button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h3 class="text-xl font-bold mb-4">경기 결과 제출</h3>
+            {% if betting.submitted %}
+                 <div class="text-center text-gray-500 font-semibold p-4 bg-gray-100 rounded-md">
+                     이 베팅은 경기 결과가 제출되어 마감되었습니다.
+                 </div>
+            {% else %}
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <select id="winner-select" class="w-full">
+                            <option value="" disabled selected>승자 선택</option>
+                            <option value="{{ betting.p1_name }}">{{ betting.p1_name }}</option>
+                            <option value="{{ betting.p2_name }}">{{ betting.p2_name }}</option>
+                        </select>
+                        <select id="score-select" class="w-full">
+                            <option value="3:0">3:0</option>
+                            <option value="2:1">2:1</option>
+                        </select>
+                    </div>
+                    <button onclick="submitBettingResult({{ betting.id }}, '{{ betting.p1_name }}', '{{ betting.p2_name }}')" class="w-full bg-main button">결과 제출 및 베팅 마감</button>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
+        </footer>
+    
+    <script> const ALL_PLAYERS = {{ all_players|tojson }}; </script>
+    <script src="{{ url_for('static', filename='js/betting_detail_admin.js') }}"></script>
+</body>
+</html>

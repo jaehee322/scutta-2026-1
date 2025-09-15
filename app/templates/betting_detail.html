@@ -13,7 +13,6 @@
 
     <header>
         <div class="flex items-center gap-2 min-w-0">
-            <button class="text-2xl p-4 -ml-4 flex-shrink-0" onclick="history.back()">&larr;</button>
             <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
                 {{ betting.p1_name }} vs {{ betting.p2_name }}
             </a>
@@ -107,7 +106,7 @@
                     {% else %}
                     <div></div>
                     {% endif %}
-                    <button onclick="saveBetting({{ betting.id }})" class="bg-main button">내 베팅 저장</button>
+                    <button onclick="saveBetting({{ betting.id }})" class="bg-main button">베팅 저장</button>
                 </div>
                 {% endif %}
             </div>

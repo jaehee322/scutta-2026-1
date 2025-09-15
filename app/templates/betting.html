@@ -16,10 +16,7 @@
 
     <header>
         <div class="flex items-center gap-2 min-w-0">
-            <button class="text-xl p-4 -ml-4 flex-shrink-0" onclick="history.back()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
+            <a href="{{ url_for('index') }}" class="text-xl font-bold truncate">
                 베팅
             </a>
         </div>
@@ -32,32 +29,75 @@
     </header>
 
     <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">진행중인 베팅</h2>
             {% if current_user.is_admin %}
-            <button class="bg-main button text-sm" onclick="createBetting()">새 베팅 생성</button>
+            <a href="{{ url_for('create_betting_page') }}" class="bg-main button text-sm">새 베팅 생성</a>
             {% endif %}
         </div>
         
-        <div class="space-y-4">
-            {% if bettings %}
-                {% for row_data in bettings %}
-                <a href="/betting/{{ row_data.betting.id }}" class="block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+         <div class="space-y-4">
+            {% if betting_data %}
+                {% for data in betting_data %}
+                <div class="block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow {% if data.betting.is_closed %} opacity-60 {% endif %}">
                     <div class="flex justify-between items-center">
-                        <div class="text-center w-2/5">
-                            <p class="font-bold text-lg">{{ row_data.betting.p1_name }}</p>
-                            <p class="text-sm text-gray-500">({{ row_data.p1_rank or '무' }}부)</p>
-                        </div>
-                        <div class="text-center w-1/5 text-gray-400 font-semibold">VS</div>
-                        <div class="text-center w-2/5">
-                            <p class="font-bold text-lg">{{ row_data.betting.p2_name }}</p>
-                            <p class="text-sm text-gray-500">({{ row_data.p2_rank or '무' }}부)</p>
+                        
+                        {% if current_user.is_admin %}
+                            <a href="{{ url_for('betting_detail', betting_id=data.betting.id) }}" class="flex-grow">
+                        {% else %}
+                            <a href="{{ url_for('betting_detail_for_user', betting_id=data.betting.id) }}" class="flex-grow">
+                        {% endif %}
+                        <div class="flex justify-between items-center">
+                                <div class="text-center w-2/5">
+                                    <p class="font-bold text-lg">{{ data.betting.p1_name }}</p>
+                                    <p class="text-sm text-gray-500">({{ data.p1_rank or '무' }}부)</p>
+                                </div>
+                                <div class="text-center w-1/5 text-gray-400 font-semibold">VS</div>
+                                <div class="text-center w-2/5">
+                                    <p class="font-bold text-lg">{{ data.betting.p2_name }}</p>
+                                    <p class="text-sm text-gray-500">({{ data.p2_rank or '무' }}부)</p>
+                                </div>
+                            </div>
+                            <div class="text-center text-xs text-blue-600 mt-3 pt-3 border-t">
+                                참가자 {{ data.betting.participants|length }}명
+                                </div>
+                            </a>
+                            
+                        <div class="pl-4 border-l ml-4 flex flex-col items-center justify-center space-y-2" style="min-width: 120px;">
+                            {% if current_user.is_admin %}
+                                <form action="{{ url_for('toggle_betting_status', betting_id=data.betting.id) }}" method="POST" class="w-full">
+                                    {% if data.betting.is_closed %}
+                                        <button type="submit" class="bg-green-500 text-white button text-sm w-full">베팅 열기</button>
+                                    {% else %}
+                                        <button type="submit" class="bg-yellow-500 text-white button text-sm w-full">베팅 마감</button>
+                                    {% endif %}
+                                </form>
+                                <button onclick="deleteBettingWithPassword({{ data.betting.id }})" class="bg-red-500 text-white button text-sm w-full">삭제</button>
+                            {% elif not data.is_player %}
+                                {% if data.betting.is_closed %}
+                                    <span class="font-bold text-red-500 text-sm">마감</span>
+                                {% else %}
+                                    <p class="text-sm font-semibold mb-2 text-indigo-600">{{ data.betting.point }} pt</p>
+                                    <a href="{{ url_for('betting_detail_for_user', betting_id=data.betting.id) }}" class="bg-main button text-sm w-full text-center">
+                                        베팅하기
+                                    </a>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="text-center text-xs text-blue-600 mt-3 pt-3 border-t">
-                        참가자 {{ row_data.betting.participants|length }}명
-                    </div>
-                </a>
+                </div>
                 {% endfor %}
             {% else %}
                 <div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">
@@ -69,23 +109,23 @@
     
     <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
         <nav class="flex h-full">
-            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-home fa-lg w-6 text-center"></i>
                 <span class="text-xs font-medium">홈</span>
             </a>
-            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-trophy fa-lg w-6 text-center"></i>
                 <span class="text-xs font-medium">랭킹</span>
             </a>
-            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
                 <span class="text-xs font-medium">리그전</span>
             </a>
-            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-900 font-bold">
                 <i class="fas fa-coins fa-lg w-6 text-center"></i>
                 <span class="text-xs font-medium">베팅</span>
             </a>
-            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
                 <span class="text-xs font-medium">마이페이지</span>
             </a>

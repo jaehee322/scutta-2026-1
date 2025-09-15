@@ -66,6 +66,7 @@ class UpdateLog(db.Model):
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=True)
     p1 = db.Column(db.String(100), nullable=False)
     p2 = db.Column(db.String(100), nullable=False)
     p3 = db.Column(db.String(100), nullable=False)
@@ -102,7 +103,7 @@ class Betting(db.Model):
     approved = db.Column(db.Boolean, default=False)
     submitted = db.Column(db.Boolean, default=False)
     result = db.Column(db.Integer, db.ForeignKey('match.id'), nullable=True)
-
+    is_closed = db.Column(db.Boolean, default=False, nullable=True)
     participants = db.relationship('BettingParticipant', backref='betting', cascade='all, delete-orphan')
 
 class BettingParticipant(db.Model):
