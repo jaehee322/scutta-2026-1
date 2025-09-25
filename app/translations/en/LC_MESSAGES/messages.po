@@ -711,6 +711,14 @@ msgid "경기"
 msgstr "Matches"
 
 #: app/routes.py:445
+msgid "이름"
+msgstr "Name"
+
+#: app/routes.py:445
+msgid "순위"
+msgstr "No."
+
+#: app/routes.py:445
 msgid "베팅"
 msgstr "Betting"
 
@@ -753,3 +761,32 @@ msgstr "Betting In Progress"
 #: app/templates/betting.html
 msgid "마감"
 msgstr "Closed"
+
+#: app/templates/mypage.html
+msgid "포인트 현황"
+msgstr "My Points"
+
+#: app/templates/mypage.html
+msgid "변동 내역 보기"
+msgstr "Point History"
+
+#: app/templates/mypage.html
+msgid "업적 포인트"
+msgstr "Acheivement Points"
+
+#: app/templates/mypage.html
+msgid "베팅 포인트"
+msgstr "Betting Point"
+
+#: app/templates/mypage.html
+msgid "번호"
+msgstr "No."
+
+#app/templates/index.html
+msgid "SCUTTA의 공식 기록 페이지입니다."
+msgstr "Welcome to the official SCUTTA records page."
+
+#: app/templates/index.html:10
+#, python-format
+msgid "<strong>%(username)s</strong>님의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요."
+msgstr "Submit your match results and check the club rankings, <strong>%(username)s</strong>."

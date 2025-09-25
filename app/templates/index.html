@@ -67,9 +67,7 @@
             <p class="text-gray-600 leading-relaxed">
                 {{_('SCUTTA의 공식 기록 페이지입니다.')}}<br>
                 {% if current_user.is_authenticated %}
-                    {% trans username=current_user.username %}
-                    <strong>{{ username }}</strong>님의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.
-                    {% endtrans %}
+                    {% trans username=current_user.username %}<strong>{{ username }}</strong>님의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.{% endtrans %}
 
                 {% else %}
                     {{_('자신의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.')}}

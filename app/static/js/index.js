@@ -29,10 +29,13 @@ function renderHeader() {
     tableHeader.innerHTML = '';
     const tr = document.createElement('tr');
     
+    // ▼▼▼ '순위'와 '이름'을 translatedHeaders 변수로 교체 ▼▼▼
     let headerHTML = `
-        <th class="whitespace-nowrap px-4 py-2 text-left">순위</th>
-        <th class="whitespace-nowrap px-4 py-2 text-left">이름</th>
+        <th class="whitespace-nowrap px-4 py-2 text-left">${translatedHeaders.rank}</th>
+        <th class="whitespace-nowrap px-4 py-2 text-left">${translatedHeaders.name}</th>
     `;
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
     dynamicColumns.forEach(key => {
         const isCurrent = key === currentCategory;
         headerHTML += `
