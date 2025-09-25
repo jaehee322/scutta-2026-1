@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>베팅 참여 - {{ betting.p1_name }} vs {{ betting.p2_name }}</title>
+    <title>{{ _('베팅 참여') }} - {{ betting.p1_name }} vs {{ betting.p2_name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -23,7 +23,7 @@
         <div class="flex-shrink-0 flex items-center gap-2">
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">{{ _('로그아웃') }}</a>
             {% endif %}
         </div>
     </header>
@@ -42,19 +42,19 @@
         {% endwith %}
 
         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-            <h3 class="text-xl font-bold mb-4">상대 전적</h3>
+            <h3 class="text-xl font-bold mb-4">{{ _('상대 전적') }}</h3>
 
             <div class="flex justify-between items-center text-center p-4 bg-gray-50 rounded-lg mb-4">
                 <div class="w-2/5">
                     <p class="font-bold text-lg"><a href="/player/{{ betting.p1_id }}" class="hover:underline">{{ betting.p1_name }}</a></p>
                     <p class="text-sm text-gray-500">{{ ranks.p1_rank or '무' }}부</p>
-                    <p class="text-md mt-1">{{ win_rate.p1_wins }}승 {{ win_rate.p2_wins }}패</p>
+                    <p class="text-md mt-1">{{ win_rate.p1_wins }}{{ _('승') }} {{ win_rate.p2_wins }}{{ _('패')}}</p>
                 </div>
                 <div class="w-1/5 text-gray-400 font-semibold">VS</div>
                 <div class="w-2/5">
                     <p class="font-bold text-lg"><a href="/player/{{ betting.p2_id }}" class="hover:underline">{{ betting.p2_name }}</a></p>
-                    <p class="text-sm text-gray-500">{{ ranks.p2_rank or '무' }}부</p>
-                    <p class="text-md mt-1">{{ win_rate.p2_wins }}승 {{ win_rate.p1_wins }}패</p>
+                    <p class="text-sm text-gray-500">{{ ranks.p2_rank or '무' }}{{ _(부) }}</p>
+                    <p class="text-md mt-1">{{ win_rate.p2_wins }}{{ _('승')}} {{ win_rate.p1_wins }}{{ _('패')}}</p>
                 </div>
             </div>
 
@@ -63,7 +63,7 @@
                     <thead>
                         <tr>
                             <th class="text-left">{{ betting.p1_name }}</th>
-                            <th class="text-center">스코어</th>
+                            <th class="text-center">{{ _('스코어') }}</th>
                             <th class="text-right">{{ betting.p2_name }}</th>
                         </tr>
                     </thead>
@@ -71,16 +71,16 @@
                         {% for match in recent_matches[:5] %}
                         <tr>
                             <td class="text-left">
-                                {% if match.winner == betting.p1_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
+                                {% if match.winner == betting.p1_id %}<span class="font-bold text-green-600">{{ _('승') }}</span>{% else %}{{ _('패') }}{% endif %}
                             </td>
                             <td class="text-center">{{ match.score }}</td>
                             <td class="text-right">
-                                {% if match.winner == betting.p2_id %}<span class="font-bold text-green-600">승</span>{% else %}패{% endif %}
+                                {% if match.winner == betting.p2_id %}<span class="font-bold text-green-600">{{ _('승') }}</span>{% else %}{{ _('패') }}{% endif %}
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="text-center text-gray-500 py-4">상대 전적이 없습니다.</td>
+                            <td colspan="3" class="text-center text-gray-500 py-4">{{ _('상대 전적이 없습니다.') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -91,17 +91,17 @@
         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
             {% if is_player %}
                <div class="text-center text-gray-500 font-semibold p-4 bg-gray-100 rounded-md">
-                    자신의 경기에는 베팅할 수 없습니다.
+                    {{ _('자신의 경기에는 베팅할 수 없습니다.') }}
                </div>
             {% elif betting.is_closed %}
-                <h3 class="text-xl font-bold mb-4">나의 베팅</h3>
+                <h3 class="text-xl font-bold mb-4">{{ _('나의 베팅') }}</h3>
                 <div class="text-center text-gray-500 font-semibold p-4 bg-gray-100 rounded-md">
-                    이 베팅은 마감되었습니다.
+                    {{ _('이 베팅은 마감되었습니다.') }}
                 </div>
             {% else %}
                 <form action="{{ url_for('place_bet') }}" method="POST">
                     <input type="hidden" name="betting_id" value="{{ betting.id }}">
-                    <h3 class="text-xl font-bold mb-4">나의 베팅</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ _('나의 베팅') }}</h3>
                     <div class="space-y-4">
                         <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
                             <input type="radio" name="winner_id" value="{{ betting.p1_id }}" class="h-5 w-5 text-indigo-600"
@@ -115,14 +115,14 @@
                         </label>
                     </div>
                     <button type="submit" class="w-full bg-main button mt-6">
-                        {% if my_choice %}베팅 변경하기{% else %}베팅하기{% endif %} ({{ betting.point }}pt)
+                        {% if my_choice %}{{ _('베팅 변경하기') }}{% else %}{{ _('베팅하기') }}{% endif %} ({{ betting.point }}pt)
                     </button>
                 </form>
             {% endif %}
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="text-xl font-bold mb-4">베팅 현황</h3>
+            <h3 class="text-xl font-bold mb-4">{{ _('베팅 현황') }}</h3>
             
             <div class="relative w-full my-6">
                 <div class="flex h-2 rounded-full">
@@ -139,37 +139,37 @@
             <div class="flex justify-between items-start text-center mt-2">
                 <div class="w-1/2">
                     <p class="text-gray-500 text-sm">{{ betting.p1_name }}</p>
-                    <p class="font-bold text-lg">{{ "{:,}".format(betting_stats.p1_bettors) }}명</p>
+                    <p class="font-bold text-lg">{{ "{:,}".format(betting_stats.p1_bettors) }}{{ _('명') }}</p>
                 </div>
                 <div class="w-1/2">
                     <p class="text-gray-500 text-sm">{{ betting.p2_name }}</p>
-                    <p class="font-bold text-lg">{{ "{:,}".format(betting_stats.p2_bettors) }}명</p>
+                    <p class="font-bold text-lg">{{ "{:,}".format(betting_stats.p2_bettors) }}{{ _('명') }}</p>
                 </div>
             </div>
         </div>
-    </main>
+    </main> 
 
     <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
         <nav class="flex h-full">
             <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-home fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">홈</span>
+                <span class="text-xs font-medium">{{ _('홈') }}</span>
             </a>
             <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-trophy fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">랭킹</span>
+                <span class="text-xs font-medium">{{ _('랭킹') }}</span>
             </a>
             <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">리그전</span>
+                <span class="text-xs font-medium">{{ _('리그전') }}</span>
             </a>
             <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-900 font-bold">
                 <i class="fas fa-coins fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">베팅</span>
+                <span class="text-xs font-medium">{{ _('베팅') }}</span>
             </a>
             <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition text-gray-700">
                 <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">마이페이지</span>
+                <span class="text-xs font-medium">{{ _('마이페이지') }}</span>
             </a>
         </nav>
     </footer>

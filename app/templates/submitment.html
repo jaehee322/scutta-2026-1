@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제출 현황</title>
+    <title>{{_('제출 현황')}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -16,12 +16,12 @@
 </head>
 <body>
     <header class="flex justify-between items-center p-4 bg-white shadow">
-        <h1 class="text-lg font-bold">제출 현황</h1>
+        <h1 class="text-lg font-bold">{{_('제출 현황')}}</h1>
 
         <div class="flex items-center gap-4">
            {% if current_user.is_authenticated %}
                 <span class="text-sm font-semibold">{{ current_user.username }}</span>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">{{_('로그아웃')}}</a>
             {% endif %}
         </div>
         <div class="text-sm">{{ config['GLOBAL_TEXTS']['semester'] }}</div>
@@ -51,11 +51,11 @@
             <table class="table min-w-full">
                 <thead>
                     <tr>
-                        <th>승인</th>
-                        <th>승리자</th>
-                        <th>세트</th>
-                        <th>패배자</th>
-                        <th>시각</th>
+                        <th>{{_('승인')}}</th>
+                        <th>{{_('승리자')}}</th>
+                        <th>{{_('세트')}}</th>
+                        <th>{{_('패배자')}}</th>
+                        <th>{{_('시각')}}</th>
                     </tr>
                 </thead>
                 <tbody id="match-table-body">
@@ -63,7 +63,7 @@
             </table>
         </div>
         <div class="flex justify-center items-center mt-4">
-            <button id="load-more" class="bg-gray-200 text-gray-700 rounded p-2 button">더 보기</button>
+            <button id="load-more" class="bg-gray-200 text-gray-700 rounded p-2 button">{{_('더 보기')}}</button>
         </div>
     </div>
 
@@ -71,23 +71,23 @@
         <nav class="flex h-full">
             <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-home fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">홈</span>
+                <span class="text-xs font-medium">{{_('홈')}}</span>
             </a>
             <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-trophy fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">랭킹</span>
+                <span class="text-xs font-medium">{{_('랭킹')}}</span>
             </a>
             <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">리그전</span>
+                <span class="text-xs font-medium">{{_('리그전')}}</span>
             </a>
             <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-coins fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">베팅</span>
+                <span class="text-xs font-medium">{{_('베팅')}}</span>
             </a>
             <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">마이페이지</span>
+                <span class="text-xs font-medium">{{_('마이페이지')}}</span>
             </a>
         </nav>
     </footer>

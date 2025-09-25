@@ -5,6 +5,7 @@ body {
     font-family: 'Pretendard', sans-serif;
     background-color: #f9fafb; /* 전체 배경색을 아주 옅은 회색으로 */
     color: #1f2937; /* 기본 글자색 (다크 그레이) */
+    padding-bottom: 156px;
 }
 
 /* =================================== */

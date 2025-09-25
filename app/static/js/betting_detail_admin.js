@@ -30,8 +30,25 @@ function submitBettingResult(bettingId, p1Name, p2Name) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(data.message);
-            window.location.reload();
+            const results = data.results;
+            const winParticipantsText = results.winParticipants.length > 0 ? results.winParticipants.join(', ') : '없음';
+            const loseParticipantsText = results.loseParticipants.length > 0 ? results.loseParticipants.join(', ') : '없음';
+
+            const alertMessage = `
+            베팅 결과가 제출되었습니다!
+            ----------------------------------------
+            - 승리: ${results.winnerName}
+            - 패배: ${results.loserName}
+            ----------------------------------------
+            - 베팅 성공 (${results.winParticipants.length}명):
+            ${winParticipantsText}
+            - 베팅 실패 (${results.loseParticipants.length}명):
+            ${loseParticipantsText}
+            ----------------------------------------
+            - 예상 분배 포인트: ${results.distributedPoints} pt
+            `;
+            alert(alertMessage);
+            window.location.href = '/betting.html'
         } else {
             alert('오류: ' + data.error);
         }

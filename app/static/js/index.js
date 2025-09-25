@@ -14,10 +14,13 @@ const loadMoreBtn = document.getElementById('load-more-btn');
 const searchInput = document.getElementById('player-search-input');
 
 const columnConfig = {
-    win_count: { name: '승리', suffix: '' }, loss_count: { name: '패배', suffix: '' },
-    rate_count: { name: '승률', suffix: '%' }, match_count: { name: '경기', suffix: '' },
-    opponent_count: { name: '상대', suffix: '' }, achieve_count: { name: '업적', suffix: '' },
-    betting_count: { name: '베팅', suffix: '' },
+    win_count: { name: translatedHeaders.win_count, suffix: '' },
+    loss_count: { name: translatedHeaders.loss_count, suffix: '' },
+    rate_count: { name: translatedHeaders.rate_count, suffix: '%' },
+    match_count: { name: translatedHeaders.match_count, suffix: '' },
+    opponent_count: { name: translatedHeaders.opponent_count, suffix: '' },
+    achieve_count: { name: translatedHeaders.achieve_count, suffix: '' },
+    betting_count: { name: translatedHeaders.betting_count, suffix: '' },
 };
 let dynamicColumns = Object.keys(columnConfig);
 

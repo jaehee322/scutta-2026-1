@@ -1,0 +1,755 @@
+# English translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-09-24 12:22+0900\n"
+"PO-Revision-Date: 2025-09-24 12:23+0900\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/routes.py:236 app/routes.py:778 app/routes.py:952 app/routes.py:993
+#: app/routes.py:1069 app/routes.py:2776 app/routes.py:3122
+msgid "권한이 없습니다."
+msgstr "Permission denied."
+
+#: app/routes.py:355
+msgid "아이디 또는 비밀번호가 올바르지 않습니다."
+msgstr "Incorrect username or password."
+
+#: app/routes.py:551
+msgid "모든 필드를 올바르게 입력해주세요."
+msgstr "Please fill out all fields correctly."
+
+#: app/routes.py:555
+msgid "승리자와 패배자는 다른 사람이어야 합니다."
+msgstr "The winner and the loser must be differnt."
+
+#: app/routes.py:566
+#, python-format
+msgid "등록되지 않은 선수 이름이 있습니다: %(names)s"
+msgstr ""
+
+#: app/routes.py:597
+msgid "경기 결과가 성공적으로 제출되었습니다. 관리자 승인 대기 중입니다."
+msgstr "Match results submitted successfully. Pending administrator approval. "
+
+#: app/routes.py:683
+msgid "선수 정보를 찾을 수 없습니다."
+msgstr "The player's information could not be found."
+
+#: app/routes.py:715
+msgid "사용자 정보를 찾을 수 없습니다."
+msgstr "The user's information could not be found."
+
+#: app/routes.py:719
+msgid "현재 비밀번호가 일치하지 않습니다."
+msgstr "The current password does not match."
+
+#: app/routes.py:723
+msgid "새로운 비밀번호가 일치하지 않습니다."
+msgstr "The new password does not match."
+
+#: app/routes.py:727
+msgid "새로운 비밀번호는 4자 이상이어야 합니다."
+msgstr "The new password must be at least 4 characters long."
+
+#: app/routes.py:733
+msgid "비밀번호가 성공적으로 변경되었습니다."
+msgstr "The password has been changed successfully."
+
+#: app/routes.py:798 app/routes.py:807 app/routes.py:816 app/routes.py:826
+#: app/routes.py:2644
+msgid "관리자만 접근할 수 있는 페이지입니다."
+msgstr "This page is for administrators only."
+
+#: app/routes.py:1143
+#, python-format
+msgid "%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다."
+msgid_plural "%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다."
+msgstr[0] "1 match result has been submitted and is pending approval."
+msgstr[1] ""
+"%(num_of_matches)s match results have been submitted and are pending "
+"approval."
+
+#: app/routes.py:1151
+msgid "제출할 새로운 경기 결과가 없습니다."
+msgstr "No new match results to submit."
+
+#: app/routes.py:2490
+msgid "잘못된 접근입니다."
+msgstr "Invalid access."
+
+#: app/routes.py:2740
+msgid "마감된 베팅에는 참여할 수 없습니다."
+msgstr "You cannot participate in a closed bet."
+
+#: app/routes.py:2744 app/templates/betting_detail_for_user.html:94
+msgid "자신의 경기에는 베팅할 수 없습니다."
+msgstr "You cannot bet on your own match."
+
+#: app/routes.py:2748
+msgid "이미 경기 결과가 제출된 베팅입니다."
+msgstr "The match result has already been submitted for this bet."
+
+#: app/routes.py:2758
+msgid "베팅을 성공적으로 변경했습니다."
+msgstr "The bet has been successfully changed."
+
+#: app/routes.py:2767
+msgid "베팅에 성공적으로 참여했습니다."
+msgstr "You have successfully joined the bet."
+
+#: app/routes.py:3132
+msgid "부원을 선택하고, 새로운 비밀번호를 입력해주세요."
+msgstr "Select a team member and enter a new password."
+
+#: app/routes.py:3136
+msgid "비밀번호는 4자 이상이어야 합니다."
+msgstr "The password must be at least 4 characters long."
+
+#: app/templates/betting_detail.html:6
+msgid "베팅 상세"
+msgstr "Bet Details"
+
+#: app/templates/betting_detail.html:32
+msgid "총 상금"
+msgstr "Total Prize Pool"
+
+#: app/templates/betting_detail.html:41
+msgid "상대 전적 (최근 5경기)"
+msgstr "Head-to-Head (Last 5 matches)"
+
+#: app/templates/betting_detail.html:47
+#: app/templates/betting_detail_for_user.html:66
+#: app/templates/league_submit_match.html:50
+#: app/templates/my_submissions.html:37
+msgid "스코어"
+msgstr "Score"
+
+#: app/templates/betting_detail.html:53 app/templates/betting_detail.html:55
+#: app/templates/betting_detail.html:60 app/templates/betting_detail.html:64
+#: app/templates/betting_detail_for_user.html:51
+#: app/templates/betting_detail_for_user.html:57
+#: app/templates/betting_detail_for_user.html:74
+#: app/templates/betting_detail_for_user.html:78
+#: app/templates/league_detail.html:39 app/templates/league_detail.html:88
+#: app/templates/my_submissions.html:47
+msgid "승"
+msgstr "Win"
+
+#: app/templates/betting_detail.html:54
+msgid "종합"
+msgstr "Comprehensive"
+
+#: app/templates/betting_detail.html:60 app/templates/betting_detail.html:64
+#: app/templates/betting_detail_for_user.html:51
+#: app/templates/betting_detail_for_user.html:57
+#: app/templates/betting_detail_for_user.html:74
+#: app/templates/betting_detail_for_user.html:78
+#: app/templates/league_detail.html:89 app/templates/my_submissions.html:47
+msgid "패"
+msgstr "Lose"
+
+#: app/templates/betting_detail.html:69
+#: app/templates/betting_detail_for_user.html:83
+msgid "상대 전적이 없습니다."
+msgstr "There is no head-to-head record."
+
+#: app/templates/betting_detail.html:77
+msgid "베팅 참가자 현황"
+msgstr "Betting Participants Status"
+
+#: app/templates/betting_detail.html:81
+msgid "참가자"
+msgstr "Participants"
+
+#: app/templates/betting_detail.html:103
+msgid "추가"
+msgstr "Add"
+
+#: app/templates/betting_detail.html:104
+msgid "삭제"
+msgstr "Delete"
+
+#: app/templates/betting_detail.html:109
+msgid "베팅 저장"
+msgstr "Save"
+
+#: app/templates/betting_detail.html:116
+msgid "경기 결과 제출 (관리자)"
+msgstr "Submit Match Result (Admin)"
+
+#: app/templates/betting_detail.html:120
+#: app/templates/submit_tournament_results.html:53
+msgid "승자 선택"
+msgstr "Select Winner"
+
+#: app/templates/betting_detail.html:129
+msgid "결과 제출 및 베팅 마감"
+msgstr "Sumbit Result&Close Bet"
+
+#: app/templates/betting_detail.html:136
+msgid "이 베팅은 경기 결과가 제출되어 마감되었습니다."
+msgstr "This bet has been closed due to the submission of the match result."
+
+#: app/templates/betting_detail.html:146
+#: app/templates/betting_detail_for_user.html:156
+#: app/templates/change_password.html:62 app/templates/league.html:67
+#: app/templates/league_detail.html:137
+#: app/templates/league_or_tournament.html:45
+#: app/templates/my_submissions.html:71 app/templates/point_history.html:63
+#: app/templates/public_player_profile.html:61 app/templates/rankings.html:78
+#: app/templates/submit_tournament_results.html:83
+#: app/templates/submitment.html:74 app/templates/tournament.html:68
+msgid "홈"
+msgstr "Home"
+
+#: app/templates/betting_detail.html:150
+#: app/templates/betting_detail_for_user.html:160
+#: app/templates/change_password.html:66 app/templates/league.html:71
+#: app/templates/league_detail.html:141
+#: app/templates/league_or_tournament.html:49
+#: app/templates/my_submissions.html:75 app/templates/point_history.html:67
+#: app/templates/public_player_profile.html:65 app/templates/rankings.html:82
+#: app/templates/submit_tournament_results.html:87
+#: app/templates/submitment.html:78 app/templates/tournament.html:72
+msgid "랭킹"
+msgstr "Ranking"
+
+#: app/templates/betting_detail.html:154
+#: app/templates/betting_detail_for_user.html:164
+#: app/templates/change_password.html:70 app/templates/league.html:18
+#: app/templates/league.html:75 app/templates/league_detail.html:145
+#: app/templates/league_or_tournament.html:32
+#: app/templates/league_or_tournament.html:53
+#: app/templates/my_submissions.html:79 app/templates/point_history.html:71
+#: app/templates/public_player_profile.html:69 app/templates/rankings.html:86
+#: app/templates/submit_tournament_results.html:91
+#: app/templates/submitment.html:82 app/templates/tournament.html:76
+msgid "리그전"
+msgstr "League"
+
+#: app/templates/betting_detail.html:158
+#: app/templates/betting_detail_for_user.html:168
+#: app/templates/change_password.html:74 app/templates/league.html:79
+#: app/templates/league_detail.html:149
+#: app/templates/league_or_tournament.html:57
+#: app/templates/my_submissions.html:83 app/templates/point_history.html:38
+#: app/templates/point_history.html:75
+#: app/templates/public_player_profile.html:73 app/templates/rankings.html:90
+#: app/templates/submit_tournament_results.html:95
+#: app/templates/submitment.html:86 app/templates/tournament.html:80
+msgid "베팅"
+msgstr "Betting"
+
+#: app/templates/betting_detail.html:162
+#: app/templates/betting_detail_for_user.html:172
+#: app/templates/change_password.html:78 app/templates/league.html:83
+#: app/templates/league_detail.html:153
+#: app/templates/league_or_tournament.html:61
+#: app/templates/my_submissions.html:87 app/templates/point_history.html:79
+#: app/templates/public_player_profile.html:77 app/templates/rankings.html:94
+#: app/templates/submit_tournament_results.html:99
+#: app/templates/submitment.html:90 app/templates/tournament.html:84
+msgid "마이페이지"
+msgstr "Mypage"
+
+#: app/templates/betting_detail_for_user.html:6
+msgid "베팅 참여"
+msgstr "Participate in Bet"
+
+#: app/templates/betting_detail_for_user.html:26
+#: app/templates/change_password.html:19 app/templates/league.html:24
+#: app/templates/league_detail.html:24
+#: app/templates/league_or_tournament.html:23
+#: app/templates/league_submit_match.html:23
+#: app/templates/my_submissions.html:23 app/templates/point_history.html:24
+#: app/templates/public_player_profile.html:24 app/templates/rankings.html:27
+#: app/templates/submit_tournament_results.html:23
+#: app/templates/submitment.html:24 app/templates/tournament.html:23
+msgid "로그아웃"
+msgstr "Log out"
+
+#: app/templates/betting_detail_for_user.html:45
+msgid "상대 전적"
+msgstr "Head-to-Head"
+
+#: app/templates/betting_detail_for_user.html:97
+#: app/templates/betting_detail_for_user.html:104
+msgid "나의 베팅"
+msgstr "My Betting"
+
+#: app/templates/betting_detail_for_user.html:99
+msgid "이 베팅은 마감되었습니다."
+msgstr "This bet has been closed."
+
+#: app/templates/betting_detail_for_user.html:118
+msgid "베팅 변경하기"
+msgstr "Change Bet"
+
+#: app/templates/betting_detail_for_user.html:118
+msgid "베팅하기"
+msgstr "Bet"
+
+#: app/templates/betting_detail_for_user.html:125
+msgid "베팅 현황"
+msgstr "Betting Status"
+
+#: app/templates/betting_detail_for_user.html:142
+#: app/templates/betting_detail_for_user.html:146
+msgid "명"
+msgstr "member(s)"
+
+#: app/templates/change_password.html:6 app/templates/change_password.html:15
+#: app/templates/change_password.html:52
+msgid "비밀번호 변경"
+msgstr "Change Password"
+
+#: app/templates/change_password.html:40
+msgid "현재 비밀번호"
+msgstr "The current password"
+
+#: app/templates/change_password.html:44
+msgid "새로운 비밀번호"
+msgstr "A new password"
+
+#: app/templates/change_password.html:48
+msgid "새로운 비밀번호 확인"
+msgstr "A new password(check)"
+
+#: app/templates/league.html:6
+msgid "리그전 목록"
+msgstr "League List"
+
+#: app/templates/league.html:31
+msgid "진행중인 리그"
+msgstr "Leagues in Progress"
+
+#: app/templates/league.html:33
+msgid "새 리그 생성"
+msgstr "Create New League"
+
+#: app/templates/league.html:43
+msgid "참가중"
+msgstr "Participating"
+
+#: app/templates/league.html:57
+msgid "현재 진행중인 리그가 없습니다."
+msgstr "There are no leagues in progress."
+
+#: app/templates/league_detail.html:6
+msgid "상세"
+msgstr "Details"
+
+#: app/templates/league_detail.html:31
+msgid "리그 멤버"
+msgstr "League Members"
+
+#: app/templates/league_detail.html:38
+msgid "전체 승수"
+msgstr "Total Wins"
+
+#: app/templates/league_detail.html:42
+msgid "전체 승률"
+msgstr "Total Win Rate"
+
+#: app/templates/league_detail.html:53
+msgid "진행할 경기"
+msgstr "Matches to play"
+
+#: app/templates/league_detail.html:62
+msgid "제출 완료"
+msgstr "Submitted"
+
+#: app/templates/league_detail.html:71
+msgid "미제출"
+msgstr "Not Submitted"
+
+#: app/templates/league_detail.html:81
+msgid "리그 순위표"
+msgstr "League Standings"
+
+#: app/templates/league_detail.html:86
+msgid "순위"
+msgstr "Rank"
+
+#: app/templates/league_detail.html:87
+msgid "이름"
+msgstr "Name"
+
+#: app/templates/league_detail.html:108
+msgid "리그 삭제"
+msgstr "Delete League"
+
+#: app/templates/league_detail.html:111
+msgid "경기 기록 되돌리기 (관리자)"
+msgstr "Revert Match Record(Admin)"
+
+#: app/templates/league_detail.html:116
+msgid "(이)가"
+msgstr "defeated"
+
+#: app/templates/league_detail.html:116
+msgid "에게 승리"
+msgstr "."
+
+#: app/templates/league_detail.html:121
+msgid "되돌리기"
+msgstr "Revert"
+
+#: app/templates/league_detail.html:125
+msgid "아직 제출된 경기 기록이 없습니다."
+msgstr "There are no match records submitted yet."
+
+#: app/templates/league_or_tournament.html:6
+#: app/templates/league_or_tournament.html:17
+#: app/templates/league_or_tournament.html:29
+msgid "리그전 및 토너먼트"
+msgstr "Leagues and Tournaments"
+
+#: app/templates/league_or_tournament.html:33
+msgid "리그전을 시작해보세요."
+msgstr "Start a league."
+
+#: app/templates/league_or_tournament.html:36
+#: app/templates/submit_tournament_results.html:17
+#: app/templates/tournament.html:6 app/templates/tournament.html:17
+msgid "토너먼트"
+msgstr "Tournament"
+
+#: app/templates/league_or_tournament.html:37
+msgid "토너먼트를 시작해보세요."
+msgstr "Start a tournament."
+
+#: app/templates/league_submit_match.html:6
+msgid "리그 경기 제출"
+msgstr "Submit League Match"
+
+#: app/templates/league_submit_match.html:30
+msgid "경기 결과 제출"
+msgstr "Submit Match Result"
+
+#: app/templates/league_submit_match.html:36
+msgid "승자를 선택해주세요."
+msgstr "Please select a winner."
+
+#: app/templates/league_submit_match.html:58
+msgid "결과 제출하기"
+msgstr "Submit Result"
+
+#: app/templates/login.html:6 app/templates/login.html:55
+msgid "로그인"
+msgstr "Log in"
+
+#: app/templates/login.html:16
+msgid "동아리 기록 페이지에 오신 것을 환영합니다."
+msgstr "Welcome to the club records page."
+
+#: app/templates/login.html:33
+msgid "아이디(이름)"
+msgstr "ID(name)"
+
+#: app/templates/login.html:40
+msgid "비밀번호"
+msgstr "Password"
+
+#: app/templates/login.html:49
+msgid "로그인 상태 유지"
+msgstr "Keep me logged in"
+
+#: app/templates/my_submissions.html:6 app/templates/my_submissions.html:17
+msgid "나의 제출 현황"
+msgstr "My Submission Status"
+
+#: app/templates/my_submissions.html:30
+msgid "나의 최근 제출 10경기"
+msgstr "My 10 Most Recent Submissions"
+
+#: app/templates/my_submissions.html:35
+msgid "결과"
+msgstr "Results"
+
+#: app/templates/my_submissions.html:36
+msgid "상대"
+msgstr "Opponent"
+
+#: app/templates/my_submissions.html:38
+msgid "승인 상태"
+msgstr "Approval Status"
+
+#: app/templates/my_submissions.html:39
+msgid "제출일"
+msgstr "Submission Date"
+
+#: app/templates/my_submissions.html:54
+msgid "승인 완료"
+msgstr "Approved"
+
+#: app/templates/my_submissions.html:54
+msgid "승인 대기"
+msgstr "Pending Approval"
+
+#: app/templates/my_submissions.html:60
+msgid "최근에 제출한 경기 결과가 없습니다."
+msgstr "There are no recently submitted match results."
+
+#: app/templates/point_history.html:6
+msgid "포인트 변동 내역"
+msgstr "Point Change History"
+
+#: app/templates/point_history.html:18
+msgid "포인트 변경 내역"
+msgstr "Point Change Details"
+
+#: app/templates/point_history.html:35
+msgid "일시"
+msgstr "Date"
+
+#: app/templates/point_history.html:36
+msgid "내용"
+msgstr "Description"
+
+#: app/templates/point_history.html:37
+msgid "업적"
+msgstr "Acheivements"
+
+#: app/templates/public_player_profile.html:6
+#: app/templates/public_player_profile.html:18
+msgid "님의 프로필"
+msgstr "'s Profile"
+
+#: app/templates/public_player_profile.html:32
+msgid "현재 부수:"
+msgstr "Current Rating:"
+
+#: app/templates/public_player_profile.html:36
+msgid "전적 통계"
+msgstr "Match Record Stats"
+
+#: app/templates/public_player_profile.html:39
+msgid "총 경기"
+msgstr "Total Matches"
+
+#: app/templates/public_player_profile.html:43
+msgid "승리"
+msgstr "Win"
+
+#: app/templates/public_player_profile.html:47
+msgid "패배"
+msgstr "Lose"
+
+#: app/templates/public_player_profile.html:51
+msgid "승률"
+msgstr "Win Rate"
+
+#: app/templates/rankings.html:6 app/templates/rankings.html:21
+msgid "전체 랭킹"
+msgstr "Overall Ranking"
+
+#: app/templates/rankings.html:34
+msgid "랭킹 요약"
+msgstr "Ranking Summary"
+
+#: app/templates/rankings.html:60
+msgid "전체 순위"
+msgstr "Overall Rank"
+
+#: app/templates/rankings.html:68
+msgid "더보기"
+msgstr "More"
+
+#: app/templates/submit_tournament_results.html:6
+msgid "결과 제출"
+msgstr "Submit Results"
+
+#: app/templates/submit_tournament_results.html:31
+msgid "진행된 경기의 결과를 입력하고 제출해주세요."
+msgstr "Please enter and submit the results of the completed match."
+
+#: app/templates/submit_tournament_results.html:39
+msgid "결승"
+msgstr "Final"
+
+#: app/templates/submit_tournament_results.html:40
+msgid "준결승"
+msgstr "Semifinals"
+
+#: app/templates/submit_tournament_results.html:41
+msgid "라운드"
+msgstr "Round"
+
+#: app/templates/submit_tournament_results.html:64
+msgid "상위 라운드 결과가 확정되면 입력할 수 있습니다."
+msgstr "You can enter the results once the higher round results are confirmed."
+
+#: app/templates/submit_tournament_results.html:75
+msgid "결과 일괄 제출"
+msgstr "Batch Submit Results"
+
+#: app/templates/submitment.html:6 app/templates/submitment.html:19
+msgid "제출 현황"
+msgstr "Submission Status"
+
+#: app/templates/submitment.html:54
+#: app/templates/index.html:227
+msgid "승인"
+msgstr "Approved"
+
+#: app/templates/submitment.html:55
+msgid "승리자"
+msgstr "Winner"
+
+#: app/templates/submitment.html:56
+msgid "세트"
+msgstr "Sets"
+
+#: app/templates/submitment.html:57
+msgid "패배자"
+msgstr "Loser"
+
+#: app/templates/submitment.html:58
+msgid "시각"
+msgstr "Date"
+
+#: app/templates/submitment.html:66
+msgid "더 보기"
+msgstr "More"
+
+#: app/templates/tournament.html:30
+msgid "토너먼트 목록"
+msgstr "Tournament List"
+
+#: app/templates/tournament.html:31
+msgid "새 토너먼트 생성"
+msgstr "Create new tournament"
+
+#: app/templates/tournament.html:39
+msgid "토너먼트 이름"
+msgstr "Tournament Name"
+
+#: app/templates/tournament.html:40
+msgid "상태"
+msgstr "Status"
+
+#: app/templates/tournament.html:41
+msgid "생성일"
+msgstr "Created On"
+
+#: app/templates/tournament.html:55
+msgid "생성된 토너먼트가 없습니다."
+msgstr "There are no tournaments in progress."
+
+#: app/templates/index.html:104
+msgid "제출하기"
+msgstr "Submit"
+
+#: app/templates/index.html:85
+msgid "일괄 제출"
+msgstr "Batch Submit Results"
+
+#: app/templates/index.html:111
+msgid "나의 리그전"
+msgstr "My League"
+
+#: app/templates/index.html:119
+msgid "나의 리그"
+msgstr "My League"
+
+#: app/templates/index.html:123
+msgid "위/5위"
+msgstr "/5"
+
+#: app/templates/index.html:131
+msgid "나의 오늘의 상대"
+msgstr "My Today's Partner"
+
+#: app/templates/index.html:186
+msgid "베팅 참여하기"
+msgstr "Participate Betting"
+
+#: app/templates/index.html:202
+msgid "최근 내 경기 기록"
+msgstr "My 10 Most Recent Submissions"
+
+#: app/templates/index.html:229
+msgid "대기"
+msgstr "Pending"
+
+#: app/templates/index.html:236
+msgid "최근 제출한 경기가 없습니다."
+msgstr "Your result could not be found."
+
+#: app/templates/index.html:248
+msgid "나의 랭킹"
+msgstr "My Ranking"
+
+#: app/templates/index.html:41
+msgid "오늘의 상대"
+msgstr "Today's Partner"
+
+#: app/routes.py:444
+msgid "승리"
+msgstr "Wins"
+
+#: app/routes.py:444
+msgid "승률"
+msgstr "Win Rate"
+
+#: app/routes.py:445
+msgid "경기"
+msgstr "Matches"
+
+#: app/routes.py:445
+msgid "베팅"
+msgstr "Betting"
+
+#: app/routes.py:688
+msgid "승리"
+msgstr "Win"
+
+#: app/routes.py:688
+msgid "패배"
+msgstr "Lose"
+
+#: app/routes.py:688
+msgid "승률"
+msgstr "Win Rate"
+
+#: app/routes.py:688
+msgid "경기"
+msgstr "Matches"
+
+#: app/routes.py:688
+msgid "상대"
+msgstr "Opponent"
+
+#: app/routes.py:688
+msgid "업적"
+msgstr "Achievements"
+
+#: app/routes.py:688
+msgid "베팅"
+msgstr "Betting"
+
+#: app/routes.py:688
+msgid "무"
+msgstr "-"
+
+#: app/templates/betting.html
+msgid "진행중인 베팅"
+msgstr "Betting In Progress"
+
+#: app/templates/betting.html
+msgid "마감"
+msgstr "Closed"

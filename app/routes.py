@@ -1,5 +1,6 @@
 from flask import render_template, jsonify, current_app, request, flash, redirect, url_for, session
 from flask_login import login_user, logout_user, current_user, login_required
+from flask_babel import _, ngettext
 from sqlalchemy import distinct, case, func
 from .extensions import db
 from sqlalchemy.orm.attributes import flag_modified
@@ -232,7 +233,7 @@ def init_routes(app):
     @login_required
     def recalculate_all_stats():
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.', 'error'))
             return redirect(url_for('index'))
 
         try:
@@ -351,7 +352,7 @@ def init_routes(app):
             user=User.query.filter_by(username=username).first()
 
             if user is None or not user.check_password(password):
-                flash('아이디 또는 비밀번호가 올바르지 않습니다.')
+                flash(_('아이디 또는 비밀번호가 올바르지 않습니다.'))
                 return redirect(url_for('login'))
                 
             login_user(user, remember=remember_me)
@@ -365,7 +366,6 @@ def init_routes(app):
         logout_user()
         return redirect(url_for('index'))
     
-
     @app.route('/admin/batch_add_users', methods=['POST'])
     @login_required
     def batch_add_users():
@@ -547,11 +547,11 @@ def init_routes(app):
         score = request.form.get('score')
 
         if not winner_name or not loser_name or not score:
-            flash('모든 필드를 올바르게 입력해주세요.', 'error')
+            flash(_('모든 필드를 올바르게 입력해주세요.'), 'error')
             return redirect(url_for('index'))
 
         if winner_name == loser_name:
-            flash('승리자와 패배자는 다른 사람이어야 합니다.', 'error')
+            flash(_('승리자와 패배자는 다른 사람이어야 합니다.'), 'error')
             return redirect(url_for('index'))
 
         winner = Player.query.filter_by(name=winner_name, is_valid=True).first()
@@ -561,7 +561,8 @@ def init_routes(app):
             unknown = []
             if not winner: unknown.append(winner_name)
             if not loser: unknown.append(loser_name)
-            flash(f'등록되지 않은 선수 이름이 있습니다: {", ".join(unknown)}', 'error')
+            names_str = ", ".join(unknown)
+            flash(_('등록되지 않은 선수 이름이 있습니다: %(names)s') % {'names' : names_str}, 'error')
             return redirect(url_for('index'))
 
         # 1. index 함수와 동일하게, 가장 최신(id가 가장 높은) 파트너 기록을 찾습니다.
@@ -592,7 +593,7 @@ def init_routes(app):
         # 3. 모든 변경사항(파트너 상태, 새 경기)을 한번에 저장합니다.
         db.session.commit()
 
-        flash('경기 결과가 성공적으로 제출되었습니다. 관리자 승인 대기 중입니다.', 'success')
+        flash(_('경기 결과가 성공적으로 제출되었습니다. 관리자 승인 대기 중입니다.'), 'success')
         return redirect(url_for('index'))
     
     @app.route('/submit_match')
@@ -647,7 +648,19 @@ def init_routes(app):
     def rankings_page():
         current_player = current_user.player if current_user.is_authenticated else None
         summary_rankings = _get_summary_rankings_data(current_player)
-        return render_template('rankings.html', summary_rankings=summary_rankings)
+
+        translated_headers ={
+            'rank': _('순위'),
+            'name': _('이름'),
+            'win_count': _('승리'),
+            'loss_count': _('패배'),
+            'rate_count': _('승률'),
+            'match_count': _('경기'),
+            'opponent_count': _('상대'),
+            'achieve_count': _('업적'),
+            'betting_count': _('베팅')
+        }
+        return render_template('rankings.html', summary_rankings=summary_rankings, headers=translated_headers)
 
     @app.route('/get_my_rank', methods=['GET'])
     @login_required
@@ -678,7 +691,7 @@ def init_routes(app):
        
         player_info = current_user.player
         if not player_info:
-            flash('선수 정보를 찾을 수 없습니다.', 'error')
+            flash(_('선수 정보를 찾을 수 없습니다.'), 'error')
             return redirect(url_for('index'))
         
         recent_matches = Match.query.filter(
@@ -710,25 +723,25 @@ def init_routes(app):
 
         user_to_update = User.query.get(current_user.id)
         if not user_to_update:
-            flash('사용자 정보를 찾을 수 없습니다.', 'error')
+            flash(_('사용자 정보를 찾을 수 없습니다.'), 'error')
             return redirect(url_for('change_password_page'))
         
         if not user_to_update.check_password(current_password):
-            flash('현재 비밀번호가 일치하지 않습니다.', 'error')
+            flash(_('현재 비밀번호가 일치하지 않습니다.'), 'error')
             return redirect(url_for('change_password_page'))
 
         if new_password != confirm_password:
-            flash('새로운 비밀번호가 일치하지 않습니다.', 'error')
+            flash(_('새로운 비밀번호가 일치하지 않습니다.'), 'error')
             return redirect(url_for('change_password_page'))
         
         if len(new_password) < 4:
-            flash('새로운 비밀번호는 4자 이상이어야 합니다.', 'error')
+            flash(_('새로운 비밀번호는 4자 이상이어야 합니다.'), 'error')
             return redirect(url_for('change_password_page'))
         
         user_to_update.set_password(new_password)
         db.session.commit()
 
-        flash('비밀번호가 성공적으로 변경되었습니다.', 'success')
+        flash(_('비밀번호가 성공적으로 변경되었습니다.'), 'success')
         return redirect(url_for('mypage'))
     
     @app.route('/league.html')
@@ -751,7 +764,7 @@ def init_routes(app):
     @app.route('/betting.html')
     @login_required
     def betting():
-        bettings = Betting.query.order_by(Betting.is_closed, Betting.id.desc()).all()
+        bettings = Betting.query.filter_by(submitted=False).order_by(Betting.is_closed, Betting.id.desc()).all()
     
         betting_data = []
         for bet in bettings:
@@ -773,7 +786,7 @@ def init_routes(app):
     @login_required
     def toggle_betting_status(betting_id):
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.'), 'error')
             return redirect(url_for('betting'))
 
         betting = Betting.query.get_or_404(betting_id)
@@ -793,16 +806,16 @@ def init_routes(app):
     @login_required
     def betting_approval():
         if not current_user.is_admin:
-            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            flash(_('관리자만 접근할 수 있는 페이지입니다.', 'error'))
             return redirect(url_for('index')) # 관리자 아니면 메인 페이지로 쫓아내기
 
         return render_template('betting_approval.html', global_texts=current_app.config['GLOBAL_TEXTS'])
-
+ 
     @app.route('/approval.html')
     @login_required
     def approval():
         if not current_user.is_admin:
-            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
             return redirect(url_for('index')) # 관리자 아니면 메인 페이지로 쫓아내기
         
         return render_template('approval.html', global_texts=current_app.config['GLOBAL_TEXTS'])
@@ -811,7 +824,7 @@ def init_routes(app):
     @login_required
     def assignment():
         if not current_user.is_admin:
-            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
             return redirect(url_for('index')) # 관리자 아니면 메인 페이지로 쫓아내기
         
         logs = UpdateLog.query.order_by(UpdateLog.timestamp.desc()).all()
@@ -821,7 +834,7 @@ def init_routes(app):
     @login_required
     def settings():
         if not current_user.is_admin:
-            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
             return redirect(url_for('index')) # 관리자 아니면 메인 페이지로 쫓아내기
         
         players = Player.query.order_by(Player.is_valid.desc(), Player.name).all()
@@ -947,7 +960,7 @@ def init_routes(app):
     @login_required
     def revert_league_match(league_id):
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.'), 'error')
             return redirect(url_for('league_detail', league_id=league_id))
 
         league = League.query.get_or_404(league_id)
@@ -988,7 +1001,7 @@ def init_routes(app):
     @login_required
     def create_tournament_page():
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.'), 'error')
             return redirect(url_for('tournament'))
         return render_template('create_tournament.html')
 
@@ -1064,7 +1077,7 @@ def init_routes(app):
     @login_required
     def submit_tournament_results_page(tournament_id):
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.'), 'error')
             return redirect(url_for('tournament_detail', tournament_id=tournament_id))
         
         tournament = Tournament.query.get_or_404(tournament_id)
@@ -1137,9 +1150,16 @@ def init_routes(app):
         db.session.commit()
 
         if submitted_matches > 0:
-            flash(f'{submitted_matches}개의 경기 결과가 제출되어 승인 대기 중입니다.', 'success')
+            flash(ngettext(
+                # 1. 단수형일 때 사용할 문장
+                '%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다.',
+                # 2. 복수형일 때 사용할 문장
+                '%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다.',
+                # 3. 단/복수를 결정할 숫자
+                submitted_matches
+            ) % {'num_of_matches': submitted_matches}, 'success')
         else:
-            flash('제출할 새로운 경기 결과가 없습니다.', 'info')
+            flash(_('제출할 새로운 경기 결과가 없습니다.'), 'info')
             
         return redirect(url_for('tournament_detail', tournament_id=tournament_id))
     # 7. 토너먼트 삭제
@@ -2478,7 +2498,7 @@ def init_routes(app):
         # 본인이 리그 참가자가 아니거나, 상대방이 리그 참가자가 아니면 접근 차단
         player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
         if current_user.player.name not in player_names or opponent.name not in player_names:
-            flash('잘못된 접근입니다.', 'error')
+            flash(_('잘못된 접근입니다.'), 'error')
             return redirect(url_for('league_detail', league_id=league_id))
 
         return render_template('league_submit_match.html', league=league, opponent=opponent)
@@ -2516,7 +2536,7 @@ def init_routes(app):
         
         db.session.commit()
 
-        flash(f'{opponent.name}님과의 리그 경기가 제출되었습니다. 관리자 승인을 기다립니다.', 'success')
+        flash('%(opponent_name)s 님과의 리그 경기가 제출되었습니다. 관리자 승인을 기다립니다.' % { 'opponent_name' : opponent.name}, 'success')
         return redirect(url_for('league_detail', league_id=league_id))
     
     # betting.js
@@ -2632,7 +2652,7 @@ def init_routes(app):
     @login_required
     def betting_detail(betting_id):
         if not current_user.is_admin:
-            flash('관리자만 접근할 수 있는 페이지입니다.', 'error')
+            flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
             return redirect(url_for('index'))
 
         betting = Betting.query.get_or_404(betting_id)
@@ -2728,15 +2748,15 @@ def init_routes(app):
 
         # ▼▼▼ 마감 여부 확인 로직 추가 ▼▼▼
         if betting.is_closed:
-            flash('마감된 베팅에는 참여할 수 없습니다.', 'error')
+            flash(_('마감된 베팅에는 참여할 수 없습니다.'), 'error')
             return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
             
         if current_user.player_id in [betting.p1_id, betting.p2_id]:
-            flash('자신의 경기에는 베팅할 수 없습니다.', 'error')
+            flash(_('자신의 경기에는 베팅할 수 없습니다.'), 'error')
             return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
 
         if betting.submitted:
-            flash('이미 경기 결과가 제출된 베팅입니다.', 'error')
+            flash(_('이미 경기 결과가 제출된 베팅입니다.'), 'error')
             return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
 
         participant_record = BettingParticipant.query.filter_by(
@@ -2746,7 +2766,7 @@ def init_routes(app):
 
         if participant_record:
             participant_record.winner_id = winner_id
-            flash('베팅을 성공적으로 변경했습니다.', 'success')
+            flash(_('베팅을 성공적으로 변경했습니다.'), 'success')
         else:
             new_participant = BettingParticipant(
                 betting_id=betting_id,
@@ -2755,7 +2775,7 @@ def init_routes(app):
                 winner_id=winner_id
             )
             db.session.add(new_participant)
-            flash('베팅에 성공적으로 참여했습니다.', 'success')
+            flash(_('베팅에 성공적으로 참여했습니다.'), 'success')
         
         db.session.commit()
         return redirect(url_for('betting_detail_for_user', betting_id=betting_id))
@@ -2764,7 +2784,7 @@ def init_routes(app):
     @login_required
     def create_betting_page():
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.'), 'error')
             return redirect(url_for('betting'))
         
         # 베팅 생성 시 선수 목록을 선택할 수 있도록 모든 선수 정보를 전달합니다.
@@ -3104,15 +3124,13 @@ def init_routes(app):
         db.session.commit()
 
         return {"match_id": new_match.id}
-    
-    # routes.py 파일 맨 아래쪽에 추가
 
     @app.route('/admin/reset_password', methods=['GET', 'POST'])
     @login_required
     def admin_reset_password():
-        # 관리자가 아니면 접근을 차단합니다.
+        # 관리자가 아니면 접근을 차단
         if not current_user.is_admin:
-            flash('권한이 없습니다.', 'error')
+            flash(_('권한이 없습니다.'), 'error')
             return redirect(url_for('index'))
 
         # POST 요청 (폼 제출 시)
@@ -3122,14 +3140,14 @@ def init_routes(app):
 
             # 입력 값 유효성 검사
             if not player_id or not new_password:
-                flash('부원을 선택하고, 새로운 비밀번호를 입력해주세요.', 'error')
+                flash(_('부원을 선택하고, 새로운 비밀번호를 입력해주세요.'), 'error')
                 return redirect(url_for('admin_reset_password'))
 
             if len(new_password) < 4:
-                flash('비밀번호는 4자 이상이어야 합니다.', 'error')
+                flash(_('비밀번호는 4자 이상이어야 합니다.'), 'error')
                 return redirect(url_for('admin_reset_password'))
             
-            # 해당 player_id를 가진 User를 찾습니다.
+            # 해당 player_id를 가진 User
             user_to_update = User.query.filter_by(player_id=player_id).first()
             
             if user_to_update:
@@ -3142,9 +3160,5 @@ def init_routes(app):
             
             return redirect(url_for('admin_reset_password'))
 
-        # GET 요청 (페이지 첫 방문 시)
-        # 드롭다운에 표시할 모든 부원 목록을 불러옵니다 (관리자 제외).
         all_players = Player.query.join(User).filter(User.is_admin == False).order_by(Player.name).all()
         return render_template('admin_reset_password.html', players=all_players)
-
-        

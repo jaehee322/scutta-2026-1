@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ player.name }}님의 프로필 - SCUTTA</title>
+    <title>{{ player.name }}{{ _('님의 프로필') }} - SCUTTA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
@@ -15,13 +15,13 @@
     <header>
         <div class="flex items-center gap-2 min-w-0">
             <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
-                {{ player.name }}님의 프로필
+                {{ player.name }}{{_('님의 프로필')}}
             </a>
         </div>
         <div class="flex-shrink-0 flex items-center gap-2">
         {% if current_user.is_authenticated %}
                 <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">로그아웃</a>
+                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">{{_('로그아웃')}}</a>
             {% endif %}
         </div>
     </header>
@@ -29,26 +29,26 @@
     <div class="container mx-auto p-4" style="margin-top:0;">
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-2xl font-bold mb-2">{{ player.name }}</h2>
-            <p class="text-lg text-gray-600">현재 부수: <span class="font-semibold text-blue-600">{{ player.rank or '미지정' }}</span></p>
+            <p class="text-lg text-gray-600">{{_('현재 부수:')}} <span class="font-semibold text-blue-600">{{ player.rank or '미지정' }}</span></p>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 class="text-xl font-bold mb-4 border-b pb-2">전적 통계</h3>
+            <h3 class="text-xl font-bold mb-4 border-b pb-2">{{_('전적 통계')}}</h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
-                    <p class="text-gray-500">총 경기</p>
+                    <p class="text-gray-500">{{_('총 경기') }}</p>
                     <p class="text-2xl font-bold">{{ player.match_count }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-500">승리</p>
+                    <p class="text-gray-500">{{_('승리')}}</p>
                     <p class="text-2xl font-bold text-green-600">{{ player.win_count }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-500">패배</p>
+                    <p class="text-gray-500">{{_('패배')}}</p>
                     <p class="text-2xl font-bold text-red-600">{{ player.loss_count }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-500">승률</p>
+                    <p class="text-gray-500">{{_('승률')}}</p>
                     <p class="text-2xl font-bold">{{ player.rate_count }}%</p>
                 </div>
             </div>
@@ -58,23 +58,23 @@
         <nav class="flex h-full">
             <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-home fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">홈</span>
+                <span class="text-xs font-medium">{{_('홈')}}</span>
             </a>
             <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-trophy fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">랭킹</span>
+                <span class="text-xs font-medium">{{_('랭킹')}}</span>
             </a>
             <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">리그전</span>
+                <span class="text-xs font-medium">{{_('리그전')}}</span>
             </a>
             <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-coins fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">베팅</span>
+                <span class="text-xs font-medium">{{_('베팅')}}</span>
             </a>
             <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
                 <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">마이페이지</span>
+                <span class="text-xs font-medium">{{_('마이페이지')}}</span>
             </a>
         </nav>
     </footer>
