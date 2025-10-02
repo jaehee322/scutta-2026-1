@@ -802,3 +802,7 @@ msgstr "Winner"
 #: app/templates/index.html
 msgid "패자"
 msgstr "Loser"
+
+#: app/templates/index.html
+msgid "내 순위:"
+msgstr "My Rank:"
