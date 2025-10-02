@@ -806,7 +806,7 @@ def init_routes(app):
     @login_required
     def betting_approval():
         if not current_user.is_admin:
-            flash(_('관리자만 접근할 수 있는 페이지입니다.', 'error'))
+            flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
             return redirect(url_for('index')) # 관리자 아니면 메인 페이지로 쫓아내기
 
         return render_template('betting_approval.html', global_texts=current_app.config['GLOBAL_TEXTS'])

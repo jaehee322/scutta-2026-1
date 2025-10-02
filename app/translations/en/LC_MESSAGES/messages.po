@@ -790,3 +790,15 @@ msgstr "Welcome to the official SCUTTA records page."
 #, python-format
 msgid "<strong>%(username)s</strong>님의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요."
 msgstr "Submit your match results and check the club rankings, <strong>%(username)s</strong>."
+
+#: app/templates/index.html
+msgid "시간"
+msgstr "Date"
+
+#: app/templates/index.html
+msgid "승자"
+msgstr "Winner"
+
+#: app/templates/index.html
+msgid "패자"
+msgstr "Loser"
