@@ -697,62 +697,6 @@ msgstr "My Ranking"
 msgid "오늘의 상대"
 msgstr "Today's Partner"
 
-#: app/routes.py:444
-msgid "승리"
-msgstr "Wins"
-
-#: app/routes.py:444
-msgid "승률"
-msgstr "Win Rate"
-
-#: app/routes.py:445
-msgid "경기"
-msgstr "Matches"
-
-#: app/routes.py:445
-msgid "이름"
-msgstr "Name"
-
-#: app/routes.py:445
-msgid "순위"
-msgstr "No."
-
-#: app/routes.py:445
-msgid "베팅"
-msgstr "Betting"
-
-#: app/routes.py:688
-msgid "승리"
-msgstr "Win"
-
-#: app/routes.py:688
-msgid "패배"
-msgstr "Lose"
-
-#: app/routes.py:688
-msgid "승률"
-msgstr "Win Rate"
-
-#: app/routes.py:688
-msgid "경기"
-msgstr "Matches"
-
-#: app/routes.py:688
-msgid "상대"
-msgstr "Opponent"
-
-#: app/routes.py:688
-msgid "업적"
-msgstr "Achievements"
-
-#: app/routes.py:688
-msgid "베팅"
-msgstr "Betting"
-
-#: app/routes.py:688
-msgid "무"
-msgstr "-"
-
 #: app/templates/betting.html
 msgid "진행중인 베팅"
 msgstr "Betting In Progress"
