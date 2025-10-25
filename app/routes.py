@@ -1150,43 +1150,20 @@ def init_routes(app):
         db.session.commit()
         
         if submitted_matches > 0:
-            try:
-                # 1. ngettext 함수를 호출해서 번역 문자열 가져오기
-                raw_translation = ngettext(
-                    '%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다.',
-                    '%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다.',
-                    submitted_matches
-                )
+            # ▼▼▼ ngettext 대신 if문과 _() 함수 사용 ▼▼▼
+            if submitted_matches == 1:
+                # 단수형 메시지 (번역 대상)
+                message = _('1 개의 경기 결과가 제출되어 승인 대기 중입니다.')
+            else:
+                # 복수형 메시지 (번역 대상) - 변수 포함
+                # F-string을 사용해 숫자를 직접 넣고, 그 결과를 번역 요청
+                message = _('%(num)d 개의 경기 결과가 제출되어 승인 대기 중입니다.') % {'num': submitted_matches}
 
-                # 2. 서버 로그에 가져온 문자열 찍어보기 (디버깅용)
-                print(f"DEBUG: Fetched translation BEFORE formatting: '{raw_translation}'")
+            flash(message, 'success')
 
-                # 3. 가져온 문자열로 포맷팅 시도
-                formatted_message = raw_translation % {'num_of_matches': submitted_matches}
-                flash(formatted_message, 'success') # 성공 시 flash 호출
-
-            except KeyError as e:
-                # 만약 포맷팅 중 KeyError 발생 시 (즉, % 표시 없을 때)
-                print(f"DEBUG: KeyError occurred! Error: {e}")
-                print(f"DEBUG: Translation causing error: '{raw_translation}'")
-                # 사용자에게는 오류 대신 임시 메시지 보여주기
-                flash(f"{submitted_matches} match results submitted (Translation Error - check logs).", 'warning')
-            except Exception as e:
-                # 그 외 예상치 못한 오류 발생 시
-                print(f"DEBUG: An unexpected error occurred: {e}")
-                flash(f"Error processing message: {e}", 'error')
-            # flash(ngettext(
-
-            #     # 1. 단수형일 때 사용할 문장
-            #     '%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다.',
-            #     # 2. 복수형일 때 사용할 문장
-            #     '%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다.',
-            #     # 3. 단/복수를 결정할 숫자
-            #     submitted_matches
-            # ) % {'num_of_matches': submitted_matches}, 'success')
-        else:
+        else: # submitted_matches가 0일 경우
             flash(_('제출할 새로운 경기 결과가 없습니다.'), 'info')
-            
+
         return redirect(url_for('tournament_detail', tournament_id=tournament_id))
     # 7. 토너먼트 삭제
     @app.route('/tournament/delete/<int:tournament_id>', methods=['POST'])
