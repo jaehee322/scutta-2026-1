@@ -1,0 +1,56 @@
+body {
+    height: 500vh; 
+    margin: 0;
+    background-color: #000; 
+}
+
+#cinematic-container {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: white;
+}
+
+.scene {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    opacity: 0; 
+    transition: opacity 0.5s ease-in-out;
+}
+
+.scene.active {
+    opacity: 1;
+}
+
+#scene-calendar .month {
+    position: absolute; 
+    width: 300px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#scene-photos .photo-item, #scene-messages p {
+    opacity: 0;
+    transform: translateY(20px); 
+    transition: opacity 0.8s, transform 0.8s;
+}
+
+#scene-photos .photo-item.show, #scene-messages p.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+
+#main-content {
+    display: none; /* JS가 보여주기 전까지 숨김 */
+    background-color: #000; /* 원래 페이지 배경색 */
+    color: #fff; /* 원래 페이지 글자색 */
+}

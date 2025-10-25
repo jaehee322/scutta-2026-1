@@ -78,8 +78,7 @@ msgstr "This page is for administrators only."
 msgid "%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다."
 msgid_plural "%(num_of_matches)s 개의 경기 결과가 제출되어 승인 대기 중입니다."
 msgstr[0] "1 match result has been submitted and is pending approval."
-msgstr[1] ""
-"%(num_of_matches)s match results have been submitted and are pending "
+msgstr[1] "%(num_of_matches)s match results have been submitted and are pending "
 "approval."
 
 #: app/routes.py:1151
