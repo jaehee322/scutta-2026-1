@@ -1630,7 +1630,7 @@ def init_routes(app):
             winner.opponent_count = calculate_opponent_count(winner.id)
             
             winner.betting_count += 4
-            add_point_log(winner.id, betting_change=1, reason='경기 결과 제출')
+            add_point_log(winner.id, betting_change=4, reason='경기 결과 제출')
 
             loser.match_count += 1
             loser.loss_count += 1
@@ -1639,7 +1639,7 @@ def init_routes(app):
             loser.opponent_count = calculate_opponent_count(loser.id)
             
             loser.betting_count += 4
-            add_point_log(loser.id, betting_change=1, reason='경기 결과 제출')
+            add_point_log(loser.id, betting_change=4, reason='경기 결과 제출')
 
             if winner.match_count == 30: 
                 winner.betting_count += 10
