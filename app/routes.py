@@ -1774,11 +1774,11 @@ def init_routes(app):
             if today_partner:
                 winner.betting_count += 10
                 winner.achieve_count += 1
-                add_point_log(winner.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
+                add_point_log(winner.id, betting_change=10, reason='오늘의 상대 경기 결과 제출!')
                 add_point_log(winner.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
                 loser.betting_count += 10
                 loser.achieve_count += 1
-                add_point_log(loser.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
+                add_point_log(loser.id, betting_change=10, reason='오늘의 상대 경기 결과 제출!')
                 add_point_log(loser.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
 
             if match.timestamp.weekday() == 6:
