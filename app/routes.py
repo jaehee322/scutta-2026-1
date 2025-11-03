@@ -1629,8 +1629,8 @@ def init_routes(app):
             winner_previous_opponent = winner.opponent_count
             winner.opponent_count = calculate_opponent_count(winner.id)
             
-            winner.betting_count += 4
-            add_point_log(winner.id, betting_change=4, reason='경기 결과 제출')
+            winner.betting_count += 1
+            add_point_log(winner.id, betting_change=1, reason='경기 결과 제출')
 
             loser.match_count += 1
             loser.loss_count += 1
@@ -1638,8 +1638,8 @@ def init_routes(app):
             loser_previous_opponent = loser.opponent_count
             loser.opponent_count = calculate_opponent_count(loser.id)
             
-            loser.betting_count += 4
-            add_point_log(loser.id, betting_change=4, reason='경기 결과 제출')
+            loser.betting_count += 1
+            add_point_log(loser.id, betting_change=1, reason='경기 결과 제출')
 
             if winner.match_count == 30: 
                 winner.betting_count += 10
@@ -1772,13 +1772,13 @@ def init_routes(app):
                 today_partner = TodayPartner.query.filter_by(p1_id=match.loser, p2_id=match.winner, submitted=True).first()
             
             if today_partner:
-                winner.betting_count += 10
+                winner.betting_count += 5
                 winner.achieve_count += 1
-                add_point_log(winner.id, betting_change=10, reason='오늘의 상대 경기 결과 제출!')
+                add_point_log(winner.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
                 add_point_log(winner.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
-                loser.betting_count += 10
+                loser.betting_count += 5
                 loser.achieve_count += 1
-                add_point_log(loser.id, betting_change=10, reason='오늘의 상대 경기 결과 제출!')
+                add_point_log(loser.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
                 add_point_log(loser.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
 
             if match.timestamp.weekday() == 6:
@@ -1835,8 +1835,8 @@ def init_routes(app):
                 winner_previous_opponent = winner.opponent_count
                 winner.opponent_count = calculate_opponent_count(winner.id)
                 
-                winner.betting_count -= 4
-                add_point_log(winner.id, betting_change=-4, reason='경기 결과 제출 취소')
+                winner.betting_count -= 1
+                add_point_log(winner.id, betting_change=-1, reason='경기 결과 제출 취소')
 
                 loser.match_count -= 1
                 loser.loss_count -= 1
@@ -1844,8 +1844,8 @@ def init_routes(app):
                 loser_previous_opponent = loser.opponent_count
                 loser.opponent_count = calculate_opponent_count(loser.id)
                 
-                loser.betting_count -= 4
-                add_point_log(loser.id, betting_change=-4, reason='경기 결과 제출 취소')
+                loser.betting_count -= 1
+                add_point_log(loser.id, betting_change=-1, reason='경기 결과 제출 취소')
                 
                 if winner.match_count == 29: 
                     winner.betting_count -= 10
@@ -1953,10 +1953,10 @@ def init_routes(app):
                     today_partner = TodayPartner.query.filter_by(p1_id=match.loser, p2_id=match.winner, submitted=True).first()
                 
                 if today_partner:
-                    winner.betting_count -= 10
-                    loser.betting_count -= 10
-                    add_point_log(winner.id, betting_change=-10, reason='오늘의 상대 제출 취소')
-                    add_point_log(loser.id, betting_change=-10, reason='오늘의 상대 제출 취소')
+                    winner.betting_count -= 5
+                    loser.betting_count -= 5
+                    add_point_log(winner.id, betting_change=-5, reason='오늘의 상대 제출 취소')
+                    add_point_log(loser.id, betting_change=-5, reason='오늘의 상대 제출 취소')
 
                 if match.timestamp.weekday() == 6:
                     winner.achieve_count -= 1; winner.betting_count -= 3
