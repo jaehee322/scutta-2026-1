@@ -5,7 +5,7 @@ from sqlalchemy import distinct, case, func
 from .extensions import db
 from sqlalchemy.orm.attributes import flag_modified
 from .models import Match, Player, UpdateLog, League, Betting, BettingParticipant, TodayPartner, GenderEnum, FreshmanEnum, PlayerPointLog, User, Tournament
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import random
 
@@ -19,6 +19,9 @@ def format_datetime(value, fmt='%Y-%m-%d'):
 
 def init_routes(app):
     app.jinja_env.filters['datetimeformat'] = format_datetime
+    
+    SEASON_START=datetime(2025, 9, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
+    SEMESTER_DEADLINE = datetime(2025, 12, 13, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
 
     @app.context_processor
     def inject_active_page():
@@ -343,7 +346,7 @@ def init_routes(app):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
-            return redirect(url_for('index')) 
+            return redirect(url_for('intro')) 
             
         if request.method == 'POST':
             username=request.form.get('username')
@@ -356,7 +359,7 @@ def init_routes(app):
                 return redirect(url_for('login'))
                 
             login_user(user, remember=remember_me)
-            return redirect(url_for('index'))
+            return redirect(url_for('intro'))
             
         return render_template('login.html', global_texts=current_app.config['GLOBAL_TEXTS'])
 
@@ -365,6 +368,175 @@ def init_routes(app):
         session.pop('_flashes', None)
         logout_user()
         return redirect(url_for('index'))
+    
+    @app.route('/intro')
+    @login_required
+    def intro():
+        seoul_tz = ZoneInfo("Asia/Seoul")
+        now = datetime.now(seoul_tz)
+        session['visited_intro']=True
+
+        is_ended = now >= SEMESTER_DEADLINE
+        
+        remaining_time = None
+        if not is_ended:
+            diff = SEMESTER_DEADLINE - now
+            days = diff.days
+            hours, remainder = divmod(diff.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            remaining_time = {'days': days, 'hours': hours, 'minutes': minutes, 'seconds': seconds}
+
+        player = current_user.player
+        my_stats = {
+            'name': player.name,
+            'match_count': player.match_count,
+            'win_count': player.win_count,
+            'rate_count': player.rate_count,
+            'rank': player.rank
+        }
+
+        my_id = current_user.player.id
+
+        special_awards = {} 
+        my_matches = Match.query.filter(
+            ((Match.winner == my_id) | (Match.loser == my_id)) & 
+            (Match.approved == True) &
+            (Match.timestamp >= SEASON_START)
+        ).all()
+
+        opponents = {} 
+        for m in my_matches:
+            is_winner = (m.winner == my_id)
+            if is_winner:
+                opponent_id = m.loser
+                opponent_name = m.loser_name
+            else:
+                opponent_id = m.winner
+                opponent_name = m.winner_name
+            
+            if not opponent_id or not opponent_name or opponent_id == my_id: continue
+
+            if opponent_id not in opponents:
+                opponents[opponent_id] = {'name': opponent_name, 'total': 0, 'wins': 0, 'losses': 0}
+            
+            opponents[opponent_id]['total'] += 1
+            if is_winner: opponents[opponent_id]['wins'] += 1
+            else: opponents[opponent_id]['losses'] += 1
+
+        if opponents:
+            rival_id = max(opponents, key=lambda x: opponents[x]['total'])
+            special_awards['rival'] = opponents[rival_id]
+        
+        wins_only = {k: v for k, v in opponents.items() if v['wins'] > 0}
+        if wins_only:
+            prey_id = max(wins_only, key=lambda x: wins_only[x]['wins'])
+            special_awards['prey'] = wins_only[prey_id]
+
+        losses_only = {k: v for k, v in opponents.items() if v['losses'] > 0}
+        if losses_only:
+            nemesis_id = max(losses_only, key=lambda x: losses_only[x]['losses'])
+            special_awards['nemesis'] = losses_only[nemesis_id]
+
+        timeline = []
+        # ▼ 번역 적용
+        timeline.append({
+            'date': SEASON_START,
+            'title': _('2학기 시즌 오픈'),
+            'desc': _('전설의 시작 🌱'),
+            'icon': '🏁'
+        })
+
+        first_match = Match.query.filter(
+            ((Match.winner == my_id) | (Match.loser == my_id)) & 
+            (Match.approved == True) & (Match.timestamp >= SEASON_START)
+        ).order_by(Match.timestamp.asc()).first()
+
+        if first_match:
+            match_date_kst = first_match.timestamp.astimezone(seoul_tz)
+            opponent = first_match.loser_name if first_match.winner == my_id else first_match.winner_name
+            # ▼ 번역 적용 (변수 포함)
+            timeline.append({
+                'date': match_date_kst,
+                'title': _('두근두근 첫 경기'),
+                'desc': _('vs %(name)s') % {'name': opponent},
+                'icon': 'start_match'
+            })
+
+            first_win = Match.query.filter(
+                (Match.winner == my_id) & (Match.approved == True) & (Match.timestamp >= SEASON_START)
+            ).order_by(Match.timestamp.asc()).first()
+
+            if first_win:
+                 win_date_kst = first_win.timestamp.astimezone(seoul_tz)
+                 # ▼ 번역 적용 (변수 포함)
+                 timeline.append({
+                    'date': win_date_kst,
+                    'title': _('감격의 첫 승리!'),
+                    'desc': _('제물: %(name)s 🤭') % {'name': first_win.loser_name},
+                    'icon': 'first_win'
+                })
+
+        achievement_logs = PlayerPointLog.query.filter(
+            (PlayerPointLog.player_id == my_id) & 
+            (PlayerPointLog.reason.like('%달성%')) & (PlayerPointLog.timestamp >= SEASON_START)
+        ).all()
+
+        for log in achievement_logs:
+            log_date_kst = log.timestamp.astimezone(seoul_tz)
+            # ▼ 번역 적용
+            timeline.append({
+                'date': log_date_kst, 
+                'title': _('업적 잠금 해제'), 
+                'desc': log.reason, 
+                'icon': 'achievement'
+            })
+
+        timeline.sort(key=lambda x: x['date'])
+        
+        # ▼ 번역 적용
+        last_node_title = _('시즌 종료') if is_ended else _('현재')
+        last_node_desc = _('수고하셨습니다! 👏') if is_ended else _('우리는 여전히 달리는 중 🏃‍♂️')
+        last_node_icon = '🏁' if is_ended else '📍'
+        
+        timeline.append({
+            'date': now, 'title': last_node_title, 'desc': last_node_desc, 'icon': last_node_icon
+        })
+
+        season_rankings = {}
+        if is_ended:
+            # ▼ 번역 적용 (타이틀 및 단위)
+            categories = [
+                (_('🏆 다승왕'), Player.win_count.desc(), 'win_count', _('승')),
+                (_('🔥 승률왕'), Player.rate_count.desc(), 'rate_count', '%'),
+                (_('🏓 최다 경기'), Player.match_count.desc(), 'match_count', _('전')),
+                (_('🤝 마당발'), Player.opponent_count.desc(), 'opponent_count', _('명')),
+                (_('🏅 업적왕'), Player.achieve_count.desc(), 'achieve_count', 'pt'),
+                (_('💸 베팅왕'), Player.betting_count.desc(), 'betting_count', 'pt'),
+                (_('💀 최다 패배'), Player.loss_count.desc(), 'loss_count', _('패'))
+            ]
+            
+            for title, criteria, attr, unit in categories:
+                top5 = Player.query.join(User).filter(
+                    Player.is_valid == True, User.is_admin == False
+                ).order_by(criteria, Player.name).limit(5).all()
+                
+                season_rankings[title] = {'players': top5, 'unit': unit, 'attr': attr}
+
+        top_players = []
+        if is_ended:
+            top_players = Player.query.join(User).filter(
+                Player.is_valid == True, User.is_admin == False
+            ).order_by(Player.win_count.desc(), Player.rate_count.desc(), Player.match_count.desc()).limit(5).all()
+
+        return render_template('intro.html', 
+                               is_ended=is_ended, 
+                               remaining_time=remaining_time, 
+                               my_stats=my_stats, 
+                               top_players=top_players,
+                               special_awards=special_awards,
+                               timeline=timeline,
+                               season_rankings=season_rankings,
+                               getattr=getattr)
     
     @app.route('/admin/batch_add_users', methods=['POST'])
     @login_required
@@ -439,6 +611,13 @@ def init_routes(app):
     @app.route('/')
     @login_required
     def index():
+        now=datetime.now(ZoneInfo("Asia/Seoul"))
+        if now>=SEMESTER_DEADLINE:
+            return redirect(url_for('intro'))
+        
+        if not session.get('visited_intro'):
+            return redirect(url_for('intro'))
+        
         # --- 1. 기본 정보 조회 (랭킹, 최근 경기, 오늘의 상대) ---
         categories = [
             ('승리', 'win_order', 'win_count'), ('승률', 'rate_order', 'rate_count'),

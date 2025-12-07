@@ -750,3 +750,228 @@ msgstr "Loser"
 #: app/templates/index.html
 msgid "내 순위:"
 msgstr "My Rank:"
+
+#: app/routes.py:382
+msgid "2학기 시즌 오픈"
+msgstr "2nd Semester Season Open"
+
+#: app/routes.py:383
+msgid "전설의 시작 🌱"
+msgstr "The Beginning of a Legend 🌱"
+
+#: app/routes.py:392
+msgid "두근두근 첫 경기"
+msgstr "Exciting First Match"
+
+#: app/routes.py:393
+msgid "vs %(name)s"
+msgstr "vs %(name)s"
+
+#: app/routes.py:401
+msgid "감격의 첫 승리!"
+msgstr "Thrilling First Win!"
+
+#: app/routes.py:402
+msgid "제물: %(name)s 🤭"
+msgstr "Victim: %(name)s 🤭"
+
+#: app/routes.py:413
+msgid "업적 잠금 해제"
+msgstr "Achievement Unlocked"
+
+#: app/routes.py:421
+msgid "시즌 종료"
+msgstr "Season Ended"
+
+#: app/routes.py:421
+msgid "현재"
+msgstr "Current"
+
+#: app/routes.py:422
+msgid "수고하셨습니다! 👏"
+msgstr "Good Job! 👏"
+
+#: app/routes.py:422
+msgid "우리는 여전히 달리는 중 🏃‍♂️"
+msgstr "We are still running 🏃‍♂️"
+
+#: app/routes.py:429
+msgid "🏆 다승왕"
+msgstr "🏆 Most Wins"
+
+#: app/routes.py:429 app/templates/intro.html:150 app/templates/intro.html:267
+msgid "승"
+msgstr "Wins"
+
+#: app/routes.py:430
+msgid "🔥 승률왕"
+msgstr "🔥 Best Win Rate"
+
+#: app/routes.py:431
+msgid "🏓 최다 경기"
+msgstr "🏓 Most Matches"
+
+#: app/routes.py:431 app/templates/intro.html:132 app/templates/intro.html:252
+msgid "전"
+msgstr "Matches"
+
+#: app/routes.py:432
+msgid "🤝 마당발"
+msgstr "🤝 Social Butterfly"
+
+#: app/routes.py:432
+msgid "명"
+msgstr "People"
+
+#: app/routes.py:433
+msgid "🏅 업적왕"
+msgstr "🏅 Top Achiever"
+
+#: app/routes.py:434
+msgid "💸 베팅왕"
+msgstr "💸 Top Bettor"
+
+#: app/routes.py:435
+msgid "💀 최다 패배"
+msgstr "💀 Most Losses"
+
+#: app/routes.py:435 app/templates/intro.html:150 app/templates/intro.html:267
+msgid "패"
+msgstr "Losses"
+
+#: app/templates/intro.html:5
+msgid "2025 결산"
+msgstr "2025 Season Recap"
+
+#: app/templates/intro.html:36
+msgid "2025년 2학기도"
+msgstr "The 2nd semester of 2025"
+
+#: app/templates/intro.html:36
+msgid "마무리되었습니다."
+msgstr "has come to an end."
+
+#: app/templates/intro.html:39 app/templates/intro.html:51
+msgid "아래로 스와이프"
+msgstr "Swipe down"
+
+#: app/templates/intro.html:47
+msgid "뜨거웠던 우리들의 랠리,"
+msgstr "Our passionate rallies,"
+
+#: app/templates/intro.html:48
+msgid "그 결과를 지금 확인해보세요."
+msgstr "Check the results right now."
+
+#: app/templates/intro.html:61
+msgid "함께여서 즐거웠습니다!"
+msgstr "It was a joy to be together!"
+
+#: app/templates/intro.html:63
+msgid "한 학기 동안 SCUTTA와 함께"
+msgstr "With SCUTTA for the semester,"
+
+#: app/templates/intro.html:64
+msgid "땀 흘려준 모든 부원 여러분께 감사드립니다."
+msgstr "thank you to all members who sweated together."
+
+#: app/templates/intro.html:65
+msgid "다음 학기에도 멋진 경기 기대할게요! 🏓"
+msgstr "Looking forward to great matches next semester! 🏓"
+
+#: app/templates/intro.html:70
+msgid "명예의 전당"
+msgstr "Hall of Fame"
+
+#: app/templates/intro.html:98
+msgid "↔ 옆으로 넘겨서 더 많은 랭킹 확인"
+msgstr "↔ Swipe left to see more rankings"
+
+#: app/templates/intro.html:102
+msgid "%(name)s님의 시즌 리포트"
+msgstr "%(name)s's Season Report"
+
+#: app/templates/intro.html:106
+msgid "소화한 경기"
+msgstr "Matches Played"
+
+#: app/templates/intro.html:110
+msgid "최종 승률"
+msgstr "Final Win Rate"
+
+#: app/templates/intro.html:115
+msgid "최종 마감 부수"
+msgstr "Final Rank"
+
+#: app/templates/intro.html:117
+msgid "부"
+msgstr "Div"
+
+#: app/templates/intro.html:122 app/templates/intro.html:279
+msgid "나의 파트너 현황"
+msgstr "My Partner Status"
+
+#: app/templates/intro.html:130 app/templates/intro.html:287
+msgid "님"
+msgstr "" 
+# (영어에선 이름 뒤에 '님'을 따로 안 붙여서 빈칸으로 두는 게 자연스러워!)
+
+#: app/templates/intro.html:140 app/templates/intro.html:297
+msgid "데이터 수집 중..."
+msgstr "Gathering Data..."
+
+#: app/templates/intro.html:141 app/templates/intro.html:298
+msgid "아직 라이벌이 없어요 🥲"
+msgstr "No rival yet 🥲"
+
+#: app/templates/intro.html:150 app/templates/intro.html:307
+msgid "헌납"
+msgstr "Given"
+
+#: app/templates/intro.html:154 app/templates/intro.html:311
+msgid "아직 없어요"
+msgstr "None yet"
+
+#: app/templates/intro.html:162 app/templates/intro.html:319
+msgid "당함"
+msgstr "Suffered"
+
+#: app/templates/intro.html:166 app/templates/intro.html:323
+msgid "무적 상태!"
+msgstr "Invincible!"
+
+#: app/templates/intro.html:173 app/templates/intro.html:330
+msgid "이번 학기 내 발자취"
+msgstr "My Footsteps This Semester"
+
+#: app/templates/intro.html:206
+msgid "SCUTTA 2025-2 시즌이 종료되었습니다."
+msgstr "SCUTTA 2025-2 Season has ended."
+
+#: app/templates/intro.html:246
+msgid "시즌 마감까지"
+msgstr "Until Season Ends"
+
+#: app/templates/intro.html:246
+msgid "달려볼까요?"
+msgstr "Shall we run?"
+
+#: app/templates/intro.html:262
+msgid "12월 13일 자정 마감"
+msgstr "Ends on midnight Dec 13"
+
+#: app/templates/intro.html:266
+msgid "총 경기"
+msgstr "Total Matches"
+
+#: app/templates/intro.html:270 app/routes.py:347 app/routes.py:1015 app/templates/intro.html:437
+msgid "승리"
+msgstr "Wins"
+
+#: app/templates/intro.html:360
+msgid "기록 페이지 입장하기"
+msgstr "Enter Record Page"
+
+#: app/templates/index.html:??
+msgid "2025 결산 미리보기"
+msgstr "2025 Season Recap Preview"
