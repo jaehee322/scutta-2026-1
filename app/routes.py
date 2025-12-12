@@ -478,7 +478,7 @@ def init_routes(app):
 
         achievement_logs = PlayerPointLog.query.filter(
             (PlayerPointLog.player_id == my_id) & 
-            (PlayerPointLog.reason.like('%달성%')) & (PlayerPointLog.timestamp >= SEASON_START)
+            (PlayerPointLog.reason.like('%달성%')) & (PlayerPointLog.timestamp >= SEASON_START) & (PlayerPointLog.achieve_change>0)
         ).all()
 
         for log in achievement_logs:
