@@ -19,9 +19,6 @@ def format_datetime(value, fmt='%Y-%m-%d'):
 
 def init_routes(app):
     app.jinja_env.filters['datetimeformat'] = format_datetime
-    
-    SEASON_START=datetime(2025, 9, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
-    SEMESTER_DEADLINE = datetime(2025, 12, 13, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
 
     @app.context_processor
     def inject_active_page():
@@ -627,8 +624,6 @@ def init_routes(app):
         if time_left.days <= 7 and not session.get('visited_intro'):
             return redirect(url_for('intro'))
         
-        if not session.get('visited_intro'):
-            return redirect(url_for('intro'))
         
         # --- 1. 기본 정보 조회 (랭킹, 최근 경기, 오늘의 상대) ---
         categories = [
