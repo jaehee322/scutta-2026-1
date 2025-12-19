@@ -4,6 +4,9 @@ from config import Config
 from .extensions import db, migrate, login_manager, babel
 from .models import User
 from flask_babel import _, lazy_gettext as _l
+from flask import Flask
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 def get_locale():
     if 'lang' in session:
@@ -21,6 +24,8 @@ def create_app():
     app.config['BABEL_SUPPORTED_LOCALES'] = ['ko', 'en']
     # 필요시 번역 디렉터리 지정(기본값은 'translations')
     app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
+    app.config['SEASON_START'] = datetime(2025, 9, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
+    app.config['SEMESTER_DEADLINE'] = datetime(2025, 12, 13, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
 
     db.init_app(app)
     migrate.init_app(app, db)

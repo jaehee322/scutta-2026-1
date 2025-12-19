@@ -14,8 +14,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get('SECRET_KEY', 'a-very-secret-key')
 
-    # ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼
-    # 현재 환경이 Render인지 확인 (Render는 IS_PULL_REQUEST 같은 환경 변수를 제공)
+    # 현재 환경이 Render인지 확인 
     is_render_env = 'IS_PULL_REQUEST' in os.environ
 
     # Render 환경일 경우에만 SSL 연결을 요구하도록 수정
@@ -28,5 +27,4 @@ class Config:
     # 로컬 환경에서는 SSL 설정을 적용하지 않음
     else:
         SQLALCHEMY_ENGINE_OPTIONS = {}
-    # ▲▲▲▲▲ 여기까지 수정 ▲▲▲▲▲
-    # ▲▲▲▲▲ 여기까지 수정 ▲▲▲▲▲
+  

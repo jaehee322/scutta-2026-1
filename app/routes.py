@@ -374,8 +374,11 @@ def init_routes(app):
     def intro():
         seoul_tz = ZoneInfo("Asia/Seoul")
         now = datetime.now(seoul_tz)
-        session['visited_intro']=True
-
+        
+        
+        SEASON_START = current_app.config['SEASON_START']
+        SEMESTER_DEADLINE = current_app.config['SEMESTER_DEADLINE']
+        
         is_ended = now >= SEMESTER_DEADLINE
         
         remaining_time = None
@@ -438,7 +441,7 @@ def init_routes(app):
             special_awards['nemesis'] = losses_only[nemesis_id]
 
         timeline = []
-        # ▼ 번역 적용
+        
         timeline.append({
             'date': SEASON_START,
             'title': _('2학기 시즌 오픈'),
@@ -454,7 +457,7 @@ def init_routes(app):
         if first_match:
             match_date_kst = first_match.timestamp.astimezone(seoul_tz)
             opponent = first_match.loser_name if first_match.winner == my_id else first_match.winner_name
-            # ▼ 번역 적용 (변수 포함)
+            
             timeline.append({
                 'date': match_date_kst,
                 'title': _('두근두근 첫 경기'),
@@ -467,23 +470,24 @@ def init_routes(app):
             ).order_by(Match.timestamp.asc()).first()
 
             if first_win:
-                 win_date_kst = first_win.timestamp.astimezone(seoul_tz)
-                 # ▼ 번역 적용 (변수 포함)
-                 timeline.append({
+                    win_date_kst = first_win.timestamp.astimezone(seoul_tz)
+                    timeline.append({
                     'date': win_date_kst,
                     'title': _('감격의 첫 승리!'),
                     'desc': _('제물: %(name)s 🤭') % {'name': first_win.loser_name},
                     'icon': 'first_win'
                 })
 
+        # ✅ [수정] 업적 로그 중복 제거 로직 추가 (achieve_change > 0)
         achievement_logs = PlayerPointLog.query.filter(
             (PlayerPointLog.player_id == my_id) & 
-            (PlayerPointLog.reason.like('%달성%')) & (PlayerPointLog.timestamp >= SEASON_START) & (PlayerPointLog.achieve_change>0)
+            (PlayerPointLog.reason.like('%달성%')) & 
+            (PlayerPointLog.timestamp >= SEASON_START) &
+            (PlayerPointLog.achieve_change > 0)  # 👈 여기가 핵심!
         ).all()
 
         for log in achievement_logs:
             log_date_kst = log.timestamp.astimezone(seoul_tz)
-            # ▼ 번역 적용
             timeline.append({
                 'date': log_date_kst, 
                 'title': _('업적 잠금 해제'), 
@@ -493,7 +497,6 @@ def init_routes(app):
 
         timeline.sort(key=lambda x: x['date'])
         
-        # ▼ 번역 적용
         last_node_title = _('시즌 종료') if is_ended else _('현재')
         last_node_desc = _('수고하셨습니다! 👏') if is_ended else _('우리는 여전히 달리는 중 🏃‍♂️')
         last_node_icon = '🏁' if is_ended else '📍'
@@ -504,7 +507,6 @@ def init_routes(app):
 
         season_rankings = {}
         if is_ended:
-            # ▼ 번역 적용 (타이틀 및 단위)
             categories = [
                 (_('🏆 다승왕'), Player.win_count.desc(), 'win_count', _('승')),
                 (_('🔥 승률왕'), Player.rate_count.desc(), 'rate_count', '%'),
@@ -528,15 +530,18 @@ def init_routes(app):
                 Player.is_valid == True, User.is_admin == False
             ).order_by(Player.win_count.desc(), Player.rate_count.desc(), Player.match_count.desc()).limit(5).all()
 
+        # [중요] index.html의 '방문 도장' 찍기
+        session['visited_intro'] = True 
+
         return render_template('intro.html', 
-                               is_ended=is_ended, 
-                               remaining_time=remaining_time, 
-                               my_stats=my_stats, 
-                               top_players=top_players,
-                               special_awards=special_awards,
-                               timeline=timeline,
-                               season_rankings=season_rankings,
-                               getattr=getattr)
+                                is_ended=is_ended, 
+                                remaining_time=remaining_time, 
+                                my_stats=my_stats, 
+                                top_players=top_players,
+                                special_awards=special_awards,
+                                timeline=timeline,
+                                season_rankings=season_rankings,
+                                getattr=getattr)
     
     @app.route('/admin/batch_add_users', methods=['POST'])
     @login_required
@@ -612,7 +617,14 @@ def init_routes(app):
     @login_required
     def index():
         now=datetime.now(ZoneInfo("Asia/Seoul"))
+
+        SEMESTER_DEADLINE = current_app.config['SEMESTER_DEADLINE']
+        
         if now>=SEMESTER_DEADLINE:
+            return redirect(url_for('intro'))
+        
+        time_left = SEMESTER_DEADLINE-now
+        if time_left.days <= 7 and not session.get('visited_intro'):
             return redirect(url_for('intro'))
         
         if not session.get('visited_intro'):
