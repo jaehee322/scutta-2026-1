@@ -617,12 +617,12 @@ def init_routes(app):
 
         SEMESTER_DEADLINE = current_app.config['SEMESTER_DEADLINE']
         
-        if now>=SEMESTER_DEADLINE:
-            return redirect(url_for('intro'))
+        # if now>=SEMESTER_DEADLINE:
+        #     return redirect(url_for('intro'))
         
-        time_left = SEMESTER_DEADLINE-now
-        if time_left.days <= 7 and not session.get('visited_intro'):
-            return redirect(url_for('intro'))
+        # time_left = SEMESTER_DEADLINE-now
+        # if time_left.days <= 7 and not session.get('visited_intro'):
+        #     return redirect(url_for('intro'))
         
         
         # --- 1. 기본 정보 조회 (랭킹, 최근 경기, 오늘의 상대) ---

@@ -19,7 +19,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    app.config['GLOBAL_TEXTS'] = {'semester': '2025-2'}
+    app.config['GLOBAL_TEXTS'] = {'semester': '2026-1'}
     app.config['BABEL_DEFAULT_LOCALE'] = 'ko'
     app.config['BABEL_SUPPORTED_LOCALES'] = ['ko', 'en']
     # 필요시 번역 디렉터리 지정(기본값은 'translations')
