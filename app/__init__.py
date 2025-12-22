@@ -17,8 +17,8 @@ def get_locale():
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
 
+    app.config.from_object(Config)
     app.config['GLOBAL_TEXTS'] = {'semester': '2026-1'}
     app.config['BABEL_DEFAULT_LOCALE'] = 'ko'
     app.config['BABEL_SUPPORTED_LOCALES'] = ['ko', 'en']
@@ -30,8 +30,6 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
     login_manager.login_view = 'login'
-
-    # 여기서 get_locale을 넘겨줍니다.
     babel.init_app(app, locale_selector=get_locale)
 
     @login_manager.user_loader
@@ -41,11 +39,5 @@ def create_app():
     from . import routes
     routes.init_routes(app)
     commands.register_commands(app)
-
-    @app.route('/set_language/<lang_code>')
-    def set_language(lang_code):
-        if lang_code in app.config['BABEL_SUPPORTED_LOCALES']:
-            session['lang'] = lang_code
-        return redirect(request.referrer or url_for('index'))
 
     return app

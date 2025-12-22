@@ -9,18 +9,17 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import random
 
-def format_datetime(value, fmt='%Y-%m-%d'):
-    if value is None:
-        return ""
-    korea_time = value.astimezone(ZoneInfo("Asia/Seoul"))
-    return korea_time.strftime(fmt)
-
 def init_routes(app):
-    app.jinja_env.filters['datetimeformat'] = format_datetime
-
     @app.context_processor
     def inject_active_page():
         return dict(active_page=request.endpoint)
+    
+    def format_datetime(value, fmt='%Y-%m-%d'):
+        if value is None:
+            return ""
+        korea_time = value.astimezone(ZoneInfo("Asia/Seoul"))
+        return korea_time.strftime(fmt)
+    app.jinja_env.filters['datetimeformat'] = format_datetime
 
     # /ranking_page 전용 함수
     def _get_summary_rankings_data(current_player):
@@ -280,6 +279,12 @@ def init_routes(app):
         logout_user()
         return redirect(url_for('index'))
     
+    @app.route('/set_language/<lang_code>')
+    def set_language(lang_code):
+        if lang_code in app.config['BABEL_SUPPORTED_LOCALES']:
+            session['lang'] = lang_code
+        return redirect(request.referrer or url_for('index'))
+
     @app.route('/intro')
     @login_required
     def intro():
