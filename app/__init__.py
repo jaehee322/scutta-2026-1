@@ -22,8 +22,7 @@ def create_app():
     app.config['GLOBAL_TEXTS'] = {'semester': '2026-1'}
     app.config['BABEL_DEFAULT_LOCALE'] = 'ko'
     app.config['BABEL_SUPPORTED_LOCALES'] = ['ko', 'en']
-    # 필요시 번역 디렉터리 지정(기본값은 'translations')
-    app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
+    app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations' # 필요시 번역 디렉터리 지정(기본값은 'translations')
     app.config['SEASON_START'] = datetime(2025, 9, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
     app.config['SEMESTER_DEADLINE'] = datetime(2025, 12, 13, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
 

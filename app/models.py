@@ -40,8 +40,6 @@ class Player(db.Model):
     betting_order = db.Column(db.Integer, default=None)
     is_she_or_he_freshman = db.Column(db.Enum(FreshmanEnum), nullable=True)
 
-   
-    
     def __repr__(self):
         return f"<Player {self.name}>"
 

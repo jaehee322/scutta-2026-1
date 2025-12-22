@@ -10,10 +10,8 @@ from zoneinfo import ZoneInfo
 import random
 
 def format_datetime(value, fmt='%Y-%m-%d'):
-    """Jinja2 템플릿에서 datetime 객체를 원하는 형식의 문자열로 변환하는 필터."""
     if value is None:
         return ""
-        # 한국 시간(KST)으로 변환합니다.
     korea_time = value.astimezone(ZoneInfo("Asia/Seoul"))
     return korea_time.strftime(fmt)
 
@@ -24,6 +22,7 @@ def init_routes(app):
     def inject_active_page():
         return dict(active_page=request.endpoint)
 
+    # /ranking_page 전용 함수
     def _get_summary_rankings_data(current_player):
         categories = [
             ('승리', Player.win_order.asc(), 'win_count', 'win_order'),
@@ -74,8 +73,8 @@ def init_routes(app):
         
         return rankings_data
     
+    # 플레이어 포인트 변동 로그 기록
     def add_point_log(player_id, achieve_change=0, betting_change=0, reason=""):
-        """플레이어 포인트 변경 로그를 기록하는 헬퍼 함수"""
         if achieve_change == 0 and betting_change == 0:
             return
         
@@ -87,6 +86,7 @@ def init_routes(app):
         )
         db.session.add(log)
     
+    # ?
     def calculate_opponent_count(player_id):
         count = (
             db.session.query(
@@ -119,7 +119,6 @@ def init_routes(app):
             
             current_rank = 0
             previous_primary_value = None
-            
             primary_field_name = primary_criteria.element.name
 
             for i, player in enumerate(players, start=1):
@@ -143,7 +142,6 @@ def init_routes(app):
             
             current_rank = 0
             previous_primary_value = None
-            
             primary_field_name = primary_criteria.element.name
 
             for i, player in enumerate(players, start=1):
@@ -156,59 +154,11 @@ def init_routes(app):
 
         db.session.commit()
     
-    def submit_match_internal(match_data):
-        winner_name = match_data.get("winner")
-        loser_name = match_data.get("loser")
-        score_value = match_data.get("score")
 
-        if not winner_name or not loser_name or not score_value:
-            return {"error": "잘못된 데이터"}
-
-        winner = Player.query.filter_by(name=winner_name).first()
-        if not winner:
-            winner = Player(name=winner_name)
-            db.session.add(winner)
-
-        loser = Player.query.filter_by(name=loser_name).first()
-        if not loser:
-            loser = Player(name=loser_name)
-            db.session.add(loser)
-
-        db.session.flush()
-
-        current_time = datetime.now(ZoneInfo("Asia/Seoul"))
-
-        new_match = Match(
-            winner=winner.id,
-            winner_name=winner.name,
-            loser=loser.id,
-            loser_name=loser.name,
-            score=score_value,
-            timestamp=current_time,
-            approved=False
-        )
-        db.session.add(new_match)
-        db.session.commit()
-
-        return {"match_id": new_match.id}
-
-
-    # 메인
     @app.route('/')
     @login_required
     def index():
-        now=datetime.now(ZoneInfo("Asia/Seoul"))
 
-        SEMESTER_DEADLINE = current_app.config['SEMESTER_DEADLINE']
-        
-        # if now>=SEMESTER_DEADLINE:
-        #     return redirect(url_for('intro'))
-        
-        # time_left = SEMESTER_DEADLINE-now
-        # if time_left.days <= 7 and not session.get('visited_intro'):
-        #     return redirect(url_for('intro'))
-        
-        
         # --- 1. 기본 정보 조회 (랭킹, 최근 경기, 오늘의 상대) ---
         categories = [
             ('승리', 'win_order', 'win_count'), ('승률', 'rate_order', 'rate_count'),
@@ -251,7 +201,7 @@ def init_routes(app):
             if current_user.player_id not in [bet.p1_id, bet.p2_id]:
                 betting_data.append(bet)
 
-        # --- 3. 나의 리그 정보 조회 (요일 체크 삭제) ---
+        # --- 3. 나의 리그 정보 조회 ---
         my_league_info = None
         my_name = current_user.player.name
         my_league = League.query.filter(
@@ -307,12 +257,12 @@ def init_routes(app):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
-            return redirect(url_for('intro')) 
+            return redirect(url_for('index'))
             
         if request.method == 'POST':
             username=request.form.get('username')
             password=request.form.get('password')
-            remember_me = True if request.form.get('remember') else False  #자동 로그인
+            remember_me = True if request.form.get('remember') else False
             user=User.query.filter_by(username=username).first()
 
             if user is None or not user.check_password(password):
@@ -320,7 +270,7 @@ def init_routes(app):
                 return redirect(url_for('login'))
                 
             login_user(user, remember=remember_me)
-            return redirect(url_for('intro'))
+            return redirect(url_for('index'))
             
         return render_template('login.html', global_texts=current_app.config['GLOBAL_TEXTS'])
     
@@ -504,8 +454,6 @@ def init_routes(app):
                                 season_rankings=season_rankings,
                                 getattr=getattr)
     
-
-    # 랭킹
     @app.route('/rankings_page')
     @login_required
     def rankings_page():
@@ -525,6 +473,7 @@ def init_routes(app):
         }
         return render_template('rankings.html', summary_rankings=summary_rankings, headers=translated_headers)
 
+    #api
     @app.route('/rankings', methods=['GET'])
     def rankings():
         # JS에서 'win_count_order' 같은 형식으로 요청을 보냅니다.
@@ -576,6 +525,7 @@ def init_routes(app):
             })
         return jsonify(response)
     
+    #api
     @app.route('/get_my_rank', methods=['GET'])
     @login_required
     def get_my_rank():
@@ -599,14 +549,12 @@ def init_routes(app):
         }
         return jsonify(response)
     
-
-    # 리그전 및 토너먼트
     @app.route('/league_or_tournament')
     @login_required
     def league_or_tournament():
         return render_template('league_or_tournament.html')
     
-    @app.route('/league.html')
+    @app.route('/league')
     @login_required
     def league():
         leagues = League.query.order_by(League.id.desc()).all()
@@ -754,6 +702,7 @@ def init_routes(app):
             return redirect(url_for('tournament'))
         return render_template('create_tournament.html')
 
+    #api from create_tournament.html & admin only
     @app.route('/tournament/generate', methods=['POST'])
     @login_required
     def generate_tournament():
@@ -923,7 +872,6 @@ def init_routes(app):
         return jsonify({'success': True, 'message': '토너먼트가 삭제되었습니다.'})
     
 
-    # 베팅
     @app.route('/betting.html')
     @login_required
     def betting():
@@ -961,7 +909,6 @@ def init_routes(app):
         return redirect(url_for('betting'))
     
 
-    # 마이페이지
     @app.route('/mypage')
     @login_required
     def mypage():
@@ -977,11 +924,13 @@ def init_routes(app):
         
         return render_template('mypage.html', player=player_info, matches=recent_matches)
     
+    # 관리자용 pw확인
     @app.route('/password.html')
     @login_required
     def password():
         return render_template('password.html', global_texts=current_app.config['GLOBAL_TEXTS'])
 
+    #api?
     @app.route('/change_password', methods=['POST'])
     @login_required
     def change_password():
@@ -1018,7 +967,6 @@ def init_routes(app):
         return render_template('change_password.html')
     
 
-    # 관리
     @app.route('/settings.html')
     @login_required
     def settings():
@@ -1059,7 +1007,6 @@ def init_routes(app):
         return render_template('assignment.html', logs=logs, global_texts=current_app.config['GLOBAL_TEXTS'])
 
 
-    #admin
     @app.route('/admin/batch_add_users', methods=['POST'])
     @login_required
     def batch_add_users():
@@ -1191,6 +1138,7 @@ def init_routes(app):
             traceback.print_exc()
             return jsonify({'success': False, 'error': f'삭제 중 오류 발생: {str(e)}'}), 500
 
+    # ?
     @app.route('/admin/recalculate-stats')
     @login_required
     def recalculate_all_stats():
@@ -1229,7 +1177,8 @@ def init_routes(app):
             flash(f'재계산 중 오류가 발생했습니다: {e}', 'error')
             
         return redirect(url_for('assignment')) # 완료 후 부수/포인트 페이지로 이동
-
+    
+    # ?
     @app.route('/admin/reset_password', methods=['GET', 'POST'])
     @login_required
     def admin_reset_password():
@@ -1286,7 +1235,7 @@ def init_routes(app):
         return current_app.send_static_file('favicon.ico')
     
 
-
+    #api from assignment.js
     @app.route('/get_assignment_players', methods=['GET'])
     @login_required
     def get_assignment_players():
@@ -1318,6 +1267,7 @@ def init_routes(app):
             })
         return jsonify(response_data)
 
+    #?
     @app.route('/update_player_points', methods=['POST'])
     @login_required
     def update_player_points():
@@ -1352,7 +1302,8 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
-        
+    
+    #?
     @app.route('/update_player_rank', methods=['POST'])
     @login_required
     def update_player_rank():
@@ -1377,7 +1328,8 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
-        
+    
+    #api from assignment.js
     @app.route('/save_all_assignment_changes', methods=['POST'])
     @login_required
     def save_all_assignment_changes():
@@ -1420,7 +1372,8 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
-        
+    
+    #?
     @app.route('/log/<int:log_id>', methods=['GET']) # JS와 일치하도록 경로 수정
     def get_log_detail(log_id):
         log = UpdateLog.query.get(log_id)
@@ -1429,11 +1382,13 @@ def init_routes(app):
 
         return jsonify({'success': True, 'title': log.title, 'html_content': log.html_content})
     
+    #??
     @app.route('/submitment.html')
     @login_required
     def submitment():
         return render_template('submitment.html', global_texts=current_app.config['GLOBAL_TEXTS'])
 
+    # used from index.html
     @app.route('/submit_match_direct', methods=['POST'])
     @login_required
     def submit_match_direct():
@@ -1491,6 +1446,7 @@ def init_routes(app):
         flash(_('경기 결과가 성공적으로 제출되었습니다. 관리자 승인 대기 중입니다.'), 'success')
         return redirect(url_for('index'))
     
+    # ㅡ경기 결과 제출
     @app.route('/submit_match')
     @login_required
     def submit_match_page():
@@ -1510,16 +1466,17 @@ def init_routes(app):
 
         return render_template('submit_match.html', matches=my_matches, all_players=all_players_data)
    
+    # ㅡ나의 제출 현황
     @app.route('/my_submissions')
     @login_required
     def my_submissions():
-        # 현재 로그인한 사용자가 제출한 최근 10경기를 찾습니다.
         my_matches = Match.query.filter(
             (Match.winner == current_user.player_id) | (Match.loser == current_user.player_id)
         ).order_by(Match.timestamp.desc()).limit(5).all()
 
         return render_template('my_submissions.html', matches=my_matches)
    
+    # ㅡ오늘의 상대
     @app.route('/partner.html')
     @login_required
     def partner():
@@ -1547,6 +1504,7 @@ def init_routes(app):
         
         return render_template('point_history.html', logs=logs)
     
+    # 관리자용?
     @app.route('/player/<int:player_id>', methods=['GET'])
     @login_required
     def player_detail(player_id):
@@ -1570,6 +1528,16 @@ def init_routes(app):
         else:
             return render_template('public_player_profile.html', player=player)
 
+
+
+
+
+
+
+
+
+
+    '''이하 모두 api'''
     #index.js
 
     @app.route('/check_players', methods=['POST'])

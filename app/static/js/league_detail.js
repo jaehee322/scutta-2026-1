@@ -208,7 +208,7 @@ async function deleteLeague(leagueId) {
     .then(data => {
         if (data.success) {
             alert(data.message);
-            window.location.href = '/league.html'; // 삭제 후 리그 목록으로 이동
+            window.location.href = '/league'; // 삭제 후 리그 목록으로 이동
         } else {
             alert('오류: ' + data.error);
         }
