@@ -1,66 +1,74 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ _('리그 경기 제출') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style> body { padding-bottom: 56px; } </style>
-</head>
-<body class="bg-gray-100">
+{% extends "base.html" %}
 
-    <header>
-        <div class="flex items-center gap-2 min-w-0">
-             <a href="{{ url_for('league_detail', league_id=league.id) }}" class="text-xl font-bold truncate">
-                vs {{ opponent.name }}
-            </a>
-        </div>
-        <div class="flex-shrink-0 flex items-center gap-2">
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">{{ _('로그아웃') }}</a>
-            {% endif %}
-        </div>
-    </header>
+{% block title %}{{ _('리그 경기 결과 제출') }} - SCUTTA{% endblock %}
 
-    <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-2xl font-bold mb-6 text-center">{{ league.name }} {{ _('경기 결과 제출') }}</h2>
-            <form action="{{ url_for('submit_league_match', league_id=league.id) }}" method="POST">
-                <input type="hidden" name="opponent_id" value="{{ opponent.id }}">
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ _('승자를 선택해주세요.') }}</label>
-                        <div class="space-y-3">
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                <input type="radio" name="winner_id" value="{{ current_user.player.id }}" class="h-5 w-5 text-indigo-600" required>
-                                <span class="ml-4 text-lg font-semibold">{{ current_user.player.name }}</span>
-                            </label>
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                <input type="radio" name="winner_id" value="{{ opponent.id }}" class="h-5 w-5 text-indigo-600" required>
-                                <span class="ml-4 text-lg font-semibold">{{ opponent.name }}</span>
-                            </label>
-                        </div>
-                    </div>
+{% block container_style %}margin-top: 0;{% endblock %}
 
-                    <div>
-                        <label for="score" class="block text-sm font-medium text-gray-700 mb-2">{{ _('스코어') }}</label>
-                        <select id="score" name="score" class="w-full" required>
-                            <option value="3:0">3:0</option>
-                            <option value="2:1">2:1</option>
-                        </select>
-                    </div>
+{% block header_left %}
+<a href="{{ url_for('league_detail', league_id=league.id) }}" class="text-xl font-bold truncate">
+    {{ league.name }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-sm max-w-md mx-auto">
+    <h2 class="text-2xl font-bold mb-6 text-center">{{ _('경기 결과 입력') }}</h2>
+
+    <form action="{{ url_for('submit_league_match', league_id=league.id) }}" method="POST" class="space-y-6">
+        <div class="text-center mb-6 p-4 bg-gray-50 rounded-lg">
+            <div class="flex justify-between items-center text-lg font-bold">
+                <div class="w-1/2 text-right pr-4 border-r border-gray-300">
+                    {{ me.name }}
+                    <span class="block text-xs font-normal text-gray-500 mt-1">{{ _('나') }}</span>
                 </div>
-
-                <button type="submit" class="w-full bg-main button mt-8">{{ _('결과 제출하기') }}</button>
-            </form>
+                <div class="w-1/2 text-left pl-4">
+                    {{ opponent.name }}
+                    <span class="block text-xs font-normal text-gray-500 mt-1">{{ _('상대') }}</span>
+                </div>
+            </div>
         </div>
-    </main>
 
-    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
-        </footer>
-</body>
-</html>
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">{{ _('승리자 선택') }}</label>
+            <div class="grid grid-cols-2 gap-4">
+                <label class="cursor-pointer">
+                    <input type="radio" name="winner_id" value="{{ me.id }}" class="peer sr-only" required>
+                    <div
+                        class="p-4 border-2 rounded-lg text-center hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 transition">
+                        <span class="font-bold">{{ me.name }}</span>
+                        <span class="block text-xs mt-1">({{ _('나') }})</span>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="winner_id" value="{{ opponent.id }}" class="peer sr-only">
+                    <div
+                        class="p-4 border-2 rounded-lg text-center hover:bg-gray-50 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 transition">
+                        <span class="font-bold">{{ opponent.name }}</span>
+                        <span class="block text-xs mt-1">({{ _('상대') }})</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">{{ _('스코어') }}</label>
+            <div class="grid grid-cols-2 gap-4">
+                <label
+                    class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="score" value="3:0" class="h-4 w-4 text-blue-600" checked>
+                    <span class="ml-2 font-bold">3 : 0</span>
+                </label>
+                <label
+                    class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                    <input type="radio" name="score" value="2:1" class="h-4 w-4 text-blue-600">
+                    <span class="ml-2 font-bold">2 : 1</span>
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-main button py-3 text-lg font-bold">
+            {{ _('결과 제출하기') }}
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,92 +1,68 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ _('나의 제출 현황') }} - SCUTTA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body class="bg-gray-100">
+{% extends "base.html" %}
 
-    <header>
-        <div class="flex items-center gap-2 min-w-0">
-            <a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
-                {{ _('나의 제출 현황') }}
-            </a>
-        </div>
-        <div class="flex-shrink-0 flex items-center gap-2">
-        {% if current_user.is_authenticated %}
-                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">{{ _('로그아웃') }}</a>
-            {% endif %}
-        </div>
-    </header>
+{% block title %}{{ _('나의 제출 현황') }} - SCUTTA{% endblock %}
 
-    <main class="container mx-auto p-4 md:p-6 lg:p-8" style="margin-top: 0;">
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-2xl font-bold mb-6 border-b pb-4">{{ _('나의 최근 제출 10경기') }}</h2>
-            <div class="overflow-x-auto no-scrollbar">
-                <table class="table-modern min-w-full table-auto">
-                    <thead>
-                        <tr>
-                            <th class="whitespace-nowrap">{{ _('결과') }}</th>
-                            <th class="whitespace-nowrap">{{ _('상대') }}</th>
-                            <th class="whitespace-nowrap">{{ _('스코어') }}</th>
-                            <th class="whitespace-nowrap">{{ _('승인 상태') }}</th>
-                            <th class="whitespace-nowrap">{{ _('제출일') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if matches %}
-                            {% for match in matches %}
-                            <tr>
-                                <td class="whitespace-nowrap">
-                                    {% if match.winner == current_user.player_id %}<span class="font-bold text-green-600">{{ _('승') }}</span>{% else %}<span class="font-bold text-red-600">{{ _('패') }}</span>{% endif %}
-                                </td>
-                                <td class="whitespace-nowrap">
-                                    {% if match.winner == current_user.player_id %}{{ match.loser_name }}{% else %}{{ match.winner_name }}{% endif %}
-                                </td>
-                                <td class="text-center whitespace-nowrap">{{ match.score }}</td>
-                                <td class="text-center whitespace-nowrap">
-                                    {% if match.approved %}<span class="text-sm font-semibold bg-green-100 text-green-700 py-1 px-3 rounded-full">{{ _('승인 완료') }}</span>{% else %}<span class="text-sm font-semibold bg-yellow-100 text-yellow-700 py-1 px-3 rounded-full">{{ _('승인 대기') }}</span>{% endif %}
-                                </td>
-                                <td class="text-sm text-gray-500 whitespace-nowrap">{{ match.timestamp.strftime('%Y-%m-%d') }}</td>
-                            </tr>
-                            {% endfor %}
+{% block container_style %}margin-top: 0;{% endblock %}
+
+{% block header_left %}
+<a href="{{ url_for('index') }}" class="text-xl font-bold truncate">
+    {{ _('나의 제출 현황') }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-sm">
+    <h2 class="text-2xl font-bold mb-6">{{ _('최근 제출 기록') }}</h2>
+
+    <div class="overflow-x-auto">
+        <table class="table-modern w-full">
+            <thead>
+                <tr>
+                    <th class="text-center">{{ _('시간') }}</th>
+                    <th class="text-center">{{ _('승자') }}</th>
+                    <th class="text-center">{{ _('패자') }}</th>
+                    <th class="text-center">{{ _('스코어') }}</th>
+                    <th class="text-center">{{ _('상태') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="text-center text-gray-500 text-sm whitespace-nowrap">
+                        {{ match.timestamp|datetimeformat('%m.%d %H:%M') }}
+                    </td>
+                    <td class="text-center font-semibold">
+                        {{ match.winner_name }}
+                    </td>
+                    <td class="text-center text-gray-600">
+                        {{ match.loser_name }}
+                    </td>
+                    <td class="text-center">
+                        {{ match.score }}
+                    </td>
+                    <td class="text-center px-4 py-2">
+                        {% if match.approved %}
+                        <span
+                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            {{ _('승인됨') }}
+                        </span>
                         {% else %}
-                            <tr><td colspan="5" class="text-center py-8 text-gray-500 whitespace-nowrap">{{ _('최근에 제출한 경기 결과가 없습니다.') }}</td></tr>
+                        <span
+                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            {{ _('대기중') }}
+                        </span>
                         {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
-        <nav class="flex h-full">
-            <a href="{{ url_for('index') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
-                <i class="fas fa-home fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">{{ _('홈') }}</span>
-            </a>
-            <a href="{{ url_for('rankings_page') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
-                <i class="fas fa-trophy fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">{{ _('랭킹') }}</span>
-            </a>
-            <a href="{{ url_for('league_or_tournament') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'league_or_tournament' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
-                <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">{{ _('리그전') }}</span>
-            </a>
-            <a href="{{ url_for('betting') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'betting' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
-                <i class="fas fa-coins fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">{{ _('베팅') }}</span>
-            </a>
-            <a href="{{ url_for('mypage') }}" class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if active_page == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
-                <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
-                <span class="text-xs font-medium">{{ _('마이페이지') }}</span>
-            </a>
-        </nav>
-    </footer>
-</body>
-</html>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-8 text-gray-500">
+                        {{ _('제출한 경기 기록이 없습니다.') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

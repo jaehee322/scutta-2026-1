@@ -1,111 +1,71 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리 - 기타 설정</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body class="bg-gray-100">
+{% extends "base.html" %}
 
-    <header>
-        <div class="flex items-center gap-4">
-            <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
-        </div>
-        <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
-        <div class="flex items-center gap-4">
-           {% if current_user.is_authenticated %}
-                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
-            {% endif %}
-        </div>
-    </header>
+{% block title %}시스템 설정 - SCUTTA{% endblock %}
 
-    <div id="menu-overlay" class="menu-overlay"></div>
-    <div id="menu" class="menu">
-        <div class="menu-header">메뉴</div>
-        <a href="{{ url_for('mypage') }}" class="menu-item">마이페이지</a><hr class="my-4" />
-        <a href="{{ url_for('submit_match_page') }}" class="menu-item">경기 결과 제출</a>
-        <a href="{{ url_for('submitment') }}" class="menu-item">제출 현황</a>
-        <a href="{{ url_for('partner') }}" class="menu-item">오늘의 상대</a>
-        <a href="{{ url_for('league_or_tournament') }}" class="menu-item">리그전 및 토너먼트</a>
-        <a href="{{ url_for('betting') }}" class="menu-item">베팅</a><hr class="mt-10" />
-        <div class="menu-item mt-10"><a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank" rel="noopener noreferrer">NOTION</a></div>
-        <a href="{{ url_for('password') }}" class="menu-item">관리 페이지로 이동</a>
-    </div>
+{% block container_style %}margin-top: 0;{% endblock %}
 
-    <div class="index-bar">
-        <a href="{{ url_for('betting_approval') }}" class="index-item {% if request.endpoint == 'betting_approval' %}active{% endif %}">베팅 승인</a>
-        <a href="{{ url_for('approval') }}" class="index-item {% if request.endpoint == 'approval' %}active{% endif %}">경기 승인</a>
-        <a href="{{ url_for('assignment') }}" class="index-item {% if request.endpoint == 'assignment' %}active{% endif %}">부수/포인트</a>
-        <a href="{{ url_for('settings') }}" class="index-item {% if request.endpoint == 'settings' %}active{% endif %}">기타 설정</a>
-    </div>
+{% block header_left %}
+<a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
+    시스템 설정
+</a>
+{% endblock %}
 
-    <div class="container mx-auto p-4 admin-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}<div class="mb-4">{% for category, message in messages %}<div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}" role="alert"><span class="font-medium">{{ message }}</span></div>{% endfor %}</div>{% endif %}
-        {% endwith %}
-        
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold">전체 선수 목록</h2><button id="delete-players-btn" class="bg-red-500 hover:bg-red-700 text-white button">선택 선수 삭제</button></div>
-            <div class="overflow-x-auto">
-                <table class="table-modern">
-                    <thead><tr><th><input type="checkbox" id="select-all-players"></th><th>이름</th><th>유효 계정</th><th>경기수</th></tr></thead>
-                    <tbody>
-                        {% for player in players %}
-                        <tr>
-                            <td><input type="checkbox" class="player-checkbox" value="{{ player.id }}"></td>
-                            <td><a href="{{ url_for('player_detail', player_id=player.id) }}" class="hover:underline">{{ player.name }}</a></td>
-                            <td>{{ '✔️' if player.is_valid else '❌' }}</td>
-                            <td>{{ player.match_count }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-sm">
+    <h2 class="text-2xl font-bold mb-6">글로벌 텍스트 설정</h2>
+
+    <form action="{{ url_for('update_global_texts') }}" method="POST">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">현재 학기 (Semester)</label>
+                <input type="text" name="semester" value="{{ config['GLOBAL_TEXTS']['semester'] }}"
+                    class="w-full px-4 py-2 border rounded-lg" placeholder="예: 2026-1">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">메인 타이틀 (Title)</label>
+                <input type="text" name="main_title" value="{{ config['GLOBAL_TEXTS']['main_title'] }}"
+                    class="w-full px-4 py-2 border rounded-lg">
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-            <h2 class="text-lg font-bold mb-4">오늘의 상대</h2>
-            <div class="space-y-4">
-                <textarea id="old-player-input" placeholder="기존 부원 이름을 스페이스바로 구분하여 입력하세요."></textarea>
-                <textarea id="new-player-input" placeholder="신입 부원 이름을 스페이스바로 구분하여 입력하세요."></textarea>
-                <div class="flex gap-4"><button id="reset-partner-button" class="bg-gray-200 text-gray-800 button w-1/3">초기화</button><button id="register-partner-button-1" class="bg-main button w-2/3">매칭</button></div>
-            </div>
-            <table id="setting-partner-table" class="table-modern mt-6 hidden">
-                <thead><tr><th>기존부원</th><th>신입부원</th></tr></thead>
-                <tbody id="setting-partner-body"></tbody>
-            </table>
-            <button id="register-partner-button-2" class="bg-main button mt-4 w-full hidden">확정</button>
-        </div>
+        <button type="submit"
+            class="mt-6 bg-main button w-full border-2 border-gray-800 text-gray-800 font-bold hover:bg-gray-100">설정
+            저장</button>
+    </form>
+</div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-lg font-bold mb-4">새 회원 일괄 등록</h2>
-            <div id="add-user-form" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" id="name" name="name" placeholder="이름 (로그인 아이디로 사용)"><input type="password" id="password" name="password" placeholder="초기 비밀번호"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <select id="gender" name="gender"><option value="" disabled selected>성별 선택</option><option value="M">남자</option><option value="F">여자</option></select>
-                    <select id="freshman" name="freshman"><option value="" disabled selected>신입/기존 부원</option><option value="Y">신입</option><option value="N">기존</option></select>
-                </div>
-                <div class="flex items-center"><input type="checkbox" id="is_admin" name="is_admin" class="mr-2 h-4 w-4 rounded"><label for="is_admin">관리자 권한 부여</label></div>
-                <button type="button" id="add-to-queue-btn" class="w-full bg-gray-200 text-gray-800 button">대기열에 추가</button>
-            </div>
-            <div class="mt-8">
-                <h3 class="font-semibold mb-2">등록 대기열</h3>
-                <div class="overflow-x-auto">
-                    <table class="table-modern">
-                        <thead><tr><th>이름</th><th>성별</th><th>구분</th><th>관리자</th><th>삭제</th></tr></thead>
-                        <tbody id="registration-queue-body"></tbody>
-                    </table>
-                </div>
-                <button id="batch-register-btn" class="w-full bg-main button mt-4">대기열 일괄 등록</button>
-            </div>
+<div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+    <h2 class="text-2xl font-bold mb-6">데이터 초기화 (위험)</h2>
+    <div class="space-y-4">
+        <div class="p-4 border border-red-200 bg-red-50 rounded-lg">
+            <h3 class="font-bold text-red-700 mb-2">모든 경기 기록 삭제</h3>
+            <p class="text-sm text-red-600 mb-4">모든 경기 기록이 영구적으로 삭제됩니다. 되돌릴 수 없습니다.</p>
+            <form action="{{ url_for('reset_matches') }}" method="POST"
+                onsubmit="return confirm('정말 모든 경기 기록을 삭제하시겠습니까?');">
+                <button type="submit"
+                    class="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 w-full md:w-auto">경기 기록
+                    초기화</button>
+            </form>
+        </div>
+        <div class="p-4 border border-red-200 bg-red-50 rounded-lg">
+            <h3 class="font-bold text-red-700 mb-2">모든 베팅 기록 삭제</h3>
+            <p class="text-sm text-red-600 mb-4">모든 베팅 및 포인트 내역이 영구적으로 삭제됩니다.</p>
+            <form action="{{ url_for('reset_betting') }}" method="POST"
+                onsubmit="return confirm('정말 모든 베팅 기록을 삭제하시겠습니까?');">
+                <button type="submit"
+                    class="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 w-full md:w-auto">베팅 기록
+                    초기화</button>
+            </form>
         </div>
     </div>
+</div>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
-</body>
-</html>
+<div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+    <h2 class="text-2xl font-bold mb-6">관리자 계정 관리</h2>
+    <a href="{{ url_for('admin_reset_password_page') }}"
+        class="block text-center bg-gray-800 text-white font-bold py-3 px-4 rounded hover:bg-gray-900">
+        사용자 비밀번호 강제 변경
+    </a>
+</div>
+{% endblock %}

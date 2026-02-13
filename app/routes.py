@@ -478,81 +478,7 @@ def init_routes(app):
         }
         return render_template('rankings.html', summary_rankings=summary_rankings, headers=translated_headers)
 
-    #api
-    @app.route('/rankings', methods=['GET'])
-    def rankings():
-        # JS에서 'win_count_order' 같은 형식으로 요청을 보냅니다.
-        category_from_req = request.args.get('category', 'win_order')
-        
-        # ▼▼▼ 핵심 수정: DB에서 사용할 이름('win_order')으로 변환합니다. ▼▼▼
-        category = category_from_req.replace('_count', '')
 
-        offset = int(request.args.get('offset', 0))
-        limit = int(request.args.get('limit', 30))
-        sort = request.args.get('sort', 'asc')
-
-        valid_categories = ['win_order', 'loss_order', 'match_order', 'rate_order', 'opponent_order', 'achieve_order', 'betting_order']
-        if category not in valid_categories:
-            return jsonify([])
-
-        secondary_criteria = {
-            'win_order': Player.match_count.desc(), 'loss_order': Player.match_count.desc(),
-            'match_order': Player.win_count.desc(), 'rate_order': Player.match_count.desc(),
-            'opponent_order': Player.match_count.desc(), 'achieve_order': Player.betting_count.desc(),
-            'betting_order': Player.achieve_count.desc(),
-        }
-        
-        primary_order = getattr(Player, category)
-        if sort == "asc":
-            primary_order = primary_order.asc()
-        else:
-            primary_order = primary_order.desc()
-        
-        secondary_order = secondary_criteria.get(category, Player.id)
-        
-        players = Player.query.join(User).filter(
-            Player.is_valid == True, User.is_admin == False
-        ).order_by(primary_order, secondary_order, Player.id).offset(offset).limit(limit).all()
-
-        response = []
-        for player in players:
-            response.append({
-                'id': player.id,
-                'current_rank': getattr(player, category),
-                'rank': player.rank or '무',
-                'name': player.name,
-                'stats': {
-                    'win_count': player.win_count, 'loss_count': player.loss_count,
-                    'rate_count': player.rate_count, 'match_count': player.match_count,
-                    'opponent_count': player.opponent_count, 'achieve_count': player.achieve_count,
-                    'betting_count': player.betting_count,
-                }
-            })
-        return jsonify(response)
-    
-    #api
-    @app.route('/get_my_rank', methods=['GET'])
-    @login_required
-    def get_my_rank():
-        if not current_user.is_authenticated or not current_user.player:
-            return jsonify(None)
-        category_from_req = request.args.get('category', 'win_order')
-        category = category_from_req.replace('_count', '')
-        valid_categories = ['win_order', 'loss_order', 'match_order', 'rate_order', 'opponent_order', 'achieve_order', 'betting_order']
-        if category not in valid_categories:
-            return jsonify({'error': 'Invalid category'}), 400
-        player = current_user.player
-        response = {
-            'id': player.id, 'current_rank': getattr(player, category), 'rank': player.rank or '무',
-            'name': player.name,
-            'stats': {
-                'win_count': player.win_count, 'loss_count': player.loss_count,
-                'rate_count': player.rate_count, 'match_count': player.match_count,
-                'opponent_count': player.opponent_count, 'achieve_count': player.achieve_count,
-                'betting_count': player.betting_count,
-            }
-        }
-        return jsonify(response)
     
     @app.route('/league_or_tournament')
     @login_required
@@ -1623,52 +1549,7 @@ def init_routes(app):
             # 브라우저에도 최소한의 오류 정보를 전달합니다.
             return jsonify({'error': '서버 내부에서 처리되지 않은 심각한 오류 발생', 'message': str(e)}), 500
 
-    @app.route('/search_players', methods=['GET'])
-    def search_players():
-        query = request.args.get('query', '').strip()
-        category_from_req = request.args.get('category', 'win_order')
-        
-        # ▼▼▼ 핵심 수정: DB에서 사용할 이름으로 변환합니다. ▼▼▼
-        category = category_from_req.replace('_count', '')
 
-        if len(query) < 2:
-            return jsonify([])
-
-        valid_categories = ['win_order', 'loss_order', 'match_order', 'rate_order', 'opponent_order', 'achieve_order', 'betting_order']
-        if category not in valid_categories:
-            return jsonify([])
-
-        secondary_criteria = {
-            'win_order': Player.match_count.desc(), 'loss_order': Player.match_count.desc(),
-            'match_order': Player.win_count.desc(), 'rate_order': Player.match_count.desc(),
-            'opponent_order': Player.match_count.desc(), 'achieve_order': Player.betting_count.desc(),
-            'betting_order': Player.achieve_count.desc(),
-        }
-
-        primary_order = getattr(Player, category)
-        secondary_order = secondary_criteria.get(category, Player.id)
-
-        players = Player.query.join(User).filter(
-            Player.name.ilike(f"%{query}%"), 
-            Player.is_valid == True,
-            User.is_admin == False
-        ).order_by(primary_order, secondary_order).all()
-
-        response = []
-        for player in players:
-            response.append({
-                'id': player.id,
-                'current_rank': getattr(player, category),
-                'rank': player.rank or '무',
-                'name': player.name,
-                'stats': {
-                    'win_count': player.win_count, 'loss_count': player.loss_count,
-                    'rate_count': player.rate_count, 'match_count': player.match_count,
-                    'opponent_count': player.opponent_count, 'achieve_count': player.achieve_count,
-                    'betting_count': player.betting_count,
-                }
-            })
-        return jsonify(response)
 
     # betting_approval.js
 
@@ -1851,6 +1732,185 @@ def init_routes(app):
         ]
         return jsonify(response)
 
+    def _approve_single_match(match):
+        winner = Player.query.get(match.winner)
+        loser = Player.query.get(match.loser)
+        if not winner or not loser:
+            return
+        
+        match.approved = True
+        
+        winner.match_count += 1
+        winner.win_count += 1
+        winner.rate_count = round((winner.win_count / winner.match_count) * 100, 2)
+        winner_previous_opponent = winner.opponent_count
+        winner.opponent_count = calculate_opponent_count(winner.id)
+        
+        winner.betting_count += 1
+        add_point_log(winner.id, betting_change=1, reason='경기 결과 제출')
+
+        loser.match_count += 1
+        loser.loss_count += 1
+        loser.rate_count = round((loser.win_count / loser.match_count) * 100, 2)
+        loser_previous_opponent = loser.opponent_count
+        loser.opponent_count = calculate_opponent_count(loser.id)
+        
+        loser.betting_count += 1
+        add_point_log(loser.id, betting_change=1, reason='경기 결과 제출')
+
+        if winner.match_count == 30: 
+            winner.betting_count += 10
+            winner.achieve_count += 5
+            add_point_log(winner.id, betting_change=10, reason='30경기 달성!')
+            add_point_log(winner.id, achieve_change=5, reason='30경기 달성!')
+        if winner.match_count == 50: 
+            winner.betting_count += 20
+            winner.achieve_count += 10
+            add_point_log(winner.id, betting_change=20, reason='50경기 달성!')
+            add_point_log(winner.id, achieve_change=10, reason='50경기 달성!')
+        if winner.match_count == 70: 
+            winner.betting_count += 40
+            winner.achieve_count += 20
+            add_point_log(winner.id, betting_change=40, reason='70경기 달성!')
+            add_point_log(winner.id, achieve_change=20, reason='70경기 달성!')
+
+        if winner.match_count == 100: 
+            winner.betting_count += 60
+            winner.achieve_count += 30
+            add_point_log(winner.id, betting_change=60, reason='100경기 달성!')
+            add_point_log(winner.id, achieve_change=30, reason='100경기 달성!')
+
+        if winner.win_count == 20: 
+            winner.betting_count += 20
+            winner.achieve_count += 10
+            add_point_log(winner.id, betting_change=20, reason='누적 20승 달성!')
+            add_point_log(winner.id, achieve_change=10, reason='누적 20승 달성!')
+
+        if winner.win_count == 35: 
+            winner.betting_count += 40
+            winner.achieve_count += 20
+            add_point_log(winner.id, betting_change=40, reason='누적 35승 달성!')
+            add_point_log(winner.id, achieve_change=20, reason='누적 35승 달성!')
+
+        if winner.win_count == 50: 
+            winner.betting_count += 60
+            winner.achieve_count += 30
+            add_point_log(winner.id, betting_change=60, reason='누적 50승 달성!')
+            add_point_log(winner.id, achieve_change=30, reason='누적 50승 달성!')
+        
+        if winner_previous_opponent == 9 and winner.opponent_count == 10: 
+            winner.betting_count += 10
+            winner.achieve_count += 5
+            add_point_log(winner.id, betting_change=10, reason='누적 상대 수 10명 달성!')
+            add_point_log(winner.id, achieve_change=5, reason='누적 상대 수 10명 달성!')
+
+        if winner_previous_opponent == 24 and winner.opponent_count == 25:
+            winner.betting_count += 40
+            winner.achieve_count += 20
+            add_point_log(winner.id, betting_change=40, reason='누적 상대 수 25명 달성!')
+            add_point_log(winner.id, achieve_change=20, reason='누적 상대 수 25명 달성!')
+
+        if winner_previous_opponent == 39 and winner.opponent_count == 40: 
+            winner.betting_count += 60
+            winner.achieve_count += 30
+            add_point_log(winner.id, betting_change=60, reason='누적 상대 수 40명 달성!')
+            add_point_log(winner.id, achieve_change=30, reason='누적 상대 수 40명 달성!')
+        
+        if loser.match_count == 30: 
+            loser.betting_count += 10
+            loser.achieve_count += 5
+            add_point_log(loser.id, betting_change=10, reason='30경기 달성!')
+            add_point_log(loser.id, achieve_change=5, reason='30경기 달성!')
+
+        if loser.match_count == 50: 
+            loser.betting_count += 20
+            loser.achieve_count += 10
+            add_point_log(loser.id, betting_change=20, reason='50경기 달성!')
+            add_point_log(loser.id, achieve_change=10, reason='50경기 달성!')
+
+        if loser.match_count == 70: 
+            loser.betting_count += 40
+            loser.achieve_count += 20
+            add_point_log(loser.id, betting_change=40, reason='70경기 달성!')
+            add_point_log(loser.id, achieve_change=20, reason='70경기 달성!')
+
+        if loser.match_count == 100: 
+            loser.betting_count += 60
+            loser.achieve_count += 30
+            add_point_log(loser.id, betting_change=60, reason='100경기 달성!')
+            add_point_log(loser.id, achieve_change=30, reason='100경기 달성!')
+
+        if loser.loss_count == 20:
+            loser.betting_count += 10
+            loser.achieve_count += 10
+            add_point_log(loser.id, betting_change=10, reason='누적 20패 달성!')
+            add_point_log(loser.id, achieve_change=10, reason='누적 20패 달성!')
+
+        if loser.loss_count == 35: 
+            loser.betting_count += 20
+            loser.achieve_count += 20
+            add_point_log(loser.id, betting_change=20, reason='누적 35패 달성!')
+            add_point_log(loser.id, achieve_change=20, reason='누적 35패 달성!')
+
+        if loser.loss_count == 50: 
+            loser.betting_count += 30
+            loser.achieve_count += 30
+            add_point_log(loser.id, betting_change=30, reason='누적 50패 달성!')
+            add_point_log(loser.id, achieve_change=30, reason='누적 50패 달성!')
+
+        if loser_previous_opponent == 9 and loser.opponent_count == 10: 
+            loser.betting_count += 10
+            loser.achieve_count += 5
+            add_point_log(loser.id, betting_change=10, reason='누적 상대 수 10명 달성!')
+            add_point_log(loser.id, achieve_change=5, reason='누적 상대 수 10명 달성!')
+
+        if loser_previous_opponent == 24 and loser.opponent_count == 25: 
+            loser.betting_count += 40
+            loser.achieve_count += 20
+            add_point_log(loser.id, betting_change=40, reason='누적 상대 수 25명 달성!')
+            add_point_log(loser.id, achieve_change=20, reason='누적 상대 수 25명 달성!')
+
+        if loser_previous_opponent == 39 and loser.opponent_count == 40: 
+            loser.betting_count += 60
+            loser.achieve_count += 30
+            add_point_log(winner.id, betting_change=60, reason='누적 상대 수 40명 달성!')
+            add_point_log(winner.id, achieve_change=30, reason='누적 상대 수 40명 달성!')
+        
+        today_partner = TodayPartner.query.filter_by(p1_id=match.winner, p2_id=match.loser, submitted=True).first()
+        if not today_partner:
+            today_partner = TodayPartner.query.filter_by(p1_id=match.loser, p2_id=match.winner, submitted=True).first()
+        
+        if today_partner:
+            winner.betting_count += 5
+            winner.achieve_count += 1
+            add_point_log(winner.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
+            add_point_log(winner.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
+            loser.betting_count += 5
+            loser.achieve_count += 1
+            add_point_log(loser.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
+            add_point_log(loser.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
+
+        if match.timestamp.weekday() == 6:
+            winner.achieve_count += 1; winner.betting_count += 3
+            loser.achieve_count += 1; loser.betting_count += 3
+            add_point_log(winner.id, betting_change=3, reason='안 쉬세요??')
+            add_point_log(winner.id, achieve_change=1, reason='안 쉬세요??')
+            add_point_log(loser.id, betting_change=3, reason='안 쉬세요??')
+            add_point_log(loser.id, achieve_change=1, reason='안 쉬세요??')
+            
+        if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 16:
+            if winner.gender == GenderEnum.MALE:
+                winner.rank = 5
+            elif winner.gender == GenderEnum.FEMALE:
+                winner.rank = 7
+        
+        
+        if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 16:
+            if loser.gender == GenderEnum.MALE:
+                loser.rank = 5
+            elif loser.gender == GenderEnum.FEMALE:
+                loser.rank = 7
+
     @app.route('/approve_matches', methods=['POST'])
     def approve_matches():
         ids = request.json.get('ids', [])
@@ -1860,196 +1920,224 @@ def init_routes(app):
         matches = Match.query.filter(Match.id.in_(ids), Match.approved == False).all()
 
         for match in matches:
+            _approve_single_match(match)
+            
+        db.session.commit()
+        update_player_orders_by_match()
+        update_player_orders_by_point()
+        return jsonify({'success': True, 'message': f'{len(matches)}개의 경기가 승인되었습니다.'})
+
+    @app.route('/approve_selected_matches', methods=['POST'])
+    @login_required
+    def approve_selected_matches():
+        if not current_user.is_admin:
+            flash(_('권한이 없습니다.'), 'error')
+            return redirect(url_for('approval'))
+
+        ids = request.form.getlist('match_ids')
+        if not ids:
+            flash(_('승인할 경기를 선택해주세요.'), 'warning')
+            return redirect(url_for('approval'))
+
+        matches = Match.query.filter(Match.id.in_(ids), Match.approved == False).all()
+        for match in matches:
+            _approve_single_match(match)
+
+        db.session.commit()
+        update_player_orders_by_match()
+        update_player_orders_by_point()
+
+        flash(f'{len(matches)}개의 경기가 승인되었습니다.', 'success')
+        return redirect(url_for('approval'))
+
+    @app.route('/approve_match/<int:match_id>', methods=['POST'])
+    @login_required
+    def approve_match(match_id):
+        if not current_user.is_admin:
+            flash(_('권한이 없습니다.'), 'error')
+            return redirect(url_for('approval'))
+
+        match = Match.query.filter_by(id=match_id, approved=False).first()
+        if match:
+             _approve_single_match(match)
+             db.session.commit()
+             flash('경기가 승인되었습니다.', 'success')
+        else:
+             flash('해당 경기를 찾을 수 없거나 이미 승인되었습니다.', 'error')
+        
+        update_player_orders_by_match()
+        update_player_orders_by_point()
+        return redirect(url_for('approval'))
+
+    def _delete_single_match(match):
+        was_approved = match.approved
+        if match.approved:
             winner = Player.query.get(match.winner)
             loser = Player.query.get(match.loser)
+
             if not winner or not loser:
-                continue
+                db.session.delete(match)
+                return 'approved'
             
-            match.approved = True
-            
-            winner.match_count += 1
-            winner.win_count += 1
-            winner.rate_count = round((winner.win_count / winner.match_count) * 100, 2)
+            # --- 승인된 경기의 모든 스탯 되돌리기 ---
+            winner.match_count -= 1
+            winner.win_count -= 1
+            winner.rate_count = round((winner.win_count / winner.match_count) * 100, 2) if winner.match_count > 0 else 0
             winner_previous_opponent = winner.opponent_count
             winner.opponent_count = calculate_opponent_count(winner.id)
             
-            winner.betting_count += 1
-            add_point_log(winner.id, betting_change=1, reason='경기 결과 제출')
+            winner.betting_count -= 1
+            add_point_log(winner.id, betting_change=-1, reason='경기 결과 제출 취소')
 
-            loser.match_count += 1
-            loser.loss_count += 1
-            loser.rate_count = round((loser.win_count / loser.match_count) * 100, 2)
+            loser.match_count -= 1
+            loser.loss_count -= 1
+            loser.rate_count = round((loser.win_count / loser.match_count) * 100, 2) if loser.match_count > 0 else 0
             loser_previous_opponent = loser.opponent_count
             loser.opponent_count = calculate_opponent_count(loser.id)
             
-            loser.betting_count += 1
-            add_point_log(loser.id, betting_change=1, reason='경기 결과 제출')
-
-            if winner.match_count == 30: 
-                winner.betting_count += 10
-                winner.achieve_count += 5
-                add_point_log(winner.id, betting_change=10, reason='30경기 달성!')
-                add_point_log(winner.id, achieve_change=5, reason='30경기 달성!')
-            if winner.match_count == 50: 
-                winner.betting_count += 20
-                winner.achieve_count += 10
-                add_point_log(winner.id, betting_change=20, reason='50경기 달성!')
-                add_point_log(winner.id, achieve_change=10, reason='50경기 달성!')
-            if winner.match_count == 70: 
-                winner.betting_count += 40
-                winner.achieve_count += 20
-                add_point_log(winner.id, betting_change=40, reason='70경기 달성!')
-                add_point_log(winner.id, achieve_change=20, reason='70경기 달성!')
-
-            if winner.match_count == 100: 
-                winner.betting_count += 60
-                winner.achieve_count += 30
-                add_point_log(winner.id, betting_change=60, reason='100경기 달성!')
-                add_point_log(winner.id, achieve_change=30, reason='100경기 달성!')
-
-            if winner.win_count == 20: 
-                winner.betting_count += 20
-                winner.achieve_count += 10
-                add_point_log(winner.id, betting_change=20, reason='누적 20승 달성!')
-                add_point_log(winner.id, achieve_change=10, reason='누적 20승 달성!')
-
-            if winner.win_count == 35: 
-                winner.betting_count += 40
-                winner.achieve_count += 20
-                add_point_log(winner.id, betting_change=40, reason='누적 35승 달성!')
-                add_point_log(winner.id, achieve_change=20, reason='누적 35승 달성!')
-
-            if winner.win_count == 50: 
-                winner.betting_count += 60
-                winner.achieve_count += 30
-                add_point_log(winner.id, betting_change=60, reason='누적 50승 달성!')
-                add_point_log(winner.id, achieve_change=30, reason='누적 50승 달성!')
+            loser.betting_count -= 1
+            add_point_log(loser.id, betting_change=-1, reason='경기 결과 제출 취소')
             
-            if winner_previous_opponent == 9 and winner.opponent_count == 10: 
-                winner.betting_count += 10
-                winner.achieve_count += 5
-                add_point_log(winner.id, betting_change=10, reason='누적 상대 수 10명 달성!')
-                add_point_log(winner.id, achieve_change=5, reason='누적 상대 수 10명 달성!')
-
-            if winner_previous_opponent == 24 and winner.opponent_count == 25:
-                winner.betting_count += 40
-                winner.achieve_count += 20
-                add_point_log(winner.id, betting_change=40, reason='누적 상대 수 25명 달성!')
-                add_point_log(winner.id, achieve_change=20, reason='누적 상대 수 25명 달성!')
-
-            if winner_previous_opponent == 39 and winner.opponent_count == 40: 
-                winner.betting_count += 60
-                winner.achieve_count += 30
-                add_point_log(winner.id, betting_change=60, reason='누적 상대 수 40명 달성!')
-                add_point_log(winner.id, achieve_change=30, reason='누적 상대 수 40명 달성!')
-            
-            if loser.match_count == 30: 
-                loser.betting_count += 10
-                loser.achieve_count += 5
-                add_point_log(loser.id, betting_change=10, reason='30경기 달성!')
-                add_point_log(loser.id, achieve_change=5, reason='30경기 달성!')
-
-            if loser.match_count == 50: 
-                loser.betting_count += 20
-                loser.achieve_count += 10
-                add_point_log(loser.id, betting_change=20, reason='50경기 달성!')
-                add_point_log(loser.id, achieve_change=10, reason='50경기 달성!')
-
-            if loser.match_count == 70: 
-                loser.betting_count += 40
-                loser.achieve_count += 20
-                add_point_log(loser.id, betting_change=40, reason='70경기 달성!')
-                add_point_log(loser.id, achieve_change=20, reason='70경기 달성!')
-
-            if loser.match_count == 100: 
-                loser.betting_count += 60
-                loser.achieve_count += 30
-                add_point_log(loser.id, betting_change=60, reason='100경기 달성!')
-                add_point_log(loser.id, achieve_change=30, reason='100경기 달성!')
-
-            if loser.loss_count == 20:
-                loser.betting_count += 10
-                loser.achieve_count += 10
-                add_point_log(loser.id, betting_change=10, reason='누적 20패 달성!')
-                add_point_log(loser.id, achieve_change=10, reason='누적 20패 달성!')
-
-            if loser.loss_count == 35: 
-                loser.betting_count += 20
-                loser.achieve_count += 20
-                add_point_log(loser.id, betting_change=20, reason='누적 35패 달성!')
-                add_point_log(loser.id, achieve_change=20, reason='누적 35패 달성!')
-
-            if loser.loss_count == 50: 
-                loser.betting_count += 30
-                loser.achieve_count += 30
-                add_point_log(loser.id, betting_change=30, reason='누적 50패 달성!')
-                add_point_log(loser.id, achieve_change=30, reason='누적 50패 달성!')
-
-            if loser_previous_opponent == 9 and loser.opponent_count == 10: 
-                loser.betting_count += 10
-                loser.achieve_count += 5
-                add_point_log(loser.id, betting_change=10, reason='누적 상대 수 10명 달성!')
-                add_point_log(loser.id, achieve_change=5, reason='누적 상대 수 10명 달성!')
-
-            if loser_previous_opponent == 24 and loser.opponent_count == 25: 
-                loser.betting_count += 40
-                loser.achieve_count += 20
-                add_point_log(loser.id, betting_change=40, reason='누적 상대 수 25명 달성!')
-                add_point_log(loser.id, achieve_change=20, reason='누적 상대 수 25명 달성!')
-
-            if loser_previous_opponent == 39 and loser.opponent_count == 40: 
-                loser.betting_count += 60
-                loser.achieve_count += 30
-                add_point_log(winner.id, betting_change=60, reason='누적 상대 수 40명 달성!')
-                add_point_log(winner.id, achieve_change=30, reason='누적 상대 수 40명 달성!')
-            
-            # if winner.rank is not None and loser.rank is not None:
-            #     if winner.rank - loser.rank == 8:
-            #         winner.betting_count += 30
-            #         winner.achieve_count += 30
-            #     if loser.rank - winner.rank == 8:
-            #         loser.betting_count += 3
-            #         loser.achieve_count += 3
+            if winner.match_count == 29: 
+                winner.betting_count -= 10
+                winner.achieve_count -= 5
+                add_point_log(winner.id, betting_change=-10, reason='누적 30경기 달성 취소')
+                add_point_log(winner.id, achieve_change=-5, reason='누적 30경기 달성 취소')
+            if winner.match_count == 49: 
+                winner.betting_count -= 20
+                winner.achieve_count -= 10
+                add_point_log(winner.id, betting_change=-20, reason='누적 50경기 달성 취소')
+                add_point_log(winner.id, achieve_change=-10, reason='누적 50경기 달성 취소')
+            if winner.match_count == 69: 
+                winner.betting_count -= 40
+                winner.achieve_count -= 20
+                add_point_log(winner.id, betting_change=-40, reason='누적 70경기 달성 취소')
+                add_point_log(winner.id, achieve_change=-20, reason='누적 70경기 달성 취소')
+            if winner.match_count == 99: 
+                winner.betting_count -= 60
+                winner.achieve_count -= 30
+                add_point_log(winner.id, betting_change=-60, reason='누적 100경기 달성 취소')
+                add_point_log(winner.id, achieve_change=-30, reason='누적 100경기 달성 취소')
+            if winner.win_count == 19: 
+                winner.betting_count -= 20
+                winner.achieve_count -= 10
+                add_point_log(winner.id, betting_change=-20, reason='누적 20승 달성 취소')
+                add_point_log(winner.id, achieve_change=-10, reason='누적 20승 달성 취소')
+            if winner.win_count == 34: 
+                winner.betting_count -= 40
+                winner.achieve_count -= 20
+                add_point_log(winner.id, betting_change=-40, reason='누적 35승 달성 취소')
+                add_point_log(winner.id, achieve_change=-20, reason='누적 35승 달성 취소')
+            if winner.win_count == 49: 
+                winner.betting_count -= 60
+                winner.achieve_count -= 30
+                add_point_log(winner.id, betting_change=-60, reason='누적 50승 달성 취소')
+                add_point_log(winner.id, achieve_change=-30, reason='누적 50승 달성 취소')
+            if winner_previous_opponent == 10 and winner.opponent_count == 9: 
+                winner.betting_count -= 10
+                winner.achieve_count -= 5
+                add_point_log(winner.id, betting_change=-10, reason='누적 상대 10명 달성 취소')
+                add_point_log(winner.id, achieve_change=-5, reason='누적 상대 10명 달성 취소')
+            if winner_previous_opponent == 25 and winner.opponent_count == 24: 
+                winner.betting_count -= 40
+                winner.achieve_count -= 20
+                add_point_log(winner.id, betting_change=-40, reason='누적 상대 25명 달성 취소')
+                add_point_log(winner.id, achieve_change=-20, reason='누적 상대 25명 달성 취소')
+            if winner_previous_opponent == 40 and winner.opponent_count == 39: 
+                winner.betting_count -= 60
+                winner.achieve_count -= 30
+                add_point_log(winner.id, betting_change=-60, reason='누적 상대 40명 달성 취소')
+                add_point_log(winner.id, achieve_change=-30, reason='누적 상대 40명 달성 취소')
+            if loser.match_count == 29: 
+                loser.betting_count -= 10
+                loser.achieve_count -= 5
+                add_point_log(loser.id, betting_change=-10, reason='누적 30경기 달성 취소')
+                add_point_log(loser.id, achieve_change=-5, reason='누적 30경기 달성 취소')
+            if loser.match_count == 49: 
+                loser.betting_count -= 20
+                loser.achieve_count -= 10
+                add_point_log(loser.id, betting_change=-10, reason='누적 50경기 달성 취소')
+                add_point_log(loser.id, achieve_change=-5, reason='누적 50경기 달성 취소')
+            if loser.match_count == 69: 
+                loser.betting_count -= 40
+                loser.achieve_count -= 20
+                add_point_log(loser.id, betting_change=-40, reason='누적 70경기 달성 취소')
+                add_point_log(loser.id, achieve_change=-20, reason='누적 70경기 달성 취소')
+            if loser.match_count == 99: 
+                loser.betting_count -= 60
+                loser.achieve_count -= 30
+                add_point_log(loser.id, betting_change=-60, reason='누적 100경기 달성 취소')
+                add_point_log(loser.id, achieve_change=-30, reason='누적 100경기 달성 취소')
+            if loser.loss_count == 19: 
+                loser.betting_count -= 10
+                loser.achieve_count -= 10
+                add_point_log(loser.id, betting_change=-10, reason='누적 20패 달성 취소')
+                add_point_log(loser.id, achieve_change=-10, reason='누적 20패 달성 취소')
+            if loser.loss_count == 34: 
+                loser.betting_count -= 20
+                loser.achieve_count -= 20
+                add_point_log(loser.id, betting_change=-20, reason='누적 35패 달성 취소')
+                add_point_log(loser.id, achieve_change=-20, reason='누적 35패 달성 취소')
+            if loser.loss_count == 49: 
+                loser.betting_count -= 30
+                loser.achieve_count -= 30
+                add_point_log(loser.id, betting_change=-30, reason='누적 50패 달성 취소')
+                add_point_log(loser.id, achieve_change=-30, reason='누적 50패 달성 취소')
+            if loser_previous_opponent == 10 and loser.opponent_count == 9: 
+                loser.betting_count -= 10
+                loser.achieve_count -= 5
+                add_point_log(loser.id, betting_change=-10, reason='누적 상대수 10명 달성 취소')
+                add_point_log(loser.id, achieve_change=-5, reason='누적 상대수 10명 달성 취소')
+            if loser_previous_opponent == 25 and loser.opponent_count == 24: 
+                loser.betting_count -= 40
+                loser.achieve_count -= 20
+                add_point_log(loser.id, betting_change=-40, reason='누적 상대수 25명 달성 취소')
+                add_point_log(loser.id, achieve_change=-20, reason='누적 상대수 25명 달성 취소')
+            if loser_previous_opponent == 40 and loser.opponent_count == 39: 
+                loser.betting_count -= 60
+                loser.achieve_count -= 30
+                add_point_log(loser.id, betting_change=-60, reason='누적 상대수 40명 달성 취소')
+                add_point_log(loser.id, achieve_change=-30, reason='누적 상대수 40명 달성 취소')
             
             today_partner = TodayPartner.query.filter_by(p1_id=match.winner, p2_id=match.loser, submitted=True).first()
             if not today_partner:
                 today_partner = TodayPartner.query.filter_by(p1_id=match.loser, p2_id=match.winner, submitted=True).first()
             
             if today_partner:
-                winner.betting_count += 5
-                winner.achieve_count += 1
-                add_point_log(winner.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
-                add_point_log(winner.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
-                loser.betting_count += 5
-                loser.achieve_count += 1
-                add_point_log(loser.id, betting_change=5, reason='오늘의 상대 경기 결과 제출!')
-                add_point_log(loser.id, achieve_change=1, reason='오늘의 상대 경기 결과 제출!')
+                winner.betting_count -= 5
+                loser.betting_count -= 5
+                add_point_log(winner.id, betting_change=-5, reason='오늘의 상대 제출 취소')
+                add_point_log(loser.id, betting_change=-5, reason='오늘의 상대 제출 취소')
 
             if match.timestamp.weekday() == 6:
-                winner.achieve_count += 1; winner.betting_count += 3
-                loser.achieve_count += 1; loser.betting_count += 3
-                add_point_log(winner.id, betting_change=3, reason='안 쉬세요??')
-                add_point_log(winner.id, achieve_change=1, reason='안 쉬세요??')
-                add_point_log(loser.id, betting_change=3, reason='안 쉬세요??')
-                add_point_log(loser.id, achieve_change=1, reason='안 쉬세요??')
-                
-            if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 16:
-                if winner.gender == GenderEnum.MALE:
-                    winner.rank = 5
-                elif winner.gender == GenderEnum.FEMALE:
-                    winner.rank = 7
+                winner.achieve_count -= 1; winner.betting_count -= 3
+                loser.achieve_count -= 1; loser.betting_count -= 3
+                add_point_log(winner.id, betting_change=-3, reason='안 쉬세요?? 취소')
+                add_point_log(winner.id, achieve_change=-1, reason='안 쉬세요?? 취소')
+                add_point_log(loser.id, achieve_change=-1, reason='안 쉬세요?? 취소')
+                add_point_log(loser.id, betting_change=-3, reason='안 쉬세요?? 취소')
             
-            
-            if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 16:
-                if loser.gender == GenderEnum.MALE:
-                    loser.rank = 5
-                elif loser.gender == GenderEnum.FEMALE:
-                    loser.rank = 7
-            
-        db.session.commit()
-        update_player_orders_by_match()
-        update_player_orders_by_point()
-        return jsonify({'success': True, 'message': f'{len(matches)}개의 경기가 승인되었습니다.'})
+            if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 15:
+                if winner.gender == GenderEnum.MALE or winner.gender == GenderEnum.FEMALE:
+                    winner.rank = 8
+            if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 15:
+                if loser.gender == GenderEnum.MALE or loser.gender == GenderEnum.FEMALE:
+                    loser.rank = 8
+        else:
+            today_partner = TodayPartner.query.filter(
+                (
+                    (TodayPartner.p1_id == match.winner) & (TodayPartner.p2_id == match.loser)
+                ) | (
+                    (TodayPartner.p1_id == match.loser) & (TodayPartner.p2_id == match.winner)
+                ),
+                TodayPartner.submitted == True
+            ).order_by(TodayPartner.id.desc()).first()
+
+            if today_partner:
+                today_partner.submitted = False
+        
+        db.session.delete(match)
+        return 'approved' if was_approved else 'pending'
 
     @app.route('/delete_matches', methods=['POST'])
     def delete_matches():
@@ -2063,174 +2151,11 @@ def init_routes(app):
         pending_matches_count = 0
 
         for match in matches_to_delete:
-            if match.approved:
+            result = _delete_single_match(match)
+            if result == 'approved':
                 approved_matches_count += 1
-                winner = Player.query.get(match.winner)
-                loser = Player.query.get(match.loser)
-
-                if not winner or not loser:
-                    db.session.delete(match)
-                    continue
-                
-                # --- 승인된 경기의 모든 스탯 되돌리기 ---
-                winner.match_count -= 1
-                winner.win_count -= 1
-                winner.rate_count = round((winner.win_count / winner.match_count) * 100, 2) if winner.match_count > 0 else 0
-                winner_previous_opponent = winner.opponent_count
-                winner.opponent_count = calculate_opponent_count(winner.id)
-                
-                winner.betting_count -= 1
-                add_point_log(winner.id, betting_change=-1, reason='경기 결과 제출 취소')
-
-                loser.match_count -= 1
-                loser.loss_count -= 1
-                loser.rate_count = round((loser.win_count / loser.match_count) * 100, 2) if loser.match_count > 0 else 0
-                loser_previous_opponent = loser.opponent_count
-                loser.opponent_count = calculate_opponent_count(loser.id)
-                
-                loser.betting_count -= 1
-                add_point_log(loser.id, betting_change=-1, reason='경기 결과 제출 취소')
-                
-                if winner.match_count == 29: 
-                    winner.betting_count -= 10
-                    winner.achieve_count -= 5
-                    add_point_log(winner.id, betting_change=-10, reason='누적 30경기 달성 취소')
-                    add_point_log(winner.id, achieve_change=-5, reason='누적 30경기 달성 취소')
-                if winner.match_count == 49: 
-                    winner.betting_count -= 20
-                    winner.achieve_count -= 10
-                    add_point_log(winner.id, betting_change=-20, reason='누적 50경기 달성 취소')
-                    add_point_log(winner.id, achieve_change=-10, reason='누적 50경기 달성 취소')
-                if winner.match_count == 69: 
-                    winner.betting_count -= 40
-                    winner.achieve_count -= 20
-                    add_point_log(winner.id, betting_change=-40, reason='누적 70경기 달성 취소')
-                    add_point_log(winner.id, achieve_change=-20, reason='누적 70경기 달성 취소')
-                if winner.match_count == 99: 
-                    winner.betting_count -= 60
-                    winner.achieve_count -= 30
-                    add_point_log(winner.id, betting_change=-60, reason='누적 100경기 달성 취소')
-                    add_point_log(winner.id, achieve_change=-30, reason='누적 100경기 달성 취소')
-                if winner.win_count == 19: 
-                    winner.betting_count -= 20
-                    winner.achieve_count -= 10
-                    add_point_log(winner.id, betting_change=-20, reason='누적 20승 달성 취소')
-                    add_point_log(winner.id, achieve_change=-10, reason='누적 20승 달성 취소')
-                if winner.win_count == 34: 
-                    winner.betting_count -= 40
-                    winner.achieve_count -= 20
-                    add_point_log(winner.id, betting_change=-40, reason='누적 35승 달성 취소')
-                    add_point_log(winner.id, achieve_change=-20, reason='누적 35승 달성 취소')
-                if winner.win_count == 49: 
-                    winner.betting_count -= 60
-                    winner.achieve_count -= 30
-                    add_point_log(winner.id, betting_change=-60, reason='누적 50승 달성 취소')
-                    add_point_log(winner.id, achieve_change=-30, reason='누적 50승 달성 취소')
-                if winner_previous_opponent == 10 and winner.opponent_count == 9: 
-                    winner.betting_count -= 10
-                    winner.achieve_count -= 5
-                    add_point_log(winner.id, betting_change=-10, reason='누적 상대 10명 달성 취소')
-                    add_point_log(winner.id, achieve_change=-5, reason='누적 상대 10명 달성 취소')
-                if winner_previous_opponent == 25 and winner.opponent_count == 24: 
-                    winner.betting_count -= 40
-                    winner.achieve_count -= 20
-                    add_point_log(winner.id, betting_change=-40, reason='누적 상대 25명 달성 취소')
-                    add_point_log(winner.id, achieve_change=-20, reason='누적 상대 25명 달성 취소')
-                if winner_previous_opponent == 40 and winner.opponent_count == 39: 
-                    winner.betting_count -= 60
-                    winner.achieve_count -= 30
-                    add_point_log(winner.id, betting_change=-60, reason='누적 상대 40명 달성 취소')
-                    add_point_log(winner.id, achieve_change=-30, reason='누적 상대 40명 달성 취소')
-                if loser.match_count == 29: 
-                    loser.betting_count -= 10
-                    loser.achieve_count -= 5
-                    add_point_log(loser.id, betting_change=-10, reason='누적 30경기 달성 취소')
-                    add_point_log(loser.id, achieve_change=-5, reason='누적 30경기 달성 취소')
-                if loser.match_count == 49: 
-                    loser.betting_count -= 20
-                    loser.achieve_count -= 10
-                    add_point_log(loser.id, betting_change=-10, reason='누적 50경기 달성 취소')
-                    add_point_log(loser.id, achieve_change=-5, reason='누적 50경기 달성 취소')
-                if loser.match_count == 69: 
-                    loser.betting_count -= 40
-                    loser.achieve_count -= 20
-                    add_point_log(loser.id, betting_change=-40, reason='누적 70경기 달성 취소')
-                    add_point_log(loser.id, achieve_change=-20, reason='누적 70경기 달성 취소')
-                if loser.match_count == 99: 
-                    loser.betting_count -= 60
-                    loser.achieve_count -= 30
-                    add_point_log(loser.id, betting_change=-60, reason='누적 100경기 달성 취소')
-                    add_point_log(loser.id, achieve_change=-30, reason='누적 100경기 달성 취소')
-                if loser.loss_count == 19: 
-                    loser.betting_count -= 10
-                    loser.achieve_count -= 10
-                    add_point_log(loser.id, betting_change=-10, reason='누적 20패 달성 취소')
-                    add_point_log(loser.id, achieve_change=-10, reason='누적 20패 달성 취소')
-                if loser.loss_count == 34: 
-                    loser.betting_count -= 20
-                    loser.achieve_count -= 20
-                    add_point_log(loser.id, betting_change=-20, reason='누적 35패 달성 취소')
-                    add_point_log(loser.id, achieve_change=-20, reason='누적 35패 달성 취소')
-                if loser.loss_count == 49: 
-                    loser.betting_count -= 30
-                    loser.achieve_count -= 30
-                    add_point_log(loser.id, betting_change=-30, reason='누적 50패 달성 취소')
-                    add_point_log(loser.id, achieve_change=-30, reason='누적 50패 달성 취소')
-                if loser_previous_opponent == 10 and loser.opponent_count == 9: 
-                    loser.betting_count -= 10
-                    loser.achieve_count -= 5
-                    add_point_log(loser.id, betting_change=-10, reason='누적 상대수 10명 달성 취소')
-                    add_point_log(loser.id, achieve_change=-5, reason='누적 상대수 10명 달성 취소')
-                if loser_previous_opponent == 25 and loser.opponent_count == 24: 
-                    loser.betting_count -= 40
-                    loser.achieve_count -= 20
-                    add_point_log(loser.id, betting_change=-40, reason='누적 상대수 25명 달성 취소')
-                    add_point_log(loser.id, achieve_change=-20, reason='누적 상대수 25명 달성 취소')
-                if loser_previous_opponent == 40 and loser.opponent_count == 39: 
-                    loser.betting_count -= 60
-                    loser.achieve_count -= 30
-                    add_point_log(loser.id, betting_change=-60, reason='누적 상대수 40명 달성 취소')
-                    add_point_log(loser.id, achieve_change=-30, reason='누적 상대수 40명 달성 취소')
-                
-                today_partner = TodayPartner.query.filter_by(p1_id=match.winner, p2_id=match.loser, submitted=True).first()
-                if not today_partner:
-                    today_partner = TodayPartner.query.filter_by(p1_id=match.loser, p2_id=match.winner, submitted=True).first()
-                
-                if today_partner:
-                    winner.betting_count -= 5
-                    loser.betting_count -= 5
-                    add_point_log(winner.id, betting_change=-5, reason='오늘의 상대 제출 취소')
-                    add_point_log(loser.id, betting_change=-5, reason='오늘의 상대 제출 취소')
-
-                if match.timestamp.weekday() == 6:
-                    winner.achieve_count -= 1; winner.betting_count -= 3
-                    loser.achieve_count -= 1; loser.betting_count -= 3
-                    add_point_log(winner.id, betting_change=-3, reason='안 쉬세요?? 취소')
-                    add_point_log(winner.id, achieve_change=-1, reason='안 쉬세요?? 취소')
-                    add_point_log(loser.id, achieve_change=-1, reason='안 쉬세요?? 취소')
-                    add_point_log(loser.id, betting_change=-3, reason='안 쉬세요?? 취소')
-                
-                if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 15:
-                    if winner.gender == GenderEnum.MALE or winner.gender == GenderEnum.FEMALE:
-                        winner.rank = 8
-                if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 15:
-                    if loser.gender == GenderEnum.MALE or loser.gender == GenderEnum.FEMALE:
-                        loser.rank = 8
-            else:
-                today_partner = TodayPartner.query.filter(
-                    (
-                        (TodayPartner.p1_id == match.winner) & (TodayPartner.p2_id == match.loser)
-                    ) | (
-                        (TodayPartner.p1_id == match.loser) & (TodayPartner.p2_id == match.winner)
-                    ),
-                    TodayPartner.submitted == True
-                ).order_by(TodayPartner.id.desc()).first()
-
-                if today_partner:
-                    today_partner.submitted = False
-                    pending_matches_count += 1
-            
-            db.session.delete(match)
+            elif result == 'pending':
+                pending_matches_count += 1
 
         db.session.commit()
 
@@ -2238,6 +2163,25 @@ def init_routes(app):
         update_player_orders_by_point()
         
         return jsonify({'success': True, 'message': f'{approved_matches_count}개의 승인된 경기와 {pending_matches_count}개의 미승인된 경기가 삭제되었습니다.'})
+
+    @app.route('/delete_match/<int:match_id>', methods=['POST'])
+    @login_required
+    def delete_match_by_admin(match_id):
+        if not current_user.is_admin:
+            flash(_('권한이 없습니다.'), 'error')
+            return redirect(url_for('approval'))
+        
+        match = Match.query.get(match_id)
+        if match:
+             _delete_single_match(match)
+             db.session.commit()
+             update_player_orders_by_match()
+             update_player_orders_by_point()
+             flash('경기가 삭제되었습니다.', 'success')
+        else:
+             flash('해당 경기를 찾을 수 없습니다.', 'error')
+        
+        return redirect(url_for('approval'))
    
     @app.route('/select_all_matches', methods=['GET'])
     def select_all_matches():

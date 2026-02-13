@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SCUTTA{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    {# ===== 상단 헤더 (sticky by default via style.css) ===== #}
+    <header>
+        <div class="flex items-center gap-2 min-w-0">
+            <div id="menu-toggle" class="text-xl cursor-pointer mr-2">&#9776;</div>
+            {% block header_left %}
+            <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
+            {% endblock %}
+        </div>
+        <div class="flex-shrink-0 flex items-center gap-2">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline truncate hidden sm:block">{{
+                current_user.username }}</a>
+            <a href="{{ url_for('logout') }}"
+                class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-2 rounded-md whitespace-nowrap">{{
+                _('로그아웃') }}</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="text-sm font-semibold hover:underline">{{ _('로그인') }}</a>
+            {% endif %}
+        </div>
+    </header>
+
+    {# ===== 사이드 메뉴 (Common) ===== #}
+    <div id="menu-overlay" class="menu-overlay"></div>
+    <div id="menu" class="menu">
+        <div class="menu-header">{{ _('메뉴') }}</div>
+        <div class="menu-item mt-4" onclick="location.href='{{ url_for('mypage') }}'">{{ _('마이페이지') }}</div>
+        <hr class="my-4" />
+        <div class="menu-item" onclick="location.href='{{ url_for('submit_match_page') }}'">{{ _('경기 결과 제출') }}</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('my_submissions') }}'">{{ _('나의 제출 현황') }}</div>
+        <div class="menu-item" onclick="location.href='{{ url_for('partner') }}'">{{ _('오늘의 상대') }}</div>
+        <hr class="my-4" />
+        <div class="menu-item">
+            <a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank">{{
+                _('공지사항(Notion)') }}</a>
+        </div>
+        <div class="menu-item" onclick="location.href='{{ url_for('password') }}'">{{ _('관리 페이지로 이동') }}</div>
+    </div>
+
+    {# ===== 플래시 메시지 ===== #}
+    <main class="container mx-auto p-4 md:p-6 lg:p-8" style="{% block container_style %}{% endblock %}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-4">
+            {% for category, message in messages %}
+            <div class="p-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-green-100 text-green-700 {% endif %}"
+                role="alert">
+                <span class="font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {# ===== 하단 네비게이션 바 ===== #}
+    <footer class="bg-white border-t fixed bottom-0 left-0 w-full z-20 h-14">
+        <nav class="flex h-full">
+            <a href="{{ url_for('index') }}"
+                class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if request.endpoint == 'index' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-home fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">{{ _('홈') }}</span>
+            </a>
+            <a href="{{ url_for('rankings_page') }}"
+                class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if request.endpoint == 'rankings_page' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-trophy fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">{{ _('랭킹') }}</span>
+            </a>
+            <a href="{{ url_for('league_or_tournament') }}"
+                class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if request.endpoint in ['league_or_tournament', 'league', 'league_detail', 'tournament', 'tournament_detail'] %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-calendar-days fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">{{ _('리그전') }}</span>
+            </a>
+            <a href="{{ url_for('betting') }}"
+                class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if request.endpoint == 'betting' or request.endpoint.startswith('betting_bp.') %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-coins fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">{{ _('베팅') }}</span>
+            </a>
+            <a href="{{ url_for('mypage') }}"
+                class="w-1/5 flex flex-col items-center justify-center gap-1 transition {% if request.endpoint == 'mypage' %}text-gray-900 font-bold{% else %}text-gray-700{% endif %}">
+                <i class="fas fa-user-circle fa-lg w-6 text-center"></i>
+                <span class="text-xs font-medium">{{ _('마이페이지') }}</span>
+            </a>
+        </nav>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

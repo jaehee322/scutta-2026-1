@@ -1,94 +1,93 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리 - 경기 승인</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
-</head>
-<body class="bg-gray-100">
+{% extends "base.html" %}
 
-    <header>
-        <div class="flex items-center gap-4">
-            <div id="menu-toggle" class="text-xl cursor-pointer">&#9776;</div>
+{% block title %}경기 승인 관리 - SCUTTA{% endblock %}
+
+{% block container_style %}margin-top: 0;{% endblock %}
+
+{% block header_left %}
+<a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
+    경기 승인 관리
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-sm">
+    <h2 class="text-2xl font-bold mb-6">승인 대기 중인 경기</h2>
+
+    <form action="{{ url_for('approve_selected_matches') }}" method="POST">
+        <div class="overflow-x-auto">
+            <table class="table-modern w-full whitespace-nowrap">
+                <thead>
+                    <tr>
+                        <th class="w-10 text-center">
+                            <input type="checkbox" id="check-all" class="h-4 w-4 rounded border-gray-300">
+                        </th>
+                        <th class="text-center">시간</th>
+                        <th class="text-center">승자</th>
+                        <th class="text-center">패자</th>
+                        <th class="text-center">스코어</th>
+                        <th class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pending_matches %}
+                    {% for match in pending_matches %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="match_ids" value="{{ match.id }}"
+                                class="match-checkbox h-4 w-4 rounded border-gray-300">
+                        </td>
+                        <td class="text-center text-sm text-gray-500">
+                            {{ match.timestamp.strftime('%m.%d %H:%M') }}
+                        </td>
+                        <td class="text-center font-bold text-blue-600">
+                            {{ match.winner_name }}
+                        </td>
+                        <td class="text-center font-bold text-red-600">
+                            {{ match.loser_name }}
+                        </td>
+                        <td class="text-center font-bold">
+                            {{ match.score }}
+                        </td>
+                        <td class="text-center">
+                            <div class="flex justify-center gap-2">
+                                <button type="submit" formaction="{{ url_for('approve_match', match_id=match.id) }}"
+                                    class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">승인</button>
+                                <button type="submit"
+                                    formaction="{{ url_for('delete_match_by_admin', match_id=match.id) }}"
+                                    class="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-500">
+                            승인 대기 중인 경기가 없습니다.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
-        <a href="{{ url_for('index') }}" class="text-xl font-bold">SCUTTA</a>
-        <div class="flex items-center gap-4">
-           {% if current_user.is_authenticated %}
-                <a href="{{ url_for('mypage') }}" class="text-sm font-semibold hover:underline">{{ current_user.username }}</a>
-                <a href="{{ url_for('logout') }}" class="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 py-1 px-3 rounded-md">로그아웃</a>
-            {% endif %}
+
+        {% if pending_matches %}
+        <div class="mt-4 flex gap-2">
+            <button type="submit"
+                class="bg-blue-600 text-white font-bold py-2 px-6 rounded hover:bg-blue-700 transition">선택 일괄
+                승인</button>
         </div>
-    </header>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
 
-    <div id="menu-overlay" class="menu-overlay"></div>
-    <div id="menu" class="menu">
-        <div class="menu-header">메뉴</div>
-        <a href="{{ url_for('mypage') }}" class="menu-item">마이페이지</a><hr class="my-4" />
-        <a href="{{ url_for('submit_match_page') }}" class="menu-item">경기 결과 제출</a>
-        <a href="{{ url_for('submitment') }}" class="menu-item">제출 현황</a>
-        <a href="{{ url_for('partner') }}" class="menu-item">오늘의 상대</a>
-        <a href="{{ url_for('league_or_tournament') }}" class="menu-item">리그전 및 토너먼트</a>
-        <a href="{{ url_for('betting') }}" class="menu-item">베팅</a><hr class="mt-10" />
-        <div class="menu-item mt-10"><a href="https://www.notion.so/scutta/SCUTTA-66ba5d3097404e0eade61cd7430bd740" target="_blank" rel="noopener noreferrer">NOTION</a></div>
-        <a href="{{ url_for('password') }}" class="menu-item">관리 페이지로 이동</a>
-    </div>
-
-    <div class="index-bar">
-        <a href="{{ url_for('betting_approval') }}" class="index-item">베팅 승인</a>
-        <a href="{{ url_for('approval') }}" class="index-item active">경기 승인</a>
-        <a href="{{ url_for('assignment') }}" class="index-item">부수/포인트</a>
-        <a href="{{ url_for('settings') }}" class="index-item">기타 설정</a>
-    </div>
-
-    <div class="container mx-auto p-4 admin-content">
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="mb-4">
-                <div class="tabs flex items-center space-x-2 mb-4">
-                    <div id="tab-all" class="tab text-sm active" onclick="selectTab(this, 'all')">전체</div>
-                    <div id="tab-pending" class="tab text-sm" onclick="selectTab(this, 'pending')">승인 대기</div>
-                    <div id="tab-approved" class="tab text-sm" onclick="selectTab(this, 'approved')">승인 완료</div>
-                </div>
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div class="flex items-center">
-                        <input type="text" id="date-filter" class="form-input rounded-md text-sm" placeholder="기간으로 검색..." style="width: 200px;">
-                        <button id="search-by-date-btn" class="bg-gray-700 text-white button text-sm ml-2">검색</button>
-                        <button id="reset-date-btn" class="bg-gray-200 text-gray-800 button text-sm ml-2">초기화</button>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button class="bg-main button text-sm whitespace-nowrap" onclick="approveAllMatches()">전체 승인</button>
-                        <button class="bg-main button text-sm whitespace-nowrap" onclick="approveMatches()">선택 승인</button>
-                        <button class="bg-gray-200 text-gray-800 button text-sm whitespace-nowrap" onclick="deleteMatches()">선택 삭제</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="overflow-x-auto no-scrollbar">
-                <table class="table-modern min-w-full table-auto">
-                    <thead>
-                        <tr>
-                            <th class="whitespace-nowrap"><input type="checkbox" onclick="toggleSelectAll(this)"></th>
-                            <th class="whitespace-nowrap">승인</th>
-                            <th class="whitespace-nowrap">승리자</th>
-                            <th class="whitespace-nowrap">점수</th>
-                            <th class="whitespace-nowrap">패배자</th>
-                            <th class="whitespace-nowrap">신청 시간</th>
-                        </tr>
-                    </thead>
-                    <tbody id="match-table-body">
-                        </tbody>
-                </table>
-            </div>
-            <div class="flex justify-center items-center mt-6"><button id="load-more" class="bg-gray-200 text-gray-800 rounded py-2 px-4">더 보기</button></div>
-        </div>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/l10n/ko.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/approval.js') }}"></script>
-</body>
-</html>
+{% block extra_scripts %}
+<script>
+    document.getElementById('check-all').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.match-checkbox');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+</script>
+{% endblock %}
