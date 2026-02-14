@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('betting') }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('betting.betting_page') }}" class="text-xl font-bold truncate">
     {{ betting.p1_name }} vs {{ betting.p2_name }}
 </a>
 {% endblock %}
@@ -73,7 +73,7 @@
         {{ _('이 베팅은 마감되었습니다.') }}
     </div>
     {% else %}
-    <form action="{{ url_for('place_bet') }}" method="POST">
+    <form action="{{ url_for('betting.place_bet') }}" method="POST">
         <input type="hidden" name="betting_id" value="{{ betting.id }}">
         <h3 class="text-xl font-bold mb-4">{{ _('나의 베팅') }}</h3>
         <div class="space-y-4">

@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('index') }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('main.index') }}" class="text-xl font-bold truncate">
     {{ _('베팅') }}
 </a>
 {% endblock %}
@@ -14,7 +14,7 @@
 <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold">{{ _('진행중인 베팅') }}</h2>
     {% if current_user.is_admin %}
-    <a href="{{ url_for('create_betting_page') }}" class="bg-main button text-sm">{{ _('새 베팅 생성') }}</a>
+    <a href="{{ url_for('betting.create_betting_page') }}" class="bg-main button text-sm">{{ _('새 베팅 생성') }}</a>
     {% endif %}
 </div>
 
@@ -26,9 +26,10 @@
         <div class="flex justify-between items-center">
 
             {% if current_user.is_admin %}
-            <a href="{{ url_for('betting_detail', betting_id=data.betting.id) }}" class="flex-grow">
+            <a href="{{ url_for('betting.betting_detail', betting_id=data.betting.id) }}" class="flex-grow">
                 {% else %}
-                <a href="{{ url_for('betting_detail_for_user', betting_id=data.betting.id) }}" class="flex-grow">
+                <a href="{{ url_for('betting.betting_detail_for_user', betting_id=data.betting.id) }}"
+                    class="flex-grow">
                     {% endif %}
                     <div class="flex justify-between items-center">
                         <div class="text-center w-2/5">
@@ -49,8 +50,8 @@
                 <div class="pl-4 border-l ml-4 flex flex-col items-center justify-center space-y-2"
                     style="min-width: 120px;">
                     {% if current_user.is_admin %}
-                    <form action="{{ url_for('toggle_betting_status', betting_id=data.betting.id) }}" method="POST"
-                        class="w-full">
+                    <form action="{{ url_for('betting.toggle_betting_status', betting_id=data.betting.id) }}"
+                        method="POST" class="w-full">
                         {% if data.betting.is_closed %}
                         <button type="submit" class="bg-green-500 text-white button text-sm w-full">{{ _('베팅 열기')
                             }}</button>
@@ -66,7 +67,7 @@
                     <span class="font-bold text-red-500 text-sm">{{ _('마감') }}</span>
                     {% else %}
                     <p class="text-sm font-semibold mb-2 text-indigo-600">{{ data.betting.point }} pt</p>
-                    <a href="{{ url_for('betting_detail_for_user', betting_id=data.betting.id) }}"
+                    <a href="{{ url_for('betting.betting_detail_for_user', betting_id=data.betting.id) }}"
                         class="bg-main button text-sm w-full text-center">
                         {{ _('베팅하기') }}
                     </a>

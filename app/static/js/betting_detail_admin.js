@@ -27,14 +27,14 @@ function submitBettingResult(bettingId, p1Name, p2Name) {
             score: score
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const results = data.results;
-            const winParticipantsText = results.winParticipants.length > 0 ? results.winParticipants.join(', ') : '없음';
-            const loseParticipantsText = results.loseParticipants.length > 0 ? results.loseParticipants.join(', ') : '없음';
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const results = data.results;
+                const winParticipantsText = results.winParticipants.length > 0 ? results.winParticipants.join(', ') : '없음';
+                const loseParticipantsText = results.loseParticipants.length > 0 ? results.loseParticipants.join(', ') : '없음';
 
-            const alertMessage = `
+                const alertMessage = `
             베팅 결과가 제출되었습니다!
             ----------------------------------------
             - 승리: ${results.winnerName}
@@ -47,16 +47,16 @@ function submitBettingResult(bettingId, p1Name, p2Name) {
             ----------------------------------------
             - 예상 분배 포인트: ${results.distributedPoints} pt
             `;
-            alert(alertMessage);
-            window.location.href = '/betting.html'
-        } else {
-            alert('오류: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('결과 제출 중 오류가 발생했습니다.');
-    });
+                alert(alertMessage);
+                window.location.href = '/betting'
+            } else {
+                alert('오류: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('결과 제출 중 오류가 발생했습니다.');
+        });
 }
 
 function addParticipantsModal(bettingId) {
@@ -93,7 +93,7 @@ function removeParticipantsModal(bettingId) {
                 alert("일부 선수를 찾을 수 없습니다. 이름을 다시 확인해주세요.");
                 return;
             }
-            
+
             sendParticipantUpdate(bettingId, playerIds, '/remove_participants');
         }
     }
@@ -105,17 +105,17 @@ function sendParticipantUpdate(bettingId, playerIds, url) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bettingId: bettingId, playerIds: playerIds })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.reload();
-        } else {
-            alert('오류: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('처리 중 오류가 발생했습니다.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('오류: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('처리 중 오류가 발생했습니다.');
+        });
 }

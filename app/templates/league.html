@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('league_or_tournament') }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('league.league_or_tournament') }}" class="text-xl font-bold truncate">
     {{ _('리그전') }}
 </a>
 {% endblock %}
@@ -26,7 +26,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% if leagues %}
         {% for league in leagues %}
-        <a href="{{ url_for('league_detail', league_id=league.id) }}"
+        <a href="{{ url_for('league.league_detail', league_id=league.id) }}"
             class="block p-6 bg-gray-50 rounded-lg border hover:border-blue-500 hover:shadow-md transition">
             <div class="flex justify-between items-start mb-4">
                 <h3 class="text-xl font-bold text-gray-900 truncate pr-2">{{ league.name }}</h3>

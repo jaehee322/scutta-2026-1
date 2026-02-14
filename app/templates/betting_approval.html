@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
+<a href="{{ url_for('main.index') }}" class="text-lg font-bold truncate">
     베팅 결과 승인
 </a>
 {% endblock %}
@@ -28,7 +28,7 @@
                 <div class="font-semibold">{{ betting.p2_name }}</div>
             </div>
 
-            <form action="{{ url_for('approve_betting_result', betting_id=betting.id) }}" method="POST"
+            <form action="{{ url_for('betting.approve_betting_result', betting_id=betting.id) }}" method="POST"
                 class="border-t pt-4">
                 <div class="flex items-center gap-4 mb-4 justify-center">
                     <label class="flex items-center gap-2 cursor-pointer">

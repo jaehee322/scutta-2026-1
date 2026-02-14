@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('index') }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('main.index') }}" class="text-xl font-bold truncate">
     {{ _('마이페이지') }}
 </a>
 {% endblock %}
@@ -43,17 +43,17 @@
 </div>
 
 <div class="space-y-4">
-    <a href="{{ url_for('my_submissions') }}"
+    <a href="{{ url_for('match.my_submissions') }}"
         class="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex justify-between items-center">
         <span class="font-medium">{{ _('내 경기 제출 내역') }}</span>
         <i class="fas fa-chevron-right text-gray-400"></i>
     </a>
-    <a href="{{ url_for('point_history') }}"
+    <a href="{{ url_for('main.point_history') }}"
         class="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex justify-between items-center">
         <span class="font-medium">{{ _('포인트 변동 내역') }}</span>
         <i class="fas fa-chevron-right text-gray-400"></i>
     </a>
-    <a href="{{ url_for('change_password_page') }}"
+    <a href="{{ url_for('auth.change_password_page') }}"
         class="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex justify-between items-center">
         <span class="font-medium">{{ _('비밀번호 변경') }}</span>
         <i class="fas fa-chevron-right text-gray-400"></i>
@@ -62,7 +62,7 @@
     {% if current_user.is_admin %}
     <div class="mt-8 pt-4 border-t">
         <h3 class="text-sm font-bold text-gray-500 mb-2 uppercase">{{ _('관리자 메뉴') }}</h3>
-        <a href="{{ url_for('approval') }}"
+        <a href="{{ url_for('admin.approval') }}"
             class="block bg-gray-800 text-white p-4 rounded-lg shadow-sm hover:bg-gray-700 transition flex justify-between items-center mb-2">
             <span class="font-bold">{{ _('관리자 대시보드 접근') }}</span>
             <i class="fas fa-cog"></i>
@@ -70,7 +70,7 @@
     </div>
     {% endif %}
 
-    <a href="{{ url_for('logout') }}"
+    <a href="{{ url_for('auth.logout') }}"
         class="block bg-red-50 p-4 rounded-lg shadow-sm hover:bg-red-100 transition flex justify-between items-center text-red-600 mt-6">
         <span class="font-bold">{{ _('로그아웃') }}</span>
         <i class="fas fa-sign-out-alt"></i>

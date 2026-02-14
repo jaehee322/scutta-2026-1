@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('tournament_detail', tournament_id=tournament.id) }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('league.tournament_detail', tournament_id=tournament.id) }}" class="text-xl font-bold truncate">
     {{ tournament.name }}
 </a>
 {% endblock %}
@@ -14,7 +14,7 @@
 <div class="bg-white p-6 rounded-lg shadow-sm max-w-2xl mx-auto">
     <h2 class="text-2xl font-bold mb-6 text-center">{{ _('경기 결과 입력') }}</h2>
 
-    <form action="{{ url_for('submit_tournament_results', tournament_id=tournament.id) }}" method="POST"
+    <form action="{{ url_for('league.submit_tournament_results', tournament_id=tournament.id) }}" method="POST"
         class="space-y-6">
         {% for match in matches %}
         {% if not match.winner_id %}

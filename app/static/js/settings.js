@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => {
              if (response.ok) {
                 alert('오늘의 상대가 확정되었습니다.');
-                window.location.href = '/partner.html';
+                window.location.href = '/partner';
             } else {
                 response.json().then(data => alert('확정 실패: ' + data.error));
             }

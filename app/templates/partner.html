@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('index') }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('main.index') }}" class="text-xl font-bold truncate">
     {{ _('오늘의 상대') }}
 </a>
 {% endblock %}
@@ -29,7 +29,7 @@
             {% for row_data in partners %}
             <tr>
                 <td class="text-center font-semibold">
-                    <a href="{{ url_for('player_detail', player_id=row_data.partner.p1_id) }}"
+                    <a href="{{ url_for('main.player_detail', player_id=row_data.partner.p1_id) }}"
                         class="hover:underline hover:text-blue-600">
                         {{ row_data.partner.p1_name }} <span class="text-xs font-normal text-gray-500">({{
                             row_data.p1_rank or '무' }})</span>
@@ -45,7 +45,7 @@
                     {% endif %}
                 </td>
                 <td class="text-center font-semibold">
-                    <a href="{{ url_for('player_detail', player_id=row_data.partner.p2_id) }}"
+                    <a href="{{ url_for('main.player_detail', player_id=row_data.partner.p2_id) }}"
                         class="hover:underline hover:text-blue-600">
                         {{ row_data.partner.p2_name }} <span class="text-xs font-normal text-gray-500">({{
                             row_data.p2_rank or '무' }})</span>

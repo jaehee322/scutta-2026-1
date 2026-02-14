@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('index') }}" class="text-lg font-bold truncate">
+<a href="{{ url_for('main.index') }}" class="text-lg font-bold truncate">
     경기 승인 관리
 </a>
 {% endblock %}
@@ -14,7 +14,7 @@
 <div class="bg-white p-6 rounded-lg shadow-sm">
     <h2 class="text-2xl font-bold mb-6">승인 대기 중인 경기</h2>
 
-    <form action="{{ url_for('approve_selected_matches') }}" method="POST">
+    <form action="{{ url_for('admin.approve_selected_matches') }}" method="POST">
         <div class="overflow-x-auto">
             <table class="table-modern w-full whitespace-nowrap">
                 <thead>
@@ -51,10 +51,11 @@
                         </td>
                         <td class="text-center">
                             <div class="flex justify-center gap-2">
-                                <button type="submit" formaction="{{ url_for('approve_match', match_id=match.id) }}"
+                                <button type="submit"
+                                    formaction="{{ url_for('match.approve_match', match_id=match.id) }}"
                                     class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">승인</button>
                                 <button type="submit"
-                                    formaction="{{ url_for('delete_match_by_admin', match_id=match.id) }}"
+                                    formaction="{{ url_for('match.delete_match_by_admin', match_id=match.id) }}"
                                     class="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                                     onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
                             </div>

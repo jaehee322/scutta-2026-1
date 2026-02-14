@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('league_detail', league_id=league.id) }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('league.league_detail', league_id=league.id) }}" class="text-xl font-bold truncate">
     {{ league.name }}
 </a>
 {% endblock %}
@@ -14,7 +14,7 @@
 <div class="bg-white p-6 rounded-lg shadow-sm max-w-md mx-auto">
     <h2 class="text-2xl font-bold mb-6 text-center">{{ _('경기 결과 입력') }}</h2>
 
-    <form action="{{ url_for('submit_league_match', league_id=league.id) }}" method="POST" class="space-y-6">
+    <form action="{{ url_for('league.submit_league_match', league_id=league.id) }}" method="POST" class="space-y-6">
         <div class="text-center mb-6 p-4 bg-gray-50 rounded-lg">
             <div class="flex justify-between items-center text-lg font-bold">
                 <div class="w-1/2 text-right pr-4 border-r border-gray-300">

@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ _('로그인')}} - SCUTTA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body class="bg-gray-100 flex items-center justify-center h-screen">
 
     <div class="w-full max-w-sm mx-auto">
         <div class="text-center mb-8">
-            <a href="{{ url_for('index') }}" class="text-3xl font-bold text-gray-800">SCUTTA</a>
+            <a href="{{ url_for('main.index') }}" class="text-3xl font-bold text-gray-800">SCUTTA</a>
             <p class="text-gray-500 mt-2">{{ _('동아리 기록 페이지에 오신 것을 환영합니다.') }}</p>
         </div>
 
-        <form method="POST" action="{{ url_for('login') }}" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8">
-            
+        <form method="POST" action="{{ url_for('auth.login') }}" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8">
+
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
-                        <p>{{ message }}</p>
-                    </div>
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
 
             <div class="mb-4">
@@ -44,7 +47,8 @@
 
             <div class="mb-6">
                 <label for="remember" class="flex items-center select-none cursor-pointer">
-                    <input type="checkbox" id="remember" name="remember" class="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500">
+                    <input type="checkbox" id="remember" name="remember"
+                        class="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500">
                     <span class="ml-2 block text-sm text-gray-900">
                         {{ _('로그인 상태 유지') }}
                     </span>
@@ -57,20 +61,25 @@
                 </button>
             </div>
 
-            
+
             <div class="mt-6">
                 <div class="flex items-center space-x-2">
-                    <a href="{{ url_for('set_language', lang_code='ko') }}" class="block w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-gray-400 focus:outline-none focus:border-gray-500 transition" title="한국어">
+                    <a href="{{ url_for('auth.set_language', lang_code='ko') }}"
+                        class="block w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-gray-400 focus:outline-none focus:border-gray-500 transition"
+                        title="한국어">
                         <img src="https://flagcdn.com/kr.svg" alt="한국어" class="w-full h-full object-cover">
                     </a>
-                    <a href="{{ url_for('set_language', lang_code='en') }}" class="block w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-gray-400 focus:outline-none focus:border-gray-500 transition" title="English">
+                    <a href="{{ url_for('auth.set_language', lang_code='en') }}"
+                        class="block w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-gray-400 focus:outline-none focus:border-gray-500 transition"
+                        title="English">
                         <img src="https://flagcdn.com/us.svg" alt="English" class="w-full h-full object-cover">
                     </a>
                 </div>
             </div>
-            
+
         </form>
     </div>
 
 </body>
+
 </html>

@@ -1,356 +1,330 @@
 <!DOCTYPE html>
-<html lang="{{ session.get('lang', 'ko') }}"> <head>
+<html lang="{{ session.get('lang', 'ko') }}">
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCUTTA - {{ _('2025 결산') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <style>
         /* ... 기존 스타일 그대로 ... */
-        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; overflow-x: hidden; margin: 0; padding: 0; }
-        .text-gold { background: linear-gradient(to right, #d97706, #b45309); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .text-fire { background: linear-gradient(to right, #fbbf24, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .bg-glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
-        .scoreboard-box { background: #1e293b; color: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); font-variant-numeric: tabular-nums; }
-        .fade-in { animation: fadeIn 1.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .bounce { animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .timeline-line { position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #cbd5e1, #94a3b8); z-index: 0; }
-        
-        {% if is_ended %}
-        .intro-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; opacity: 0; transition: opacity 0.1s linear; }
-        #bg-black-layer { background-color: black; z-index: 40; opacity: 1; }
-        #text-layer-1 { z-index: 50; opacity: 1; }
-        #text-layer-2 { z-index: 50; opacity: 0; }
-        #main-content { position: relative; z-index: 10; background-color: #f8fafc; min-height: 100vh; }
-        {% endif %}
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .text-gold {
+            background: linear-gradient(to right, #d97706, #b45309);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-fire {
+            background: linear-gradient(to right, #fbbf24, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .scoreboard-box {
+            background: #1e293b;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .fade-in {
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
+            z-index: 0;
+        }
+
+            {
+            % if is_ended %
+        }
+
+        .intro-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s linear;
+        }
+
+        #bg-black-layer {
+            background-color: black;
+            z-index: 40;
+            opacity: 1;
+        }
+
+        #text-layer-1 {
+            z-index: 50;
+            opacity: 1;
+        }
+
+        #text-layer-2 {
+            z-index: 50;
+            opacity: 0;
+        }
+
+        #main-content {
+            position: relative;
+            z-index: 10;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+
+            {
+            % endif %
+        }
     </style>
 </head>
+
 <body>
 
     {% if is_ended %}
-        <div style="height: 400vh; width: 100%; position: absolute; top: 0; left: 0; z-index: 5;"></div>
+    <div style="height: 400vh; width: 100%; position: absolute; top: 0; left: 0; z-index: 5;"></div>
 
-        <div id="bg-black-layer" class="intro-layer"></div>
+    <div id="bg-black-layer" class="intro-layer"></div>
 
-        <div id="text-layer-1" class="intro-layer">
-            <div class="text-center">
-                <p class="text-yellow-500 font-bold tracking-widest text-sm mb-4">SEASON OFF</p>
-                <h1 class="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-6">
-                    {{ _('2025년 2학기도') }}<br>{{ _('마무리되었습니다.') }}
-                </h1>
-            </div>
-            <div class="absolute bottom-20 flex flex-col items-center bounce opacity-70">
-                <p class="text-xs text-gray-500 mb-2">{{ _('아래로 스와이프') }}</p>
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-            </div>
+    <div id="text-layer-1" class="intro-layer">
+        <div class="text-center">
+            <p class="text-yellow-500 font-bold tracking-widest text-sm mb-4">SEASON OFF</p>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-6">
+                {{ _('2025년 2학기도') }}<br>{{ _('마무리되었습니다.') }}
+            </h1>
         </div>
-
-        <div id="text-layer-2" class="intro-layer">
-            <div class="text-center px-4">
-                <h2 class="text-3xl md:text-4xl font-bold leading-tight mb-4 text-white">
-                    <span class="text-fire font-extrabold text-4xl md:text-5xl block mb-2">{{ _('뜨거웠던 우리들의 랠리,') }}</span>
-                    {{ _('그 결과를 지금 확인해보세요.') }}
-                </h2>
-            </div>
-            <div class="absolute bottom-20 flex flex-col items-center bounce opacity-70">
-                <p class="text-xs text-gray-500 mb-2">{{ _('아래로 스와이프') }}</p>
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-            </div>
+        <div class="absolute bottom-20 flex flex-col items-center bounce opacity-70">
+            <p class="text-xs text-gray-500 mb-2">{{ _('아래로 스와이프') }}</p>
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3">
+                </path>
+            </svg>
         </div>
+    </div>
 
-        <div id="main-content" class="flex flex-col items-center py-12 px-4 space-y-10" style="margin-top: 400vh;">
-            
-            <div class="max-w-md w-full space-y-10">
-                
-                <div class="text-center space-y-3 pt-10">
-                    <span class="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">Thank You</span>
-                    <h2 class="text-2xl font-bold text-gray-800">{{ _('함께여서 즐거웠습니다!') }}</h2>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        {{ _('한 학기 동안 SCUTTA와 함께') }}<br>
-                        {{ _('땀 흘려준 모든 부원 여러분께 감사드립니다.') }}<br>
-                        {{ _('다음 학기에도 멋진 경기 기대할게요! 🏓') }}
-                    </p>
-                </div>
+    <div id="text-layer-2" class="intro-layer">
+        <div class="text-center px-4">
+            <h2 class="text-3xl md:text-4xl font-bold leading-tight mb-4 text-white">
+                <span class="text-fire font-extrabold text-4xl md:text-5xl block mb-2">{{ _('뜨거웠던 우리들의 랠리,') }}</span>
+                {{ _('그 결과를 지금 확인해보세요.') }}
+            </h2>
+        </div>
+        <div class="absolute bottom-20 flex flex-col items-center bounce opacity-70">
+            <p class="text-xs text-gray-500 mb-2">{{ _('아래로 스와이프') }}</p>
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3">
+                </path>
+            </svg>
+        </div>
+    </div>
 
-                <div class="space-y-4">
-                    <h3 class="text-lg font-bold text-gray-800 px-2 flex items-center gap-2">
-                        <span>🏆</span> {{ _('명예의 전당') }}
-                    </h3>
-                    <div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
-                        {% for title, data in season_rankings.items() %}
-                        <div class="flex-shrink-0 w-[280px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 snap-center">
-                            <h4 class="text-center font-bold text-lg text-gray-800 mb-4 border-b border-gray-100 pb-2">{{ title }}</h4>
-                            <ul class="space-y-3">
-                                {% for player in data.players %}
-                                <li class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold
+    <div id="main-content" class="flex flex-col items-center py-12 px-4 space-y-10" style="margin-top: 400vh;">
+
+        <div class="max-w-md w-full space-y-10">
+
+            <div class="text-center space-y-3 pt-10">
+                <span class="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">Thank
+                    You</span>
+                <h2 class="text-2xl font-bold text-gray-800">{{ _('함께여서 즐거웠습니다!') }}</h2>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    {{ _('한 학기 동안 SCUTTA와 함께') }}<br>
+                    {{ _('땀 흘려준 모든 부원 여러분께 감사드립니다.') }}<br>
+                    {{ _('다음 학기에도 멋진 경기 기대할게요! 🏓') }}
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-gray-800 px-2 flex items-center gap-2">
+                    <span>🏆</span> {{ _('명예의 전당') }}
+                </h3>
+                <div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory">
+                    {% for title, data in season_rankings.items() %}
+                    <div
+                        class="flex-shrink-0 w-[280px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 snap-center">
+                        <h4 class="text-center font-bold text-lg text-gray-800 mb-4 border-b border-gray-100 pb-2">{{
+                            title }}</h4>
+                        <ul class="space-y-3">
+                            {% for player in data.players %}
+                            <li class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold
                                             {% if loop.index == 1 %}bg-yellow-100 text-yellow-700
                                             {% elif loop.index == 2 %}bg-gray-100 text-gray-600
                                             {% elif loop.index == 3 %}bg-orange-100 text-orange-700
                                             {% else %}text-gray-400{% endif %}">
-                                            {{ loop.index }}
-                                        </span>
-                                        <span class="text-sm font-medium text-gray-700 truncate max-w-[120px]">{{ player.name }}</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-indigo-600">
-                                        {{ getattr(player, data.attr) }}<span class="text-xs font-normal text-gray-400 ml-0.5">{{ data.unit }}</span>
+                                        {{ loop.index }}
                                     </span>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <p class="text-center text-xs text-gray-400">{{ _('↔ 옆으로 넘겨서 더 많은 랭킹 확인') }}</p>
-                </div>
-
-                <div class="pt-6 border-t border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800 mb-6 text-center">📜 {{ _('%(name)s님의 시즌 리포트', name=my_stats.name) }}</h3>
-
-                    <div class="bg-white rounded-3xl p-6 grid grid-cols-2 gap-y-6 gap-x-4 text-center shadow-lg border border-gray-100 mb-8">
-                        <div>
-                            <div class="text-xs text-gray-400 mb-1 font-bold">{{ _('소화한 경기') }}</div>
-                            <div class="font-bold text-xl text-gray-800">{{ my_stats.match_count }}{{ _('전') }}</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-gray-400 mb-1 font-bold">{{ _('최종 승률') }}</div>
-                            <div class="font-bold text-xl text-gray-800">{{ my_stats.rate_count }}%</div>
-                        </div>
-                        <div class="col-span-2 pt-4 border-t border-gray-100">
-                            <div class="text-xs text-gray-400 mb-2 font-bold">{{ _('최종 마감 부수') }}</div>
-                            <div class="inline-block bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-2 rounded-full font-bold text-2xl text-white shadow-md">
-                                {{ my_stats.rank or '?' }}{{ _('부') }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4 mb-8">
-                        <h3 class="text-sm font-bold text-gray-500 px-1 uppercase tracking-wider">👀 {{ _('나의 파트너 현황') }}</h3>
-                        <div class="grid grid-cols-1 gap-3">
-                            <div class="bg-white rounded-xl p-5 border border-indigo-100 shadow-md relative overflow-hidden group">
-                                {% if special_awards.get('rival') %}
-                                    <div class="absolute right-0 top-0 p-2 opacity-10 text-6xl text-indigo-500 group-hover:scale-110 transition-transform">🔥</div>
-                                    <div class="flex justify-between items-center relative z-10">
-                                        <div>
-                                            <p class="text-[10px] text-indigo-600 font-extrabold uppercase tracking-wide mb-1">Soul Rival</p>
-                                            <div class="flex items-baseline gap-1">
-                                                <span class="text-xl font-black text-gray-800">{{ special_awards.rival.name }}</span>
-                                                <span class="text-xs text-gray-500 font-bold">{{ _('님') }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="block text-2xl font-bold text-indigo-600">{{ special_awards.rival.total }}<span class="text-sm text-gray-400">{{ _('전') }}</span></span>
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <div class="absolute right-0 top-0 p-2 opacity-5 text-6xl text-gray-400">❔</div>
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">Soul Rival</p>
-                                    <h4 class="text-xl font-bold text-gray-300">{{ _('데이터 수집 중...') }}</h4>
-                                    <div class="mt-2 text-xs text-gray-400">{{ _('아직 라이벌이 없어요 🥲') }}</div>
-                                {% endif %}
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm relative overflow-hidden">
-                                    {% if special_awards.get('prey') %}
-                                        <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-green-500">🍀</div>
-                                        <p class="text-[10px] text-green-600 font-extrabold uppercase mb-2">My Vitamin</p>
-                                        <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.prey.name }}</div>
-                                        <div class="text-[10px] text-gray-500"><span class="text-green-600 font-bold text-sm">{{ special_awards.prey.wins }}{{ _('승') }}</span> {{ _('헌납') }}</div>
-                                    {% else %}
-                                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">My Vitamin</p>
-                                        <div class="text-xs text-gray-400 py-2">{{ _('아직 없어요') }}</div>
-                                    {% endif %}
+                                    <span class="text-sm font-medium text-gray-700 truncate max-w-[120px]">{{
+                                        player.name }}</span>
                                 </div>
-                                <div class="bg-white rounded-xl p-4 border border-red-100 shadow-sm relative overflow-hidden">
-                                    {% if special_awards.get('nemesis') %}
-                                        <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-red-500">💀</div>
-                                        <p class="text-[10px] text-red-600 font-extrabold uppercase mb-2">Nemesis</p>
-                                        <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.nemesis.name }}</div>
-                                        <div class="text-[10px] text-gray-500"><span class="text-red-600 font-bold text-sm">{{ special_awards.nemesis.losses }}{{ _('패') }}</span> {{ _('당함') }}</div>
-                                    {% else %}
-                                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Nemesis</p>
-                                        <div class="text-xs text-gray-400 py-2">{{ _('무적 상태!') }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+                                <span class="text-sm font-bold text-indigo-600">
+                                    {{ getattr(player, data.attr) }}<span
+                                        class="text-xs font-normal text-gray-400 ml-0.5">{{ data.unit }}</span>
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
-
-                    <div class="mt-10 relative">
-                        <h3 class="text-sm font-bold text-gray-500 mb-6 px-1 uppercase tracking-wider">👣 {{ _('이번 학기 내 발자취') }}</h3>
-                        <div class="relative pl-5">
-                            <div class="timeline-line"></div>
-                            <div class="space-y-8">
-                                {% for event in timeline %}
-                                <div class="relative flex items-center gap-4 group">
-                                    <div class="absolute left-[-5px] w-4 h-4 rounded-full border-2 border-white z-10 shadow-sm
-                                        {% if event.icon == 'first_win' %}bg-amber-400 ring-2 ring-amber-100
-                                        {% elif event.icon == 'start_match' %}bg-blue-500 ring-2 ring-blue-100
-                                        {% elif event.icon == 'achievement' %}bg-purple-500 ring-2 ring-purple-100
-                                        {% elif event.icon == '📍' or event.icon == '🏁' %}bg-red-500 animate-pulse
-                                        {% else %}bg-gray-400{% endif %}">
-                                    </div>
-                                    <div class="w-12 text-right flex-shrink-0">
-                                        <span class="text-[10px] font-mono text-gray-400 font-bold block">{{ event.date.strftime('%m.%d') }}</span>
-                                    </div>
-                                    <div class="bg-white p-3 rounded-lg border border-gray-100 flex-grow shadow-sm group-hover:shadow-md transition-shadow">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="text-lg">
-                                                {% if event.icon == 'start_match' %}🏓
-                                                {% elif event.icon == 'first_win' %}🎉
-                                                {% elif event.icon == 'achievement' %}🏅
-                                                {% else %}{{ event.icon }}{% endif %}
-                                            </span>
-                                            <span class="font-bold text-sm text-gray-800">{{ event.title }}</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 pl-7">{{ event.desc }}</p>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
-
-                <div class="h-[50px] w-full"></div>
-                <div class="text-center pt-8 pb-4">
-                    <p class="text-gray-400 text-xs">{{ _('SCUTTA 2025-2 시즌이 종료되었습니다.') }}</p>
-                </div>
+                <p class="text-center text-xs text-gray-400">{{ _('↔ 옆으로 넘겨서 더 많은 랭킹 확인') }}</p>
             </div>
-        </div>
 
-        <script>
-            document.addEventListener('scroll', function() {
-                const scrollY = window.scrollY;
-                const vh = window.innerHeight;
-                
-                const bgLayer = document.getElementById('bg-black-layer');
-                const text1 = document.getElementById('text-layer-1');
-                const text2 = document.getElementById('text-layer-2');
-                
-                if (scrollY < vh * 0.8) {
-                    text1.style.opacity = 1 - (scrollY / (vh * 0.8));
-                } else {
-                    text1.style.opacity = 0;
-                }
+            <div class="pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-6 text-center">📜 {{ _('%(name)s님의 시즌 리포트',
+                    name=my_stats.name) }}</h3>
 
-                if (scrollY < vh * 1.2) {
-                    text2.style.opacity = 0;
-                } else if (scrollY >= vh * 1.2 && scrollY < vh * 1.8) {
-                    text2.style.opacity = (scrollY - vh * 1.2) / (vh * 0.6);
-                } else if (scrollY >= vh * 1.8 && scrollY < vh * 2.2) {
-                    text2.style.opacity = 1;
-                } else if (scrollY >= vh * 2.2 && scrollY < vh * 3.0) {
-                    text2.style.opacity = 1 - (scrollY - vh * 2.2) / (vh * 0.8);
-                } else {
-                    text2.style.opacity = 0;
-                }
-
-                if (scrollY < vh * 3.0) {
-                    bgLayer.style.opacity = 1;
-                } else if (scrollY >= vh * 3.0 && scrollY < vh * 3.8) {
-                    bgLayer.style.opacity = 1 - (scrollY - vh * 3.0) / (vh * 0.8);
-                } else {
-                    bgLayer.style.opacity = 0;
-                }
-            });
-        </script>
-
-    {% else %}
-        <div class="relative z-10 bg-slate-50 min-h-screen flex flex-col items-center py-12 px-4 space-y-10">
-            <div class="max-w-md w-full space-y-10">
-                <div class="text-center space-y-2">
-                    <p class="text-gray-500 text-sm tracking-widest uppercase font-bold">SCUTTA 2025-2 SEASON</p>
-                    <h1 class="text-4xl font-extrabold text-gray-900 leading-tight">
-                        {{ _('시즌 마감까지') }}<br><span class="text-gold">{{ _('달려볼까요?') }}</span>
-                    </h1>
-                </div>
-
-                <div class="bg-white rounded-3xl p-6 text-center shadow-xl border border-gray-100 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-400 to-orange-500"></div>
-                    <h2 class="text-5xl font-black text-gray-800 mb-4 tracking-tight">
-                        D-<span id="timer-days" class="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">{{ remaining_time.days }}</span>
-                    </h2>
-                    <div class="flex items-center justify-center gap-2 text-white">
-                        <div class="flex flex-col items-center">
-                            <div class="scoreboard-box w-12 h-12 flex items-center justify-center text-xl font-bold font-mono text-amber-400"><span id="timer-hours">{{ "%02d" % remaining_time.hours }}</span></div>
-                        </div>
-                        <span class="text-xl font-bold pb-4 text-gray-300">:</span>
-                        <div class="flex flex-col items-center">
-                            <div class="scoreboard-box w-12 h-12 flex items-center justify-center text-xl font-bold font-mono text-amber-400"><span id="timer-minutes">{{ "%02d" % remaining_time.minutes }}</span></div>
-                        </div>
-                        <span class="text-xl font-bold pb-4 text-gray-300">:</span>
-                        <div class="flex flex-col items-center">
-                            <div class="scoreboard-box w-12 h-12 flex items-center justify-center text-xl font-bold font-mono text-red-400"><span id="timer-seconds">{{ "%02d" % remaining_time.seconds }}</span></div>
-                        </div>
+                <div
+                    class="bg-white rounded-3xl p-6 grid grid-cols-2 gap-y-6 gap-x-4 text-center shadow-lg border border-gray-100 mb-8">
+                    <div>
+                        <div class="text-xs text-gray-400 mb-1 font-bold">{{ _('소화한 경기') }}</div>
+                        <div class="font-bold text-xl text-gray-800">{{ my_stats.match_count }}{{ _('전') }}</div>
                     </div>
-                    <p class="text-gray-400 text-[10px] mt-4 font-medium">{{ _('12월 13일 자정 마감') }}</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white rounded-xl py-4 px-4 border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-                        <span class="text-gray-400 text-xs font-bold mb-1">{{ _('총 경기') }}</span>
-                        <span class="text-2xl font-black text-gray-800">{{ my_stats.match_count }}{{ _('전') }}</span>
+                    <div>
+                        <div class="text-xs text-gray-400 mb-1 font-bold">{{ _('최종 승률') }}</div>
+                        <div class="font-bold text-xl text-gray-800">{{ my_stats.rate_count }}%</div>
                     </div>
-                    <div class="bg-white rounded-xl py-4 px-4 border border-gray-200 shadow-sm flex flex-col items-center justify-center">
-                        <span class="text-gray-400 text-xs font-bold mb-1">{{ _('승리') }}</span>
-                        <span class="text-2xl font-black text-amber-500">{{ my_stats.win_count }}{{ _('승') }}</span>
+                    <div class="col-span-2 pt-4 border-t border-gray-100">
+                        <div class="text-xs text-gray-400 mb-2 font-bold">{{ _('최종 마감 부수') }}</div>
+                        <div
+                            class="inline-block bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-2 rounded-full font-bold text-2xl text-white shadow-md">
+                            {{ my_stats.rank or '?' }}{{ _('부') }}
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-3 mt-8">
-                    <h3 class="text-sm font-bold text-gray-500 px-1 uppercase tracking-wider">👀 {{ _('나의 파트너 현황') }}</h3>
+                <div class="space-y-4 mb-8">
+                    <h3 class="text-sm font-bold text-gray-500 px-1 uppercase tracking-wider">👀 {{ _('나의 파트너 현황') }}
+                    </h3>
                     <div class="grid grid-cols-1 gap-3">
-                        <div class="bg-white rounded-xl p-5 border border-indigo-100 shadow-md relative overflow-hidden group">
+                        <div
+                            class="bg-white rounded-xl p-5 border border-indigo-100 shadow-md relative overflow-hidden group">
                             {% if special_awards.get('rival') %}
-                                <div class="absolute right-0 top-0 p-2 opacity-10 text-6xl text-indigo-500 group-hover:scale-110 transition-transform">🔥</div>
-                                <div class="flex justify-between items-center relative z-10">
-                                    <div>
-                                        <p class="text-[10px] text-indigo-600 font-extrabold uppercase tracking-wide mb-1">Soul Rival</p>
-                                        <div class="flex items-baseline gap-1">
-                                            <span class="text-xl font-black text-gray-800">{{ special_awards.rival.name }}</span>
-                                            <span class="text-xs text-gray-500 font-bold">{{ _('님') }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="block text-2xl font-bold text-indigo-600">{{ special_awards.rival.total }}<span class="text-sm text-gray-400">{{ _('전') }}</span></span>
+                            <div
+                                class="absolute right-0 top-0 p-2 opacity-10 text-6xl text-indigo-500 group-hover:scale-110 transition-transform">
+                                🔥</div>
+                            <div class="flex justify-between items-center relative z-10">
+                                <div>
+                                    <p class="text-[10px] text-indigo-600 font-extrabold uppercase tracking-wide mb-1">
+                                        Soul Rival</p>
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="text-xl font-black text-gray-800">{{ special_awards.rival.name
+                                            }}</span>
+                                        <span class="text-xs text-gray-500 font-bold">{{ _('님') }}</span>
                                     </div>
                                 </div>
+                                <div class="text-right">
+                                    <span class="block text-2xl font-bold text-indigo-600">{{ special_awards.rival.total
+                                        }}<span class="text-sm text-gray-400">{{ _('전') }}</span></span>
+                                </div>
+                            </div>
                             {% else %}
-                                <div class="absolute right-0 top-0 p-2 opacity-5 text-6xl text-gray-400">❔</div>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">Soul Rival</p>
-                                <h4 class="text-xl font-bold text-gray-300">{{ _('데이터 수집 중...') }}</h4>
-                                <div class="mt-2 text-xs text-gray-400">{{ _('아직 라이벌이 없어요 🥲') }}</div>
+                            <div class="absolute right-0 top-0 p-2 opacity-5 text-6xl text-gray-400">❔</div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">Soul Rival</p>
+                            <h4 class="text-xl font-bold text-gray-300">{{ _('데이터 수집 중...') }}</h4>
+                            <div class="mt-2 text-xs text-gray-400">{{ _('아직 라이벌이 없어요 🥲') }}</div>
                             {% endif %}
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm relative overflow-hidden">
+                            <div
+                                class="bg-white rounded-xl p-4 border border-green-100 shadow-sm relative overflow-hidden">
                                 {% if special_awards.get('prey') %}
-                                    <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-green-500">🍀</div>
-                                    <p class="text-[10px] text-green-600 font-extrabold uppercase mb-2">My Vitamin</p>
-                                    <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.prey.name }}</div>
-                                    <div class="text-[10px] text-gray-500"><span class="text-green-600 font-bold text-sm">{{ special_awards.prey.wins }}{{ _('승') }}</span> {{ _('헌납') }}</div>
+                                <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-green-500">🍀</div>
+                                <p class="text-[10px] text-green-600 font-extrabold uppercase mb-2">My Vitamin</p>
+                                <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.prey.name
+                                    }}</div>
+                                <div class="text-[10px] text-gray-500"><span class="text-green-600 font-bold text-sm">{{
+                                        special_awards.prey.wins }}{{ _('승') }}</span> {{ _('헌납') }}</div>
                                 {% else %}
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">My Vitamin</p>
-                                    <div class="text-xs text-gray-400 py-2">{{ _('아직 없어요') }}</div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">My Vitamin</p>
+                                <div class="text-xs text-gray-400 py-2">{{ _('아직 없어요') }}</div>
                                 {% endif %}
                             </div>
-                            <div class="bg-white rounded-xl p-4 border border-red-100 shadow-sm relative overflow-hidden">
+                            <div
+                                class="bg-white rounded-xl p-4 border border-red-100 shadow-sm relative overflow-hidden">
                                 {% if special_awards.get('nemesis') %}
-                                    <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-red-500">💀</div>
-                                    <p class="text-[10px] text-red-600 font-extrabold uppercase mb-2">Nemesis</p>
-                                    <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.nemesis.name }}</div>
-                                    <div class="text-[10px] text-gray-500"><span class="text-red-600 font-bold text-sm">{{ special_awards.nemesis.losses }}{{ _('패') }}</span> {{ _('당함') }}</div>
+                                <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-red-500">💀</div>
+                                <p class="text-[10px] text-red-600 font-extrabold uppercase mb-2">Nemesis</p>
+                                <div class="text-lg font-black text-gray-800 truncate mb-1">{{
+                                    special_awards.nemesis.name }}</div>
+                                <div class="text-[10px] text-gray-500"><span class="text-red-600 font-bold text-sm">{{
+                                        special_awards.nemesis.losses }}{{ _('패') }}</span> {{ _('당함') }}</div>
                                 {% else %}
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Nemesis</p>
-                                    <div class="text-xs text-gray-400 py-2">{{ _('무적 상태!') }}</div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Nemesis</p>
+                                <div class="text-xs text-gray-400 py-2">{{ _('무적 상태!') }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -358,23 +332,26 @@
                 </div>
 
                 <div class="mt-10 relative">
-                    <h3 class="text-sm font-bold text-gray-500 mb-6 px-1 uppercase tracking-wider">👣 {{ _('이번 학기 내 발자취') }}</h3>
+                    <h3 class="text-sm font-bold text-gray-500 mb-6 px-1 uppercase tracking-wider">👣 {{ _('이번 학기 내
+                        발자취') }}</h3>
                     <div class="relative pl-5">
                         <div class="timeline-line"></div>
                         <div class="space-y-8">
                             {% for event in timeline %}
                             <div class="relative flex items-center gap-4 group">
                                 <div class="absolute left-[-5px] w-4 h-4 rounded-full border-2 border-white z-10 shadow-sm
-                                    {% if event.icon == 'first_win' %}bg-amber-400 ring-2 ring-amber-100
-                                    {% elif event.icon == 'start_match' %}bg-blue-500 ring-2 ring-blue-100
-                                    {% elif event.icon == 'achievement' %}bg-purple-500 ring-2 ring-purple-100
-                                    {% elif event.icon == '📍' or event.icon == '🏁' %}bg-red-500 animate-pulse
-                                    {% else %}bg-gray-400{% endif %}">
+                                        {% if event.icon == 'first_win' %}bg-amber-400 ring-2 ring-amber-100
+                                        {% elif event.icon == 'start_match' %}bg-blue-500 ring-2 ring-blue-100
+                                        {% elif event.icon == 'achievement' %}bg-purple-500 ring-2 ring-purple-100
+                                        {% elif event.icon == '📍' or event.icon == '🏁' %}bg-red-500 animate-pulse
+                                        {% else %}bg-gray-400{% endif %}">
                                 </div>
                                 <div class="w-12 text-right flex-shrink-0">
-                                    <span class="text-[10px] font-mono text-gray-400 font-bold block">{{ event.date.strftime('%m.%d') }}</span>
+                                    <span class="text-[10px] font-mono text-gray-400 font-bold block">{{
+                                        event.date.strftime('%m.%d') }}</span>
                                 </div>
-                                <div class="bg-white p-3 rounded-lg border border-gray-100 flex-grow shadow-sm group-hover:shadow-md transition-shadow">
+                                <div
+                                    class="bg-white p-3 rounded-lg border border-gray-100 flex-grow shadow-sm group-hover:shadow-md transition-shadow">
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="text-lg">
                                             {% if event.icon == 'start_match' %}🏓
@@ -391,32 +368,235 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="fixed bottom-6 left-0 w-full flex justify-center px-4 z-50">
-                    <a href="{{ url_for('index') }}" class="w-full max-w-md bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-full text-center shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                        <span>{{ _('기록 페이지 입장하기') }}</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </a>
-                </div>
-                <div class="h-[80px] w-full"></div>
+            <div class="h-[50px] w-full"></div>
+            <div class="text-center pt-8 pb-4">
+                <p class="text-gray-400 text-xs">{{ _('SCUTTA 2025-2 시즌이 종료되었습니다.') }}</p>
             </div>
         </div>
+    </div>
 
-        <script>
-            const deadline = new Date("2025-12-13T00:00:00+09:00").getTime();
-            function updateTimer() {
-                const now = new Date().getTime();
-                const distance = deadline - now;
-                if (distance < 0) { window.location.reload(); return; }
-                document.getElementById("timer-days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
-                document.getElementById("timer-hours").innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
-                document.getElementById("timer-minutes").innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                document.getElementById("timer-seconds").innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+    <script>
+        document.addEventListener('scroll', function () {
+            const scrollY = window.scrollY;
+            const vh = window.innerHeight;
+
+            const bgLayer = document.getElementById('bg-black-layer');
+            const text1 = document.getElementById('text-layer-1');
+            const text2 = document.getElementById('text-layer-2');
+
+            if (scrollY < vh * 0.8) {
+                text1.style.opacity = 1 - (scrollY / (vh * 0.8));
+            } else {
+                text1.style.opacity = 0;
             }
-            setInterval(updateTimer, 1000);
-            updateTimer();
-        </script>
+
+            if (scrollY < vh * 1.2) {
+                text2.style.opacity = 0;
+            } else if (scrollY >= vh * 1.2 && scrollY < vh * 1.8) {
+                text2.style.opacity = (scrollY - vh * 1.2) / (vh * 0.6);
+            } else if (scrollY >= vh * 1.8 && scrollY < vh * 2.2) {
+                text2.style.opacity = 1;
+            } else if (scrollY >= vh * 2.2 && scrollY < vh * 3.0) {
+                text2.style.opacity = 1 - (scrollY - vh * 2.2) / (vh * 0.8);
+            } else {
+                text2.style.opacity = 0;
+            }
+
+            if (scrollY < vh * 3.0) {
+                bgLayer.style.opacity = 1;
+            } else if (scrollY >= vh * 3.0 && scrollY < vh * 3.8) {
+                bgLayer.style.opacity = 1 - (scrollY - vh * 3.0) / (vh * 0.8);
+            } else {
+                bgLayer.style.opacity = 0;
+            }
+        });
+    </script>
+
+    {% else %}
+    <div class="relative z-10 bg-slate-50 min-h-screen flex flex-col items-center py-12 px-4 space-y-10">
+        <div class="max-w-md w-full space-y-10">
+            <div class="text-center space-y-2">
+                <p class="text-gray-500 text-sm tracking-widest uppercase font-bold">SCUTTA 2025-2 SEASON</p>
+                <h1 class="text-4xl font-extrabold text-gray-900 leading-tight">
+                    {{ _('시즌 마감까지') }}<br><span class="text-gold">{{ _('달려볼까요?') }}</span>
+                </h1>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 text-center shadow-xl border border-gray-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+                <h2 class="text-5xl font-black text-gray-800 mb-4 tracking-tight">
+                    D-<span id="timer-days"
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">{{
+                        remaining_time.days }}</span>
+                </h2>
+                <div class="flex items-center justify-center gap-2 text-white">
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="scoreboard-box w-12 h-12 flex items-center justify-center text-xl font-bold font-mono text-amber-400">
+                            <span id="timer-hours">{{ "%02d" % remaining_time.hours }}</span></div>
+                    </div>
+                    <span class="text-xl font-bold pb-4 text-gray-300">:</span>
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="scoreboard-box w-12 h-12 flex items-center justify-center text-xl font-bold font-mono text-amber-400">
+                            <span id="timer-minutes">{{ "%02d" % remaining_time.minutes }}</span></div>
+                    </div>
+                    <span class="text-xl font-bold pb-4 text-gray-300">:</span>
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="scoreboard-box w-12 h-12 flex items-center justify-center text-xl font-bold font-mono text-red-400">
+                            <span id="timer-seconds">{{ "%02d" % remaining_time.seconds }}</span></div>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-[10px] mt-4 font-medium">{{ _('12월 13일 자정 마감') }}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div
+                    class="bg-white rounded-xl py-4 px-4 border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+                    <span class="text-gray-400 text-xs font-bold mb-1">{{ _('총 경기') }}</span>
+                    <span class="text-2xl font-black text-gray-800">{{ my_stats.match_count }}{{ _('전') }}</span>
+                </div>
+                <div
+                    class="bg-white rounded-xl py-4 px-4 border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+                    <span class="text-gray-400 text-xs font-bold mb-1">{{ _('승리') }}</span>
+                    <span class="text-2xl font-black text-amber-500">{{ my_stats.win_count }}{{ _('승') }}</span>
+                </div>
+            </div>
+
+            <div class="space-y-3 mt-8">
+                <h3 class="text-sm font-bold text-gray-500 px-1 uppercase tracking-wider">👀 {{ _('나의 파트너 현황') }}</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <div
+                        class="bg-white rounded-xl p-5 border border-indigo-100 shadow-md relative overflow-hidden group">
+                        {% if special_awards.get('rival') %}
+                        <div
+                            class="absolute right-0 top-0 p-2 opacity-10 text-6xl text-indigo-500 group-hover:scale-110 transition-transform">
+                            🔥</div>
+                        <div class="flex justify-between items-center relative z-10">
+                            <div>
+                                <p class="text-[10px] text-indigo-600 font-extrabold uppercase tracking-wide mb-1">Soul
+                                    Rival</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-xl font-black text-gray-800">{{ special_awards.rival.name
+                                        }}</span>
+                                    <span class="text-xs text-gray-500 font-bold">{{ _('님') }}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-2xl font-bold text-indigo-600">{{ special_awards.rival.total
+                                    }}<span class="text-sm text-gray-400">{{ _('전') }}</span></span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="absolute right-0 top-0 p-2 opacity-5 text-6xl text-gray-400">❔</div>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mb-1">Soul Rival</p>
+                        <h4 class="text-xl font-bold text-gray-300">{{ _('데이터 수집 중...') }}</h4>
+                        <div class="mt-2 text-xs text-gray-400">{{ _('아직 라이벌이 없어요 🥲') }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm relative overflow-hidden">
+                            {% if special_awards.get('prey') %}
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-green-500">🍀</div>
+                            <p class="text-[10px] text-green-600 font-extrabold uppercase mb-2">My Vitamin</p>
+                            <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.prey.name }}
+                            </div>
+                            <div class="text-[10px] text-gray-500"><span class="text-green-600 font-bold text-sm">{{
+                                    special_awards.prey.wins }}{{ _('승') }}</span> {{ _('헌납') }}</div>
+                            {% else %}
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">My Vitamin</p>
+                            <div class="text-xs text-gray-400 py-2">{{ _('아직 없어요') }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="bg-white rounded-xl p-4 border border-red-100 shadow-sm relative overflow-hidden">
+                            {% if special_awards.get('nemesis') %}
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl text-red-500">💀</div>
+                            <p class="text-[10px] text-red-600 font-extrabold uppercase mb-2">Nemesis</p>
+                            <div class="text-lg font-black text-gray-800 truncate mb-1">{{ special_awards.nemesis.name
+                                }}</div>
+                            <div class="text-[10px] text-gray-500"><span class="text-red-600 font-bold text-sm">{{
+                                    special_awards.nemesis.losses }}{{ _('패') }}</span> {{ _('당함') }}</div>
+                            {% else %}
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Nemesis</p>
+                            <div class="text-xs text-gray-400 py-2">{{ _('무적 상태!') }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 relative">
+                <h3 class="text-sm font-bold text-gray-500 mb-6 px-1 uppercase tracking-wider">👣 {{ _('이번 학기 내 발자취') }}
+                </h3>
+                <div class="relative pl-5">
+                    <div class="timeline-line"></div>
+                    <div class="space-y-8">
+                        {% for event in timeline %}
+                        <div class="relative flex items-center gap-4 group">
+                            <div class="absolute left-[-5px] w-4 h-4 rounded-full border-2 border-white z-10 shadow-sm
+                                    {% if event.icon == 'first_win' %}bg-amber-400 ring-2 ring-amber-100
+                                    {% elif event.icon == 'start_match' %}bg-blue-500 ring-2 ring-blue-100
+                                    {% elif event.icon == 'achievement' %}bg-purple-500 ring-2 ring-purple-100
+                                    {% elif event.icon == '📍' or event.icon == '🏁' %}bg-red-500 animate-pulse
+                                    {% else %}bg-gray-400{% endif %}">
+                            </div>
+                            <div class="w-12 text-right flex-shrink-0">
+                                <span class="text-[10px] font-mono text-gray-400 font-bold block">{{
+                                    event.date.strftime('%m.%d') }}</span>
+                            </div>
+                            <div
+                                class="bg-white p-3 rounded-lg border border-gray-100 flex-grow shadow-sm group-hover:shadow-md transition-shadow">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-lg">
+                                        {% if event.icon == 'start_match' %}🏓
+                                        {% elif event.icon == 'first_win' %}🎉
+                                        {% elif event.icon == 'achievement' %}🏅
+                                        {% else %}{{ event.icon }}{% endif %}
+                                    </span>
+                                    <span class="font-bold text-sm text-gray-800">{{ event.title }}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 pl-7">{{ event.desc }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="fixed bottom-6 left-0 w-full flex justify-center px-4 z-50">
+                <a href="{{ url_for('main.index') }}"
+                    class="w-full max-w-md bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-full text-center shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                    <span>{{ _('기록 페이지 입장하기') }}</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </a>
+            </div>
+            <div class="h-[80px] w-full"></div>
+        </div>
+    </div>
+
+    <script>
+        const deadline = new Date("2025-12-13T00:00:00+09:00").getTime();
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = deadline - now;
+            if (distance < 0) { window.location.reload(); return; }
+            document.getElementById("timer-days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
+            document.getElementById("timer-hours").innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+            document.getElementById("timer-minutes").innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            document.getElementById("timer-seconds").innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
     {% endif %}
 
 </body>
+
 </html>

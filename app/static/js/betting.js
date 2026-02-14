@@ -79,7 +79,7 @@ ${data.participants.map(p => `${p.name} : ${p.betting_count}`).join('\n')}
                         .then(data => {
                             if (data.success) {
                                 alert(data.message);
-                                window.location.href = '/betting.html';
+                                window.location.href = '/betting';
                             } else {
                                 alert(data.error || '베팅 생성에 실패했습니다.');
                             }
@@ -93,7 +93,7 @@ ${data.participants.map(p => `${p.name} : ${p.betting_count}`).join('\n')}
 
 function deleteBettingWithPassword(bettingId) {
     const password = prompt("삭제를 위해 관리자 비밀번호를 입력하세요:");
-    
+
     // 사용자가 '취소'를 누르면 아무것도 하지 않음
     if (password === null) {
         return;
@@ -106,18 +106,18 @@ function deleteBettingWithPassword(bettingId) {
         },
         body: JSON.stringify({ password: password }) // 비밀번호를 JSON 형태로 전송
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-      
-            window.location.reload(); // 성공 시 페이지 새로고침
-        } else {
-            alert('오류: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('삭제 중 오류가 발생했습니다.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+
+                window.location.reload(); // 성공 시 페이지 새로고침
+            } else {
+                alert('오류: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('삭제 중 오류가 발생했습니다.');
+        });
 }

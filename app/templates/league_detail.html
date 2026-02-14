@@ -5,7 +5,7 @@
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('league') }}" class="text-xl font-bold truncate">
+<a href="{{ url_for('league.league') }}" class="text-xl font-bold truncate">
     {{ league.name }}
 </a>
 {% endblock %}
@@ -105,13 +105,13 @@
                         {% if match.status != 'completed' %}
                         {% if current_user.is_admin or current_user.player_id == match.p1_id or current_user.player_id
                         == match.p2_id %}
-                        <a href="{{ url_for('league_submit_match_page', league_id=league.id, opponent_id=(match.p2_id if current_user.player_id == match.p1_id else match.p1_id)) }}"
+                        <a href="{{ url_for('league.league_submit_match_page', league_id=league.id, opponent_id=(match.p2_id if current_user.player_id == match.p1_id else match.p1_id)) }}"
                             class="bg-main button text-xs py-1 px-2">
                             {{ _('결과 입력') }}
                         </a>
                         {% endif %}
                         {% elif current_user.is_admin %}
-                        <form action="{{ url_for('revert_league_match', league_id=league.id) }}" method="POST"
+                        <form action="{{ url_for('league.revert_league_match', league_id=league.id) }}" method="POST"
                             onsubmit="return confirm('{{ _('정말 이 경기 결과를 취소하시겠습니까?') }}');">
                             <input type="hidden" name="match_id" value="{{ match.id }}">
                             <button type="submit"
