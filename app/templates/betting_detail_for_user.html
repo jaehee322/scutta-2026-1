@@ -11,10 +11,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+<div class="card mb-6" style="padding: 1.5rem;">
     <h3 class="text-xl font-bold mb-4">{{ _('상대 전적') }}</h3>
 
-    <div class="flex justify-between items-center text-center p-4 bg-gray-50 rounded-lg mb-4">
+    <div class="flex justify-between items-center text-center p-4 bg-blue-50 rounded-xl mb-4">
         <div class="w-2/5">
             <p class="font-bold text-lg"><a href="/player/{{ betting.p1_id }}" class="hover:underline">{{
                     betting.p1_name }}</a></p>
@@ -62,14 +62,14 @@
     </div>
 </div>
 
-<div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+<div class="card mb-6" style="padding: 1.5rem;">
     {% if is_player %}
-    <div class="text-center text-gray-500 font-semibold p-4 bg-gray-100 rounded-md">
+    <div class="text-center text-gray-400 font-semibold p-4 bg-gray-50 rounded-xl border border-gray-100">
         {{ _('자신의 경기에는 베팅할 수 없습니다.') }}
     </div>
     {% elif betting.is_closed %}
     <h3 class="text-xl font-bold mb-4">{{ _('나의 베팅') }}</h3>
-    <div class="text-center text-gray-500 font-semibold p-4 bg-gray-100 rounded-md">
+    <div class="text-center text-gray-400 font-semibold p-4 bg-gray-50 rounded-xl border border-gray-100">
         {{ _('이 베팅은 마감되었습니다.') }}
     </div>
     {% else %}
@@ -77,31 +77,33 @@
         <input type="hidden" name="betting_id" value="{{ betting.id }}">
         <h3 class="text-xl font-bold mb-4">{{ _('나의 베팅') }}</h3>
         <div class="space-y-4">
-            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                <input type="radio" name="winner_id" value="{{ betting.p1_id }}" class="h-5 w-5 text-indigo-600" {% if
+            <label
+                class="flex items-center p-4 border border-gray-100 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition">
+                <input type="radio" name="winner_id" value="{{ betting.p1_id }}" class="h-5 w-5 accent-blue-500" {% if
                     my_choice and my_choice.winner_id==betting.p1_id %}checked{% endif %} required>
                 <span class="ml-4 text-lg font-semibold">{{ betting.p1_name }}</span>
             </label>
-            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                <input type="radio" name="winner_id" value="{{ betting.p2_id }}" class="h-5 w-5 text-indigo-600" {% if
+            <label
+                class="flex items-center p-4 border border-gray-100 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition">
+                <input type="radio" name="winner_id" value="{{ betting.p2_id }}" class="h-5 w-5 accent-blue-500" {% if
                     my_choice and my_choice.winner_id==betting.p2_id %}checked{% endif %} required>
                 <span class="ml-4 text-lg font-semibold">{{ betting.p2_name }}</span>
             </label>
         </div>
-        <button type="submit" class="w-full bg-main button mt-6">
+        <button type="submit" class="btn-submit mt-6">
             {% if my_choice %}{{ _('베팅 변경하기') }}{% else %}{{ _('베팅하기') }}{% endif %} ({{ betting.point }}pt)
         </button>
     </form>
     {% endif %}
 </div>
 
-<div class="bg-white p-6 rounded-lg shadow-sm">
+<div class="card" style="padding: 1.5rem;">
     <h3 class="text-xl font-bold mb-4">{{ _('베팅 현황') }}</h3>
 
     <div class="relative w-full my-6">
         <div class="flex h-2 rounded-full">
-            <div class="bg-blue-500 rounded-l-full" style="width: {{ betting_stats.p1_percent }}%;"></div>
-            <div class="bg-red-500 rounded-r-full" style="width: {{ betting_stats.p2_percent }}%;"></div>
+            <div class="bg-blue-400 rounded-l-full" style="width: {{ betting_stats.p1_percent }}%;"></div>
+            <div class="bg-blue-200 rounded-r-full" style="width: {{ betting_stats.p2_percent }}%;"></div>
         </div>
         <div class="absolute top-0 h-full flex items-center"
             style="left: {{ betting_stats.p1_percent }}%; transform: translateX(-50%);">

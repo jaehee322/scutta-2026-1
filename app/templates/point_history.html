@@ -30,7 +30,7 @@
                     <td class="font-medium">{{ log.reason }}</td>
                     <td class="text-center font-bold">
                         {% if log.achieve_change > 0 %}
-                        <span class="text-blue-600">+{{ log.achieve_change }}</span>
+                        <span class="text-blue-500">+{{ log.achieve_change }}</span>
                         {% elif log.achieve_change < 0 %} <span class="text-red-600">{{ log.achieve_change }}</span>
                             {% else %}
                             <span class="text-gray-300">-</span>
@@ -38,7 +38,7 @@
                     </td>
                     <td class="text-center font-bold">
                         {% if log.betting_change > 0 %}
-                        <span class="text-blue-600">+{{ log.betting_change }}</span>
+                        <span class="text-blue-500">+{{ log.betting_change }}</span>
                         {% elif log.betting_change < 0 %} <span class="text-red-600">{{ log.betting_change }}</span>
                             {% else %}
                             <span class="text-gray-300">-</span>

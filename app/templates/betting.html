@@ -14,7 +14,8 @@
 <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold">{{ _('진행중인 베팅') }}</h2>
     {% if current_user.is_admin %}
-    <a href="{{ url_for('betting.create_betting_page') }}" class="bg-main button text-sm">{{ _('새 베팅 생성') }}</a>
+    <a href="{{ url_for('betting.create_betting_page') }}"
+        class="bg-blue-500 hover:bg-blue-600 text-white button text-sm">{{ _('새 베팅 생성') }}</a>
     {% endif %}
 </div>
 
@@ -22,7 +23,7 @@
     {% if betting_data %}
     {% for data in betting_data %}
     <div
-        class="block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow {% if data.betting.is_closed %} opacity-60 {% endif %}">
+        class="block bg-white p-4 rounded-xl border border-gray-100 hover:border-blue-200 transition {% if data.betting.is_closed %} opacity-60 {% endif %}">
         <div class="flex justify-between items-center">
 
             {% if current_user.is_admin %}
@@ -42,7 +43,7 @@
                             <p class="text-sm text-gray-500">({{ data.p2_rank or '무' }}부)</p>
                         </div>
                     </div>
-                    <div class="text-center text-xs text-blue-600 mt-3 pt-3 border-t">
+                    <div class="text-center text-xs text-blue-500 mt-3 pt-3 border-t border-gray-100">
                         {{_('참가자') }} {{ data.betting.participants|length }}{{ _('명') }}
                     </div>
                 </a>
@@ -66,9 +67,9 @@
                     {% if data.betting.is_closed %}
                     <span class="font-bold text-red-500 text-sm">{{ _('마감') }}</span>
                     {% else %}
-                    <p class="text-sm font-semibold mb-2 text-indigo-600">{{ data.betting.point }} pt</p>
+                    <p class="text-sm font-semibold mb-2 text-blue-500">{{ data.betting.point }} pt</p>
                     <a href="{{ url_for('betting.betting_detail_for_user', betting_id=data.betting.id) }}"
-                        class="bg-main button text-sm w-full text-center">
+                        class="bg-blue-500 hover:bg-blue-600 text-white button text-sm w-full text-center">
                         {{ _('베팅하기') }}
                     </a>
                     {% endif %}
@@ -78,7 +79,7 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">
+    <div class="card text-center text-gray-400">
         {{ _('현재 진행중인 베팅이 없습니다.') }}
     </div>
     {% endif %}

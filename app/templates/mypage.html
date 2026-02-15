@@ -11,59 +11,59 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+<div class="card mb-6" style="padding: 1.5rem;">
     <div class="flex items-center gap-4 mb-6">
         <div
-            class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-bold text-gray-500">
+            class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-xl font-bold text-blue-600">
             {{ current_user.player.name[0] }}
         </div>
         <div>
-            <h2 class="text-2xl font-bold">{{ current_user.player.name }}</h2>
-            <p class="text-gray-500">{{ current_user.username }}</p>
-            <span class="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-bold rounded">{{
+            <h2 class="text-xl font-bold">{{ current_user.player.name }}</h2>
+            <p class="text-gray-400 text-sm">{{ current_user.username }}</p>
+            <span class="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">{{
                 current_user.player.rank or '미지정' }}부</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-4 text-center border-t border-b py-4">
+    <div class="grid grid-cols-3 gap-4 text-center border-t border-b border-gray-100 py-4">
         <div>
-            <p class="text-gray-500 text-sm">{{ _('승리') }}</p>
-            <p class="text-xl font-bold text-blue-600">{{ current_user.player.win_count }}</p>
+            <p class="text-gray-400 text-sm">{{ _('승리') }}</p>
+            <p class="text-xl font-bold text-blue-500">{{ current_user.player.win_count }}</p>
         </div>
         <div>
-            <p class="text-gray-500 text-sm">{{ _('패배') }}</p>
-            <p class="text-xl font-bold text-red-600">{{ current_user.player.loss_count }}</p>
+            <p class="text-gray-400 text-sm">{{ _('패배') }}</p>
+            <p class="text-xl font-bold text-red-400">{{ current_user.player.loss_count }}</p>
         </div>
         <div>
-            <p class="text-gray-500 text-sm">{{ _('포인트') }}</p>
-            <p class="text-xl font-bold text-yellow-600">{{ current_user.player.achieve_count +
+            <p class="text-gray-400 text-sm">{{ _('포인트') }}</p>
+            <p class="text-xl font-bold text-amber-500">{{ current_user.player.achieve_count +
                 current_user.player.betting_count }}</p>
         </div>
     </div>
 </div>
 
-<div class="space-y-4">
+<div class="space-y-3">
     <a href="{{ url_for('match.my_submissions') }}"
-        class="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex justify-between items-center">
+        class="block bg-white p-4 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition flex justify-between items-center">
         <span class="font-medium">{{ _('내 경기 제출 내역') }}</span>
-        <i class="fas fa-chevron-right text-gray-400"></i>
+        <i class="fas fa-chevron-right text-gray-300"></i>
     </a>
     <a href="{{ url_for('main.point_history') }}"
-        class="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex justify-between items-center">
+        class="block bg-white p-4 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition flex justify-between items-center">
         <span class="font-medium">{{ _('포인트 변동 내역') }}</span>
-        <i class="fas fa-chevron-right text-gray-400"></i>
+        <i class="fas fa-chevron-right text-gray-300"></i>
     </a>
     <a href="{{ url_for('auth.change_password_page') }}"
-        class="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition flex justify-between items-center">
+        class="block bg-white p-4 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition flex justify-between items-center">
         <span class="font-medium">{{ _('비밀번호 변경') }}</span>
-        <i class="fas fa-chevron-right text-gray-400"></i>
+        <i class="fas fa-chevron-right text-gray-300"></i>
     </a>
 
     {% if current_user.is_admin %}
-    <div class="mt-8 pt-4 border-t">
-        <h3 class="text-sm font-bold text-gray-500 mb-2 uppercase">{{ _('관리자 메뉴') }}</h3>
+    <div class="mt-6 pt-4 border-t border-gray-100">
+        <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">{{ _('관리자 메뉴') }}</h3>
         <a href="{{ url_for('admin.approval') }}"
-            class="block bg-gray-800 text-white p-4 rounded-lg shadow-sm hover:bg-gray-700 transition flex justify-between items-center mb-2">
+            class="block bg-blue-500 text-white p-4 rounded-xl hover:bg-blue-600 transition flex justify-between items-center mb-2">
             <span class="font-bold">{{ _('관리자 대시보드 접근') }}</span>
             <i class="fas fa-cog"></i>
         </a>
@@ -71,7 +71,7 @@
     {% endif %}
 
     <a href="{{ url_for('auth.logout') }}"
-        class="block bg-red-50 p-4 rounded-lg shadow-sm hover:bg-red-100 transition flex justify-between items-center text-red-600 mt-6">
+        class="block bg-red-50 p-4 rounded-xl border border-red-100 hover:bg-red-100 transition flex justify-between items-center text-red-500 mt-4">
         <span class="font-bold">{{ _('로그아웃') }}</span>
         <i class="fas fa-sign-out-alt"></i>
     </a>

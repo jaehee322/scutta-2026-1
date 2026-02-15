@@ -11,11 +11,6 @@ from ..models import GenderEnum, FreshmanEnum
 match_bp = Blueprint('match', __name__)
 
 
-@match_bp.route('/submitment')
-@login_required
-def submitment():
-    return render_template('submitment.html', global_texts=current_app.config['GLOBAL_TEXTS'])
-
 
 @match_bp.route('/submit_match_direct', methods=['POST'])
 @login_required
@@ -104,83 +99,6 @@ def my_submissions():
 
     return render_template('my_submissions.html', matches=my_matches)
 
-
-@match_bp.route('/check_players', methods=['POST'])
-def check_players():
-    matches = request.json.get('matches', [])
-    player_names = set()
-    for match in matches:
-        player_names.add(match['winner'])
-        player_names.add(match['loser'])
-
-    existing_players = {player.name for player in Player.query.filter(Player.name.in_(player_names), Player.is_valid == True).all()}
-    unknown_players = list(player_names - existing_players)
-
-    return jsonify({'unknownPlayers': unknown_players})
-
-
-@match_bp.route('/submit_matches', methods=['POST'])
-def submit_matches():
-    # 함수 전체를 try...except 블록으로 감싸서 숨겨진 오류를 잡아냅니다.
-    try:
-        matches = request.get_json()
-
-        if not matches or not isinstance(matches, list):
-            return jsonify({"error": "올바른 데이터를 제출해주세요."}), 400
-
-        for match in matches:
-            if not isinstance(match, dict):
-                return jsonify({"error": "각 경기 데이터는 객체 형식이어야 합니다."}), 400
-
-            winner_name = match.get('winner')
-            loser_name = match.get('loser')
-            score_value = match.get('score')
-            league_tf = match.get('league')
-
-            if not winner_name or not loser_name or not score_value:
-                continue
-
-            winner = Player.query.filter_by(name=winner_name).first()
-            loser = Player.query.filter_by(name=loser_name).first()
-
-            if not winner or not loser:
-                print(f"Player not found, skipping match: Winner={winner_name}, Loser={loser_name}")
-                continue
-
-            current_time = datetime.now(ZoneInfo("Asia/Seoul"))
-
-            new_match = Match(
-                winner=winner.id,
-                winner_name=winner.name,
-                loser=loser.id,
-                loser_name=loser.name,
-                score=score_value,
-                timestamp=current_time,
-                approved=False
-            )
-            db.session.add(new_match)
-
-            today_partner = TodayPartner.query.filter_by(p1_name=winner_name, p2_name=loser_name).first()
-            if not today_partner:
-                today_partner = TodayPartner.query.filter_by(p1_name=loser_name, p2_name=winner_name).first()
-
-            if today_partner:
-                today_partner.submitted = True
-
-            if league_tf:
-                winner.betting_count += 3
-                add_point_log(winner.id, betting_change=3, reason=f"{loser.name} 상대 경기 승리")
-                update_player_orders_by_point()
-
-        db.session.commit()
-        return jsonify({'success': True, 'message': f"{len(matches)}개의 경기 결과가 제출되었습니다!"}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Submit matches error : {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': '서버 내부에서 처리되지 않은 심각한 오류 발생', 'message': str(e)}), 500
 
 
 @match_bp.route('/get_matches', methods=['GET'])

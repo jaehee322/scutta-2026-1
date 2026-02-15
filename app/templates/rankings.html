@@ -11,10 +11,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-sm p-4 h-full flex flex-col">
+<div class="card" style="padding: 1rem;">
     <div class="flex space-x-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
         <button
-            class="tab-button bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap active"
+            class="tab-button bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap active"
             data-tab="win">{{ _('승리순') }}</button>
         <button
             class="tab-button bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
@@ -41,8 +41,8 @@
             </thead>
             <tbody class="ranking-list" id="ranking-list-win">
                 {% for p in players|sort(attribute='win_count', reverse=True) %}
-                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-500">
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="text-center font-bold text-gray-400">
                         {% if loop.index == 1 %}🥇
                         {% elif loop.index == 2 %}🥈
                         {% elif loop.index == 3 %}🥉
@@ -52,43 +52,43 @@
                         {{ p.name }}
                         <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
                     </td>
-                    <td class="text-right font-bold text-blue-600 pr-4">{{ p.win_count }}</td>
+                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.win_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-rate">
                 {% for p in players|sort(attribute='rate_count', reverse=True) %}
-                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-500">{{ loop.index }}</td>
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
                     <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-indigo-600 pr-4">{{ p.rate_count }}%</td>
+                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.rate_count }}%</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-match">
                 {% for p in players|sort(attribute='match_count', reverse=True) %}
-                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-500">{{ loop.index }}</td>
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
                     <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-gray-800 pr-4">{{ p.match_count }}</td>
+                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.match_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-achieve">
                 {% for p in players|sort(attribute='achieve_count', reverse=True) %}
-                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-500">{{ loop.index }}</td>
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
                     <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-yellow-600 pr-4">{{ p.achieve_count }}</td>
+                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.achieve_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-betting">
                 {% for p in players|sort(attribute='betting_count', reverse=True) %}
-                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-500">{{ loop.index }}</td>
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
                     <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-green-600 pr-4">{{ p.betting_count }}</td>
+                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.betting_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -102,18 +102,17 @@
     document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => {
             document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active', 'bg-gray-200', 'text-gray-700');
+                btn.classList.remove('active', 'bg-blue-500', 'text-white');
                 btn.classList.add('bg-gray-100', 'text-gray-500');
             });
 
-            button.classList.add('active', 'bg-gray-200', 'text-gray-700');
+            button.classList.add('active', 'bg-blue-500', 'text-white');
             button.classList.remove('bg-gray-100', 'text-gray-500');
 
             const tabName = button.dataset.tab;
             document.querySelectorAll('.ranking-list').forEach(list => list.classList.add('hidden'));
             document.getElementById(`ranking-list-${tabName}`).classList.remove('hidden');
 
-            // 동적 헤더 변경 (선택 사항)
             const headerTextMap = {
                 'win': '{{ _("승리") }}',
                 'rate': '{{ _("승률") }}',

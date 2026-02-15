@@ -11,7 +11,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-sm">
+{# ===== 글로벌 텍스트 설정 ===== #}
+<div class="card">
     <h2 class="text-2xl font-bold mb-6">글로벌 텍스트 설정</h2>
 
     <form action="{{ url_for('admin.update_global_texts') }}" method="POST">
@@ -30,12 +31,166 @@
         </div>
 
         <button type="submit"
-            class="mt-6 bg-main button w-full border-2 border-gray-800 text-gray-800 font-bold hover:bg-gray-100">설정
+            class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg w-full transition">설정
             저장</button>
     </form>
 </div>
 
-<div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+{# ===== 새 회원 일괄 등록 ===== #}
+<div class="card mt-8">
+    <h2 class="text-2xl font-bold mb-6">새 회원 일괄 등록</h2>
+
+    <div class="space-y-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">이름</label>
+                <input type="text" id="name" placeholder="이름" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">비밀번호</label>
+                <input type="text" id="password" placeholder="초기 비밀번호" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">성별</label>
+                <select id="gender" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">선택</option>
+                    <option value="M">남자</option>
+                    <option value="F">여자</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">신입 여부</label>
+                <select id="freshman" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">선택</option>
+                    <option value="Y">신입</option>
+                    <option value="N">기존</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="is_admin" class="h-4 w-4 rounded border-gray-300">
+                    <span class="text-sm font-bold text-gray-700">관리자</span>
+                </label>
+            </div>
+            <div class="flex items-end">
+                <button id="add-to-queue-btn"
+                    class="bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900 transition w-full">
+                    대기열에 추가
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="table-modern w-full">
+            <thead>
+                <tr>
+                    <th class="text-center">이름</th>
+                    <th class="text-center">성별</th>
+                    <th class="text-center">신입</th>
+                    <th class="text-center">관리자</th>
+                    <th class="text-center">삭제</th>
+                </tr>
+            </thead>
+            <tbody id="registration-queue-body">
+            </tbody>
+        </table>
+    </div>
+
+    <button id="batch-register-btn"
+        class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg w-full transition">
+        일괄 등록
+    </button>
+</div>
+
+{# ===== 선수 관리 (삭제) ===== #}
+<div class="card mt-8">
+    <h2 class="text-2xl font-bold mb-6">선수 관리</h2>
+
+    <div class="overflow-x-auto">
+        <table class="table-modern w-full">
+            <thead>
+                <tr>
+                    <th class="w-10 text-center">
+                        <input type="checkbox" id="select-all-players" class="h-4 w-4 rounded border-gray-300">
+                    </th>
+                    <th class="text-center">이름</th>
+                    <th class="text-center">성별</th>
+                    <th class="text-center">경기 수</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in players %}
+                <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="player-checkbox h-4 w-4 rounded border-gray-300"
+                            value="{{ player.id }}">
+                    </td>
+                    <td class="text-center">{{ player.name }}</td>
+                    <td class="text-center">{{ player.gender.value if player.gender else '-' }}</td>
+                    <td class="text-center">{{ player.match_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button id="delete-players-btn"
+        class="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg w-full transition">
+        선택한 선수 삭제
+    </button>
+</div>
+
+{# ===== 오늘의 상대 매칭 ===== #}
+<div class="card mt-8">
+    <h2 class="text-2xl font-bold mb-6">오늘의 상대 매칭</h2>
+
+    <div class="space-y-4 mb-4">
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">기존 부원 (공백으로 구분)</label>
+            <textarea id="old-player-input" rows="2" placeholder="예: 홍길동 김철수 이영희"
+                class="w-full px-3 py-2 border rounded-lg"></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">신입 부원 (공백으로 구분)</label>
+            <textarea id="new-player-input" rows="2" placeholder="예: 박지민 최유리 정수현"
+                class="w-full px-3 py-2 border rounded-lg"></textarea>
+        </div>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+        <button id="register-partner-button-1"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition flex-1">
+            매칭 생성
+        </button>
+        <button id="reset-partner-button"
+            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition flex-1">
+            상대 초기화
+        </button>
+    </div>
+
+    <div id="setting-partner-table" class="hidden">
+        <div class="overflow-x-auto">
+            <table class="table-modern w-full">
+                <thead>
+                    <tr>
+                        <th class="text-center">기존 부원</th>
+                        <th class="text-center">신입 부원</th>
+                    </tr>
+                </thead>
+                <tbody id="setting-partner-body">
+                </tbody>
+            </table>
+        </div>
+        <button id="register-partner-button-2"
+            class="hidden mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg w-full transition">
+            매칭 확정
+        </button>
+    </div>
+</div>
+
+{# ===== 데이터 초기화 (위험) ===== #}
+<div class="card mt-8">
     <h2 class="text-2xl font-bold mb-6">데이터 초기화 (위험)</h2>
     <div class="space-y-4">
         <div class="p-4 border border-red-200 bg-red-50 rounded-lg">
@@ -61,11 +216,16 @@
     </div>
 </div>
 
-<div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+{# ===== 관리자 계정 관리 ===== #}
+<div class="card mt-8">
     <h2 class="text-2xl font-bold mb-6">관리자 계정 관리</h2>
     <a href="{{ url_for('admin.admin_reset_password_page') }}"
         class="block text-center bg-gray-800 text-white font-bold py-3 px-4 rounded hover:bg-gray-900">
         사용자 비밀번호 강제 변경
     </a>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 {% endblock %}

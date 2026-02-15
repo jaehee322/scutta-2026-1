@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-sm max-w-2xl mx-auto">
+<div class="card max-w-2xl mx-auto">
     <h2 class="text-2xl font-bold mb-6 text-center">{{ _('경기 결과 입력') }}</h2>
 
     <form action="{{ url_for('league.submit_tournament_results', tournament_id=tournament.id) }}" method="POST"
@@ -56,7 +56,7 @@
         {% endif %}
         {% endfor %}
 
-        <button type="submit" class="w-full bg-main button py-3 text-lg font-bold">
+        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white button py-3 text-lg font-bold">
             {{ _('입력 완료') }}
         </button>
     </form>

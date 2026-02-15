@@ -11,17 +11,17 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-sm">
+<div class="card" style="padding: 1.5rem;">
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h2 class="text-2xl font-bold">{{ league.name }} {{ _('순위표') }}</h2>
         {% if current_user.is_admin %}
         <div class="flex gap-2">
             <button onclick="saveLeague({{ league.id }})"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition text-sm">
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
                 {{ _('리그 저장 (순위 확정)') }}
             </button>
             <button onclick="deleteLeague({{ league.id }})"
-                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition text-sm">
+                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
                 {{ _('리그 삭제') }}
             </button>
         </div>
@@ -50,7 +50,7 @@
                         {% else %}{{ loop.index }}{% endif %}
                     </td>
                     <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-center text-blue-600 font-bold">{{ p.wins }}</td>
+                    <td class="text-center text-blue-500 font-bold">{{ p.wins }}</td>
                     <td class="text-center text-red-600 font-bold">{{ p.losses }}</td>
                     <td class="text-center text-gray-600">{{ p.score_diff }}</td>
                     <td class="text-center">{{ "%.1f"|format(p.win_rate) }}%</td>
@@ -74,7 +74,7 @@
             </thead>
             <tbody>
                 {% for match in matches %}
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-blue-50 transition">
                     <td class="text-center">
                         {% if match.status == 'completed' %}
                         <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">{{
@@ -85,7 +85,7 @@
                         {% endif %}
                     </td>
                     <td class="text-right">
-                        <span class="{% if match.winner_id == match.p1_id %}font-bold text-blue-600{% endif %}">
+                        <span class="{% if match.winner_id == match.p1_id %}font-bold text-blue-500{% endif %}">
                             {{ match.p1_name }}
                         </span>
                     </td>
@@ -97,7 +97,7 @@
                         {% endif %}
                     </td>
                     <td class="text-left">
-                        <span class="{% if match.winner_id == match.p2_id %}font-bold text-blue-600{% endif %}">
+                        <span class="{% if match.winner_id == match.p2_id %}font-bold text-blue-500{% endif %}">
                             {{ match.p2_name }}
                         </span>
                     </td>
@@ -106,7 +106,7 @@
                         {% if current_user.is_admin or current_user.player_id == match.p1_id or current_user.player_id
                         == match.p2_id %}
                         <a href="{{ url_for('league.league_submit_match_page', league_id=league.id, opponent_id=(match.p2_id if current_user.player_id == match.p1_id else match.p1_id)) }}"
-                            class="bg-main button text-xs py-1 px-2">
+                            class="bg-blue-500 hover:bg-blue-600 text-white button text-xs py-1 px-2">
                             {{ _('결과 입력') }}
                         </a>
                         {% endif %}

@@ -22,7 +22,7 @@
         <table class="table-modern w-full">
             <tr>
                 <th class="w-1/3 bg-gray-50">{{ _('승리') }}</th>
-                <td class="font-bold text-blue-600">{{ player.win_count }}</td>
+                <td class="font-bold text-blue-500">{{ player.win_count }}</td>
                 <td class="text-sm text-gray-500 text-right">{{ player.win_order or '-' }}위</td>
             </tr>
             <tr>
@@ -130,7 +130,7 @@
                     <td>{{ log.reason }}</td>
                     <td class="text-center font-bold">
                         {% if log.achieve_change > 0 %}
-                        <span class="text-blue-600">+{{ log.achieve_change }}</span>
+                        <span class="text-blue-500">+{{ log.achieve_change }}</span>
                         {% elif log.achieve_change < 0 %} <span class="text-red-600">{{ log.achieve_change }}</span>
                             {% else %}
                             <span class="text-gray-300">-</span>
@@ -138,7 +138,7 @@
                     </td>
                     <td class="text-center font-bold">
                         {% if log.betting_change > 0 %}
-                        <span class="text-blue-600">+{{ log.betting_change }}</span>
+                        <span class="text-blue-500">+{{ log.betting_change }}</span>
                         {% elif log.betting_change < 0 %} <span class="text-red-600">{{ log.betting_change }}</span>
                             {% else %}
                             <span class="text-gray-300">-</span>

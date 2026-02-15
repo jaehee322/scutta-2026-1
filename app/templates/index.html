@@ -3,113 +3,159 @@
 {% block title %}SCUTTA {{ config.GLOBAL_TEXTS.semester }}{% endblock %}
 
 {% block header_left %}
-<a href="{{ url_for('main.index') }}" class="text-xl font-bold">SCUTTA</a>
+<a href="{{ url_for('main.index') }}" class="text-xl font-bold text-gray-900">SCUTTA</a>
 {% endblock %}
 
 {% block content %}
-<section class="mb-12">
-    <h2 class="text-2xl md:text-3xl font-light mb-4">SCUTTA</h2>
-    <p class="text-gray-600 leading-relaxed">
+<section class="mb-10">
+    <h2 class="text-2xl font-bold mb-2">SCUTTA</h2>
+    <p class="text-gray-500 text-sm leading-relaxed">
         {{_('SCUTTA의 공식 기록 페이지입니다.')}}<br>
         {% if current_user.is_authenticated %}
         {% trans username=current_user.username %}<strong>{{ username }}</strong>님의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.{%
         endtrans %}
-
         {% else %}
         {{_('자신의 경기 기록을 제출하고, 동아리 내 랭킹을 확인하세요.')}}
         {% endif %}
     </p>
 </section>
 
-<section class="mb-12">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold">{{ _('경기 결과 제출') }}</h3>
-        <a href="{{ url_for('match.submit_match_page') }}"
-            class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
-            {{_('일괄 제출')}} &gt;
-        </a>
+{# ===== 경기 결과 제출 ===== #}
+<section class="mb-10">
+    <div class="section-header">
+        <h3 class="section-title">{{ _('경기 결과 제출') }}</h3>
     </div>
-    <form action="{{ url_for('match.submit_match_direct') }}" method="POST" class="space-y-4">
+    <form action="{{ url_for('match.submit_match_direct') }}" method="POST" class="card space-y-4">
         <div>
-            <label class="text-sm font-bold text-gray-600">{{ _('승리자') }}</label>
-            <input type="text" name="winner_name" placeholder="승리자 이름 입력" class="w-full mt-1" required>
+            <label class="block text-sm font-semibold text-gray-500 mb-1.5">{{ _('승리자') }}</label>
+            <input type="text" name="winner_name" placeholder="승리자 이름 입력" class="w-full" required>
         </div>
         <div>
-            <label class="text-sm font-bold text-gray-600">{{ _('패배자') }}</label>
-            <input type="text" name="loser_name" placeholder="패배자 이름 입력" class="w-full mt-1" required>
+            <label class="block text-sm font-semibold text-gray-500 mb-1.5">{{ _('패배자') }}</label>
+            <input type="text" name="loser_name" placeholder="패배자 이름 입력" class="w-full" required>
         </div>
         <div>
-            <label class="text-sm font-bold text-gray-600">{{ _('스코어') }}</label>
-            <select name="score" class="w-full mt-1" required>
-                <option value="3:0">3:0</option>
-                <option value="2:1">2:1</option>
-            </select>
+            <label class="block text-sm font-semibold text-gray-500 mb-2">{{ _('스코어') }}</label>
+            <div class="score-radio-group">
+                <label class="score-radio-label">
+                    <input type="radio" name="score" value="3:0" checked>
+                    <span>3 : 0</span>
+                </label>
+                <label class="score-radio-label">
+                    <input type="radio" name="score" value="2:1">
+                    <span>2 : 1</span>
+                </label>
+            </div>
         </div>
-        <button type="submit" class="w-full bg-main button mt-4">{{ _('제출하기') }}</button>
+        <button type="submit" class="btn-submit mt-2">{{ _('결과 제출하기') }}</button>
     </form>
 </section>
 
-{% if my_league_info %}
-<section class="mb-12">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold">{{ _('나의 리그전') }}</h3>
-        <a href="{{ url_for('league.league') }}" class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
+{# ===== 최근 내 경기 기록 ===== #}
+{% if current_user.is_authenticated %}
+<section class="mb-10">
+    <div class="section-header">
+        <h3 class="section-title">{{ _('최근 내 경기 기록') }}</h3>
+        <a href="{{ url_for('match.my_submissions') }}" class="section-more">
             {{ _('더보기') }} &gt;
         </a>
     </div>
-    <a href="{{ url_for('league.league_detail', league_id=my_league_info.league.id) }}"
-        class="border rounded-lg p-4 block hover:bg-gray-50 transition">
-        <div class="flex justify-between items-center">
-            <p class="font-bold text-lg">{{ my_league_info.league.name }}</p>
-            <span
-                class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{
-                _('나의 리그') }}</span>
-        </div>
-        <div class="mt-2 flex justify-between items-baseline text-gray-600">
-            <p>{{ my_league_info.wins }}{{ _ ('승') }} {{ my_league_info.losses }}{{ _('패') }}</p>
-            <p class="font-bold">{{ my_league_info.rank }}{{ _('위 / 5위') }}</p>
-        </div>
-    </a>
+    <div class="card overflow-hidden" style="padding: 0;">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100">
+                    <th class="py-3 px-3 text-center text-xs font-semibold text-gray-400">{{ _('날짜') }}</th>
+                    <th class="py-3 px-3 text-center text-xs font-semibold text-gray-400">{{ _('승자') }}</th>
+                    <th class="py-3 px-3 text-center text-xs font-semibold text-gray-400">{{ _('패자') }}</th>
+                    <th class="py-3 px-3 text-center text-xs font-semibold text-gray-400">{{ _('스코어') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in my_recent_matches %}
+                <tr class="border-b border-gray-50 last:border-b-0">
+                    <td class="py-3 px-3 text-center text-gray-400 text-xs">{{
+                        match.timestamp|datetimeformat('%m.%d %H:%M') }}</td>
+                    <td class="py-3 px-3 text-center font-semibold text-gray-800">{{ match.winner_name }}</td>
+                    <td class="py-3 px-3 text-center text-gray-500">{{ match.loser_name }}</td>
+                    <td class="py-3 px-3 text-center text-gray-500">{{ match.score }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="py-8 text-center text-sm text-gray-400">
+                        {{ _('최근 제출한 경기가 없습니다.') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 {% endif %}
 
+{# ===== 나의 오늘의 상대 ===== #}
 {% if current_user.is_authenticated %}
-<section class="mb-12">
-    <h3 class="text-xl font-semibold mb-4">{{ _('나의 오늘의 상대') }}</h3>
-    <div class="border rounded-lg p-4 flex justify-between items-center">
+<section class="mb-10">
+    <h3 class="section-title mb-3">{{ _('나의 오늘의 상대') }}</h3>
+    <div class="card-partner">
         {% if today_partner_info %}
-        <div>
-            <span class="text-sm text-gray-500">{{ today_partner_info.date }}</span>
-            <p class="text-lg font-bold">{{ today_partner_info.opponent_name }}</p>
-        </div>
-        <div>
-            {% if not today_partner_info.submitted %}
-            <span
-                class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{
-                _('미제출') }}</span>
-            {% elif today_partner_info.approval_status == 'pending' %}
-            <span
-                class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{
-                _('승인 대기') }}</span>
-            {% elif today_partner_info.approval_status == 'approved' %}
-            <span
-                class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{
-                _('승인 완료') }}</span>
-            {% endif %}
+        <div class="w-full flex justify-between items-center">
+            <div>
+                <span class="text-xs text-gray-400">{{ today_partner_info.date }}</span>
+                <p class="text-lg font-bold text-gray-800">{{ today_partner_info.opponent_name }}</p>
+            </div>
+            <div>
+                {% if not today_partner_info.submitted %}
+                <span class="badge badge-warning">{{ _('미제출') }}</span>
+                {% elif today_partner_info.approval_status == 'pending' %}
+                <span class="badge badge-primary">{{ _('승인 대기') }}</span>
+                {% elif today_partner_info.approval_status == 'approved' %}
+                <span class="badge badge-success">{{ _('승인 완료') }}</span>
+                {% endif %}
+            </div>
         </div>
         {% else %}
-        <p class="text-sm text-gray-500">{{ _('오늘의 상대가 지정되지 않았습니다.') }}</p>
+        <div class="partner-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+        </div>
+        <p class="text-sm text-gray-400">{{ _('오늘의 상대가 지정되지 않았습니다.') }}</p>
         {% endif %}
     </div>
 </section>
 {% endif %}
 
+{# ===== 나의 리그전 ===== #}
+{% if my_league_info %}
+<section class="mb-10">
+    <div class="section-header">
+        <h3 class="section-title">{{ _('나의 리그전') }}</h3>
+        <a href="{{ url_for('league.league') }}" class="section-more">
+            {{ _('더보기') }} &gt;
+        </a>
+    </div>
+    <a href="{{ url_for('league.league_detail', league_id=my_league_info.league.id) }}"
+        class="card block hover:border-blue-200 transition">
+        <div class="flex justify-between items-center">
+            <p class="font-bold text-lg">{{ my_league_info.league.name }}</p>
+            <span class="badge badge-primary">{{ _('나의 리그') }}</span>
+        </div>
+        <div class="mt-2 flex justify-between items-baseline text-gray-500 text-sm">
+            <p>{{ my_league_info.wins }}{{ _ ('승') }} {{ my_league_info.losses }}{{ _('패') }}</p>
+            <p class="font-bold text-gray-800">{{ my_league_info.rank }}{{ _('위 / 5위') }}</p>
+        </div>
+    </a>
+</section>
+{% endif %}
+
+{# ===== 베팅하기 ===== #}
 {% if ongoing_bettings %}
-<section class="mb-12">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold">{{ _('베팅하기') }}</h3>
-        <a href="{{ url_for('betting.betting_page') }}"
-            class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
+<section class="mb-10">
+    <div class="section-header">
+        <h3 class="section-title">{{ _('베팅하기') }}</h3>
+        <a href="{{ url_for('betting.betting_page') }}" class="section-more">
             {{ _('더보기') }} &gt;
         </a>
     </div>
@@ -125,20 +171,20 @@
             ">
             {% for bet in ongoing_bettings %}
             <a href="{{ url_for('betting.betting_detail_for_user', betting_id=bet.id) }}"
-                class="block bg-white rounded-lg shadow-sm border hover:border-gray-300 transition {% if ongoing_bettings|length >= 3 %}flex-shrink-0{% endif %}"
-                style="{% if ongoing_bettings|length >= 3 %}width: 280px;{% endif %} overflow: hidden;">
-                <div class="p-4">
+                class="block rounded-xl border border-gray-100 hover:border-blue-200 transition overflow-hidden {% if ongoing_bettings|length >= 3 %}flex-shrink-0{% endif %}"
+                style="{% if ongoing_bettings|length >= 3 %}width: 280px;{% endif %}">
+                <div class="p-4 bg-white">
                     <div class="flex justify-between items-center text-center">
                         <div class="w-2/5">
                             <p class="font-bold truncate">{{ bet.p1_name }}</p>
                         </div>
-                        <div class="w-1/5 text-gray-400">VS</div>
+                        <div class="w-1/5 text-gray-300 text-sm font-semibold">VS</div>
                         <div class="w-2/5">
                             <p class="font-bold truncate">{{ bet.p2_name }}</p>
                         </div>
                     </div>
                 </div>
-                <div class="text-center text-sm text-white bg-main p-2 font-semibold">
+                <div class="text-center text-sm text-white bg-blue-500 p-2.5 font-semibold">
                     {{ _('베팅 참여하기') }} ({{ bet.point }}pt)
                 </div>
             </a>
@@ -146,95 +192,60 @@
         </div>
 
         {% if ongoing_bettings|length > 2 %}
-        <div class="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-white to-transparent pointer-events-none">
+        <div
+            class="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none">
         </div>
         {% endif %}
     </div>
 </section>
 {% endif %}
 
+{# ===== 시즌 리포트 ===== #}
 {% if current_user.is_authenticated %}
-<section class="mb-12">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold">{{ _('최근 내 경기 기록') }}</h3>
-        <a href="{{ url_for('match.my_submissions') }}"
-            class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
-            {{ _('더보기') }} &gt;
-        </a>
-    </div>
-    <div class="overflow-x-auto bg-white shadow-md rounded-lg no-scrollbar">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col"
-                        class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{
-                        _('시간') }}</th>
-                    <th scope="col"
-                        class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{
-                        _('승자') }}</th>
-                    <th scope="col"
-                        class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{
-                        _('패자') }}</th>
-                    <th scope="col"
-                        class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{
-                        _('스코어') }}</th>
-                    <th scope="col"
-                        class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{
-                        _('상태') }}</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for match in my_recent_matches %}
-                <tr class="{% if loop.index is even %}bg-gray-50{% else %}bg-white{% endif %}">
-                    <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{
-                        match.timestamp|datetimeformat('%m.%d %H:%M') }}</td>
-                    <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{{ match.winner_name }}
-                    </td>
-                    <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ match.loser_name }}
-                    </td>
-                    <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ match.score }}</td>
-                    <td class="px-2 py-4 whitespace-nowrap text-sm text-center">
-                        {% if match.approved %}
-                        <span
-                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{
-                            _('승인') }}</span>
-                        {% else %}
-                        <span
-                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{
-                            _('대기') }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                        {{ _('최근 제출한 경기가 없습니다.') }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<section class="mb-10">
+    <h3 class="section-title mb-3">🏓 {{ current_user.player.name }}{{ _('님의 시즌 리포트') }}</h3>
+    <div class="season-report">
+        <div class="stat-grid">
+            <div class="stat-item">
+                <div class="stat-label">{{ _('진행한 경기') }}</div>
+                <div class="stat-value">{{ current_user.player.match_count }}{{ _('전') }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">{{ _('승리 수') }}</div>
+                <div class="stat-value">{{ current_user.player.win_count }}{{ _('승') }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">{{ _('승률') }}</div>
+                <div class="stat-value">{{ current_user.player.rate_count }}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">{{ _('포인트') }}</div>
+                <div class="stat-value">{{ current_user.player.achieve_count + current_user.player.betting_count }}P
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 {% endif %}
 
-<section>
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold">{{ _('나의 랭킹') }}</h3>
-        <a href="{{ url_for('main.rankings_page') }}" class="text-sm font-semibold text-gray-600 hover:text-indigo-600">
+{# ===== 나의 랭킹 ===== #}
+<section class="mb-6">
+    <div class="section-header">
+        <h3 class="section-title">{{ _('나의 랭킹') }}</h3>
+        <a href="{{ url_for('main.rankings_page') }}" class="section-more">
             {{ _('더보기') }} &gt;
         </a>
     </div>
     <div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">
         {% for title, data in rankings.items() %}
-        <div class="bg-white rounded-lg shadow-sm p-4 flex-shrink-0" style="width: 280px;">
+        <div class="card flex-shrink-0" style="width: 280px;">
             <h3 class="font-bold text-lg text-center mb-4">{{ _(title) }}</h3>
 
             {% if data.my_rank %}
             <div class="mb-4 text-left">
-                <p class="text-lg text-gray-800">
+                <p class="text-base text-gray-800">
                     <span class="font-semibold">{{ _('내 순위') }}:</span>
-                    <span class="font-bold text-indigo-600">{{ data.my_rank.rank or 'N/A' }}{{ _('위') }}</span>
+                    <span class="font-bold text-blue-500">{{ data.my_rank.rank or 'N/A' }}{{ _('위') }}</span>
                     ({{ data.my_rank.value }}{% if title == '승률' %}%{% endif %})
                 </p>
             </div>
@@ -242,7 +253,7 @@
 
             <ul>
                 {% for player in data.players %}
-                <li class="flex items-center py-2 border-b last:border-b-0">
+                <li class="flex items-center py-2 border-b border-gray-50 last:border-b-0">
                     <span class="w-8 text-xl">
                         {% if data.top_ranks and player.actual_rank == data.top_ranks[0] %}🥇
                         {% elif data.top_ranks|length > 1 and player.actual_rank == data.top_ranks[1] %}🥈

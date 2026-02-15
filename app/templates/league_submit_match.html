@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-sm max-w-md mx-auto">
+<div class="card max-w-md mx-auto">
     <h2 class="text-2xl font-bold mb-6 text-center">{{ _('경기 결과 입력') }}</h2>
 
     <form action="{{ url_for('league.submit_league_match', league_id=league.id) }}" method="POST" class="space-y-6">
@@ -55,18 +55,18 @@
             <div class="grid grid-cols-2 gap-4">
                 <label
                     class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                    <input type="radio" name="score" value="3:0" class="h-4 w-4 text-blue-600" checked>
+                    <input type="radio" name="score" value="3:0" class="h-4 w-4 text-blue-500" checked>
                     <span class="ml-2 font-bold">3 : 0</span>
                 </label>
                 <label
                     class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                    <input type="radio" name="score" value="2:1" class="h-4 w-4 text-blue-600">
+                    <input type="radio" name="score" value="2:1" class="h-4 w-4 text-blue-500">
                     <span class="ml-2 font-bold">2 : 1</span>
                 </label>
             </div>
         </div>
 
-        <button type="submit" class="w-full bg-main button py-3 text-lg font-bold">
+        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white button py-3 text-lg font-bold">
             {{ _('결과 제출하기') }}
         </button>
     </form>

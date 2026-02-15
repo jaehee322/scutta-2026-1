@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-sm">
+<div class="card">
     <h2 class="text-2xl font-bold mb-6">결과 대기 중인 베팅</h2>
 
     <div class="space-y-6">
@@ -33,12 +33,12 @@
                 <div class="flex items-center gap-4 mb-4 justify-center">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="winner_id" value="{{ betting.p1_id }}" required
-                            class="form-radio text-blue-600">
+                            class="form-radio accent-blue-500">
                         <span>{{ betting.p1_name }} 승</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="winner_id" value="{{ betting.p2_id }}" required
-                            class="form-radio text-red-600">
+                            class="form-radio text-blue-500">
                         <span>{{ betting.p2_name }} 승</span>
                     </label>
                 </div>

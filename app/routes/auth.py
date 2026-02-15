@@ -42,9 +42,18 @@ def set_language(lang_code):
     return redirect(request.referrer or url_for('main.index'))
 
 
-@auth_bp.route('/password')
+@auth_bp.route('/password', methods=['GET', 'POST'])
 @login_required
 def password():
+    if request.method == 'POST':
+        input_password = request.form.get('password')
+        admin_password = current_app.config.get('ADMIN_PASSWORD', 'yeong6701')
+        if input_password == admin_password:
+            session['admin_verified'] = True
+            return redirect(url_for('admin.settings'))
+        else:
+            flash(_('비밀번호가 올바르지 않습니다.'), 'error')
+            return redirect(url_for('auth.password'))
     return render_template('password.html', global_texts=current_app.config['GLOBAL_TEXTS'])
 
 

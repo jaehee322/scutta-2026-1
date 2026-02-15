@@ -18,7 +18,8 @@ def approval():
     if not current_user.is_admin:
         flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
         return redirect(url_for('main.index'))
-    return render_template('approval.html', global_texts=current_app.config['GLOBAL_TEXTS'])
+    pending_matches = Match.query.filter_by(approved=False).order_by(Match.timestamp.desc()).all()
+    return render_template('approval.html', pending_matches=pending_matches, global_texts=current_app.config['GLOBAL_TEXTS'])
 
 
 @admin_bp.route('/assignment')
@@ -38,6 +39,113 @@ def settings():
         return redirect(url_for('main.index'))
     players = Player.query.filter_by(is_valid=True).order_by(Player.name).all()
     return render_template('settings.html', players=players, global_texts=current_app.config['GLOBAL_TEXTS'])
+
+
+@admin_bp.route('/update_global_texts', methods=['POST'])
+@login_required
+def update_global_texts():
+    if not current_user.is_admin:
+        flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
+        return redirect(url_for('main.index'))
+    current_app.config['GLOBAL_TEXTS']['semester'] = request.form.get('semester', '')
+    current_app.config['GLOBAL_TEXTS']['main_title'] = request.form.get('main_title', '')
+    flash('설정이 저장되었습니다.', 'success')
+    return redirect(url_for('admin.settings'))
+
+
+@admin_bp.route('/reset_matches', methods=['POST'])
+@login_required
+def reset_matches():
+    if not current_user.is_admin:
+        flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
+        return redirect(url_for('main.index'))
+    try:
+        Match.query.delete()
+        for player in Player.query.all():
+            player.win_count = 0
+            player.loss_count = 0
+            player.match_count = 0
+            player.rate_count = 0
+        db.session.commit()
+        update_player_orders_by_match()
+        flash('모든 경기 기록이 삭제되었습니다.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'경기 기록 초기화 중 오류: {e}', 'error')
+    return redirect(url_for('admin.settings'))
+
+
+@admin_bp.route('/reset_betting', methods=['POST'])
+@login_required
+def reset_betting():
+    if not current_user.is_admin:
+        flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
+        return redirect(url_for('main.index'))
+    try:
+        BettingParticipant.query.delete()
+        Betting.query.delete()
+        PlayerPointLog.query.delete()
+        for player in Player.query.all():
+            player.achieve_count = 0
+            player.betting_count = 0
+        db.session.commit()
+        update_player_orders_by_point()
+        flash('모든 베팅 기록이 삭제되었습니다.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'베팅 기록 초기화 중 오류: {e}', 'error')
+    return redirect(url_for('admin.settings'))
+
+
+@admin_bp.route('/admin_reset_password_page')
+@login_required
+def admin_reset_password_page():
+    if not current_user.is_admin:
+        flash(_('권한이 없습니다.'), 'error')
+        return redirect(url_for('main.index'))
+    all_players = Player.query.join(User).filter(User.is_admin == False).order_by(Player.name).all()
+    return render_template('admin_reset_password.html', players=all_players)
+
+
+
+# settings.js API
+
+@admin_bp.route('/admin/batch_add_users', methods=['POST'])
+@login_required
+def batch_add_users():
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': '권한이 없습니다.'}), 403
+    data = request.get_json()
+    users = data.get('users', [])
+    if not users:
+        return jsonify({'success': False, 'message': '등록할 사용자가 없습니다.'})
+    added_count = 0
+    for user_data in users:
+        name = user_data.get('name', '').strip()
+        password = user_data.get('password', '').strip()
+        gender_str = user_data.get('gender', '')
+        freshman_str = user_data.get('freshman', '')
+        is_admin = user_data.get('is_admin', False)
+        if not name or not password or not gender_str or not freshman_str:
+            continue
+        if Player.query.filter_by(name=name).first():
+            continue
+        gender_enum = GenderEnum(gender_str)
+        freshman_enum = FreshmanEnum(freshman_str)
+        initial_rank = None
+        if gender_enum == GenderEnum.MALE:
+            initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 4
+        elif gender_enum == GenderEnum.FEMALE:
+            initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 6
+        new_player = Player(name=name, gender=gender_enum, is_she_or_he_freshman=freshman_enum, rank=initial_rank)
+        db.session.add(new_player)
+        db.session.flush()
+        new_user = User(username=name, player_id=new_player.id, is_admin=is_admin)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        added_count += 1
+    db.session.commit()
+    return jsonify({'success': True, 'message': f'{added_count}명의 사용자가 등록되었습니다.'})
 
 
 # assignment.js API
