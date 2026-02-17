@@ -135,3 +135,62 @@ def update_player_orders_by_point():
             setattr(player, order_field, current_rank)
 
     db.session.commit()
+
+
+def get_player_ranks(player):
+    """특정 선수의 실시간 순위 정보를 계산하여 반환합니다."""
+    # 1. 승리 순위
+    win_rank = Player.query.filter(Player.win_count > player.win_count, Player.is_valid == True).count() + 1
+    
+    # 2. 패배 순위 (많이 진 순서)
+    loss_rank = Player.query.filter(Player.loss_count > player.loss_count, Player.is_valid == True).count() + 1
+    
+    # 3. 승률 순위
+    rate_rank = Player.query.filter(Player.rate_count > player.rate_count, Player.is_valid == True).count() + 1
+    
+    # 4. 경기수 순위
+    match_rank = Player.query.filter(Player.match_count > player.match_count, Player.is_valid == True).count() + 1
+    
+    # 5. 상대수 순위
+    opponent_rank = Player.query.filter(Player.opponent_count > player.opponent_count, Player.is_valid == True).count() + 1
+    
+    # 6. 업적 순위
+    achieve_rank = Player.query.filter(Player.achieve_count > player.achieve_count, Player.is_valid == True).count() + 1
+    
+    # 7. 베팅 순위
+    betting_rank = Player.query.filter(Player.betting_count > player.betting_count, Player.is_valid == True).count() + 1
+    
+    return {
+        'win_order': win_rank,
+        'loss_order': loss_rank,
+        'rate_order': rate_rank,
+        'match_order': match_rank,
+        'opponent_order': opponent_rank,
+        'achieve_order': achieve_rank,
+        'betting_order': betting_rank
+    }
+
+
+def attach_rank(players, attribute, rank_attr_name):
+    """
+    리스트에 있는 선수들에게 특정 속성(attribute)을 기준으로 순위(rank_attr_name)를 매깁니다.
+    동점자가 있을 경우 공동 순위를 부여합니다 (예: 1위, 1위, 3위).
+    """
+    # 점수 기준 내림차순 정렬
+    sorted_players = sorted(players, key=lambda p: getattr(p, attribute) or 0, reverse=True)
+
+    previous_val = None
+    current_rank = 1
+    
+    for i, player in enumerate(sorted_players):
+        val = getattr(player, attribute) or 0
+        
+        if i > 0 and val == previous_val:
+            # 이전 선수와 점수가 같으면 같은 순위 유지 (current_rank 변하지 않음)
+            pass 
+        else:
+            # 다르면 현재 인덱스+1 이 순위가 됨
+            current_rank = i + 1
+        
+        setattr(player, rank_attr_name, current_rank)
+        previous_val = val

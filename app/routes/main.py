@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, current_app
 from flask_login import current_user, login_required
 from flask_babel import _
 from ..extensions import db
-from ..models import Match, Player, User, TodayPartner, Betting, League
-from ..utils import _get_summary_rankings_data
+from ..models import Match, Player, User, TodayPartner, Betting, League, PlayerPointLog
+from ..utils import _get_summary_rankings_data, get_player_ranks, attach_rank
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -18,6 +18,8 @@ def index():
         ('승리', 'win_order', 'win_count'), ('승률', 'rate_order', 'rate_count'),
         ('경기', 'match_order', 'match_count'), ('베팅', 'betting_order', 'betting_count'),
     ]
+    
+
     rankings_data = {}
     for title, order_field, value_field in categories:
         top_players = Player.query.join(Player.user).filter(Player.is_valid == True, User.is_admin == False).order_by(getattr(Player, order_field).asc(), Player.name.asc()).limit(3).all()
@@ -111,21 +113,19 @@ def index():
 @main_bp.route('/rankings_page')
 @login_required
 def rankings_page():
-    current_player = current_user.player if current_user.is_authenticated else None
-    summary_rankings = _get_summary_rankings_data(current_player)
+    players = Player.query.join(Player.user).filter(
+        Player.is_valid == True, 
+        User.is_admin == False
+    ).all()
+    
+    # 랭킹 페이지용 실시간 순위 계산 (1위, 1위, 3위 방식)
+    attach_rank(players, 'win_count', 'real_win_rank')
+    attach_rank(players, 'rate_count', 'real_rate_rank')
+    attach_rank(players, 'match_count', 'real_match_rank')
+    attach_rank(players, 'achieve_count', 'real_achieve_rank')
+    attach_rank(players, 'betting_count', 'real_betting_rank')
 
-    translated_headers = {
-        'rank': _('순위'),
-        'name': _('이름'),
-        'win_count': _('승리'),
-        'loss_count': _('패배'),
-        'rate_count': _('승률'),
-        'match_count': _('경기'),
-        'opponent_count': _('상대'),
-        'achieve_count': _('업적'),
-        'betting_count': _('베팅')
-    }
-    return render_template('rankings.html', summary_rankings=summary_rankings, headers=translated_headers)
+    return render_template('rankings.html', players=players)
 
 
 @main_bp.route('/mypage')
@@ -160,6 +160,16 @@ def player_detail(player_id):
         return redirect(url_for('main.mypage'))
 
     player = Player.query.get_or_404(player_id)
+
+    # 실시간 순위 정보 계산 및 할당
+    ranks = get_player_ranks(player)
+    player.win_order = ranks['win_order']
+    player.loss_order = ranks['loss_order']
+    player.rate_order = ranks['rate_order']
+    player.match_order = ranks['match_order']
+    player.opponent_order = ranks['opponent_order']
+    player.achieve_order = ranks['achieve_order']
+    player.betting_order = ranks['betting_order']
 
     if current_user.is_admin:
         point_logs = PlayerPointLog.query.filter_by(player_id=player_id)\

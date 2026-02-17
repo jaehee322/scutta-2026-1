@@ -34,61 +34,68 @@
         <table class="table-modern w-full whitespace-nowrap">
             <thead class="sticky top-0 bg-white shadow-sm">
                 <tr>
-                    <th class="text-center">{{ _('순위') }}</th>
-                    <th>{{ _('이름') }}</th>
-                    <th class="text-right pr-6">{{ _('승리') }}</th>
+                    <th class="!text-center w-[15%]">{{ _('순위') }}</th>
+                    <th class="!text-left pl-36 w-[55%]">{{ _('이름') }}</th>
+                    <th class="!text-center w-[30%]">{{ _('승리') }}</th>
                 </tr>
             </thead>
             <tbody class="ranking-list" id="ranking-list-win">
                 {% for p in players|sort(attribute='win_count', reverse=True) %}
                 <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-400">
-                        {% if loop.index == 1 %}🥇
-                        {% elif loop.index == 2 %}🥈
-                        {% elif loop.index == 3 %}🥉
-                        {% else %}{{ loop.index }}{% endif %}
-                    </td>
-                    <td class="font-semibold">
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_win_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
                         {{ p.name }}
                         <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
                     </td>
-                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.win_count }}</td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.win_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-rate">
                 {% for p in players|sort(attribute='rate_count', reverse=True) %}
                 <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
-                    <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.rate_count }}%</td>
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_rate_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
+                        {{ p.name }}
+                        <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
+                    </td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.rate_count }}%</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-match">
                 {% for p in players|sort(attribute='match_count', reverse=True) %}
                 <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
-                    <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.match_count }}</td>
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_match_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
+                        {{ p.name }}
+                        <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
+                    </td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.match_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-achieve">
                 {% for p in players|sort(attribute='achieve_count', reverse=True) %}
                 <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
-                    <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.achieve_count }}</td>
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_achieve_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
+                        {{ p.name }}
+                        <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
+                    </td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.achieve_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tbody class="ranking-list hidden" id="ranking-list-betting">
                 {% for p in players|sort(attribute='betting_count', reverse=True) %}
                 <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
-                    <td class="text-center font-bold text-gray-400">{{ loop.index }}</td>
-                    <td class="font-semibold">{{ p.name }}</td>
-                    <td class="text-right font-bold text-blue-500 pr-4">{{ p.betting_count }}</td>
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_betting_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
+                        {{ p.name }}
+                        <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
+                    </td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.betting_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
