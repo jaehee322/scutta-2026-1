@@ -11,6 +11,29 @@
 {% endblock %}
 
 {% block content %}
+{# ===== 관리자 도구 ===== #}
+<div class="card mb-8">
+    <h2 class="text-2xl font-bold mb-6">관리자 도구</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="{{ url_for('betting.betting_approval') }}"
+            class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-lg text-center transition">
+            <i class="fas fa-check-circle mb-2 text-2xl"></i>
+            <div class="text-lg">베팅 승인 관리</div>
+        </a>
+        <a href="{{ url_for('admin.assignment') }}"
+            class="block bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-lg text-center transition">
+            <i class="fas fa-users-cog mb-2 text-2xl"></i>
+            <div class="text-lg">선수 점수/부수 관리</div>
+        </a>
+        <a href="{{ url_for('admin.recalculate_all_stats') }}"
+            class="block bg-purple-500 hover:bg-purple-600 text-white font-bold py-4 px-6 rounded-lg text-center transition"
+            onclick="return confirm('전체 선수의 전적 통계를 재계산하시겠습니까? 시간이 소요될 수 있습니다.');">
+            <i class="fas fa-calculator mb-2 text-2xl"></i>
+            <div class="text-lg">전적 통계 재계산</div>
+        </a>
+    </div>
+</div>
+
 {# ===== 글로벌 텍스트 설정 ===== #}
 <div class="card">
     <h2 class="text-2xl font-bold mb-6">글로벌 텍스트 설정</h2>

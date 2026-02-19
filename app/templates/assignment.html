@@ -11,131 +11,44 @@
 {% endblock %}
 
 {% block content %}
-<style>
-    .drag-container {
-        display: flex;
-        gap: 20px;
-        overflow-x: auto;
-        padding-bottom: 20px;
-    }
-
-    .drag-column {
-        background-color: #f3f4f6;
-        border-radius: 8px;
-        min-width: 280px;
-        padding: 16px;
-    }
-
-    .drag-item {
-        background-color: white;
-        padding: 12px;
-        margin-bottom: 8px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        cursor: grab;
-    }
-
-    .drag-item:active {
-        cursor: grabbing;
-    }
-
-    .drag-item.dragging {
-        opacity: 0.5;
-    }
-</style>
-
 <div class="card">
-    <h2 class="text-2xl font-bold mb-4">선수 그룹 배정</h2>
-    <p class="text-gray-600 mb-6">선수를 드래그하여 원하는 그룹으로 이동시키세요.</p>
-
-    <div class="drag-container space-x-4">
-        {% for group_name, players in grouped_players.items() %}
-        <div class="drag-column" data-group="{{ group_name }}">
-            <h3 class="font-bold text-lg mb-4 text-center border-b pb-2">{{ group_name }}</h3>
-            <div class="drag-list min-h-[200px]" id="group-{{ group_name }}">
-                {% for player in players %}
-                <div class="drag-item" draggable="true" data-id="{{ player.id }}">
-                    <div class="font-semibold">{{ player.name }}</div>
-                    <div class="text-sm text-gray-500">{{ player.department }}</div>
-                </div>
-                {% endfor %}
-            </div>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <h2 class="text-2xl font-bold w-full md:w-auto text-center md:text-left" id="player-count-title">선수 관리</h2>
+        <div class="flex w-full md:w-auto gap-2">
+            <input type="text" id="player-search-input" placeholder="이름"
+                class="flex-grow md:w-40 px-3 py-2 border rounded-lg text-sm">
+            <button id="player-search-btn"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap">검색</button>
+            <button id="show-all-players-btn"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap">전체</button>
         </div>
-        {% endfor %}
     </div>
 
-    <div class="mt-8 flex justify-end">
-        <button id="save-assignment" class="bg-blue-500 hover:bg-blue-600 text-white button">배정 저장하기</button>
+    <div class="overflow-x-auto">
+        <table class="w-full text-center text-sm md:text-base">
+            <thead class="bg-gray-100 text-gray-700">
+                <tr>
+                    <th class="p-2 whitespace-nowrap">이름</th>
+                    <th class="p-2 w-16 md:w-24 whitespace-nowrap">업적</th>
+                    <th class="p-2 w-16 md:w-24 whitespace-nowrap">베팅</th>
+                    <th class="p-2 w-14 md:w-20 whitespace-nowrap">부수</th>
+                </tr>
+            </thead>
+            <tbody id="assignment-player-list-body" class="divide-y divide-gray-100">
+                <!-- JS로 로드됨 -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+        <button id="save-all-btn"
+            class="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition shadow-md">
+            저장
+        </button>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-    const draggables = document.querySelectorAll('.drag-item');
-    const containers = document.querySelectorAll('.drag-list');
-
-    draggables.forEach(draggable => {
-        draggable.addEventListener('dragstart', () => {
-            draggable.classList.add('dragging');
-        });
-
-        draggable.addEventListener('dragend', () => {
-            draggable.classList.remove('dragging');
-        });
-    });
-
-    containers.forEach(container => {
-        container.addEventListener('dragover', e => {
-            e.preventDefault();
-            const afterElement = getDragAfterElement(container, e.clientY);
-            const draggable = document.querySelector('.dragging');
-            if (afterElement == null) {
-                container.appendChild(draggable);
-            } else {
-                container.insertBefore(draggable, afterElement);
-            }
-        });
-    });
-
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.drag-item:not(.dragging)')];
-
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    document.getElementById('save-assignment').addEventListener('click', () => {
-        const assignments = {};
-        document.querySelectorAll('.drag-column').forEach(column => {
-            const groupName = column.dataset.group;
-            const playerIds = [...column.querySelectorAll('.drag-item')].map(item => item.dataset.id);
-            assignments[groupName] = playerIds;
-        });
-
-        fetch('/api/assignment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(assignments),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('배정이 저장되었습니다.');
-                    location.reload();
-                } else {
-                    alert('저장에 실패했습니다.');
-                }
-            });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/assignment.js') }}"></script>
 {% endblock %}

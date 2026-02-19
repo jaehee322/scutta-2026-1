@@ -50,6 +50,12 @@ def create_app():
     app.register_blueprint(betting_bp)
     app.register_blueprint(admin_bp)
 
+    @app.template_filter('datetimeformat')
+    def datetimeformat_filter(value, format='%Y-%m-%d %H:%M'):
+        if value is None:
+            return ""
+        return value.strftime(format)
+
     commands.register_commands(app)
 
     return app

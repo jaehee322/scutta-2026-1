@@ -4,7 +4,7 @@ from flask_babel import _
 from sqlalchemy import func
 from ..extensions import db
 from ..models import Match, Player, Betting, BettingParticipant, PlayerPointLog
-from ..utils import add_point_log, update_player_orders_by_point
+from ..utils import add_point_log, update_player_orders_by_point, update_player_orders_by_match
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -327,6 +327,20 @@ def approve_bettings():
         winner_player.betting_count += share
         add_point_log(winner_player.id, betting_change=share, reason=f"{betting_reason} 경기 승리")
         betting.approved = True
+
+        # 승패 및 경기 수 업데이트
+        winner_player.win_count += 1
+        winner_player.match_count += 1
+        loser_player.loss_count += 1
+        loser_player.match_count += 1
+        
+        # 승률 업데이트
+        if winner_player.match_count > 0:
+            winner_player.rate_count = round((winner_player.win_count / winner_player.match_count) * 100, 2)
+        if loser_player.match_count > 0:
+            loser_player.rate_count = round((loser_player.loss_count / loser_player.match_count) * 100, 2)
+            
+        match.approved = True
         if today.weekday() == 4:
             all_involved = [winner_player, loser_player] + [Player.query.get(p.participant_id) for p in participants]
             for player in all_involved:
@@ -335,6 +349,7 @@ def approve_bettings():
                 if not bonus: player.betting_count += 10; add_point_log(player.id, betting_change=10, reason="베팅 데이")
     db.session.commit()
     update_player_orders_by_point()
+    update_player_orders_by_match()
     return jsonify({"success": True, "message": "선택한 베팅이 승인되었습니다."})
 
 

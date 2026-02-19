@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     loadPlayers();
 
     document.getElementById('player-search-btn').addEventListener('click', () => {
@@ -91,14 +91,14 @@ function saveAllChanges() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(changes)
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            // 저장 후 목록을 새로고침하여 원래 값을 갱신합니다.
-            loadPlayers(document.getElementById('player-search-input').value);
-        } else {
-            alert('오류: ' + data.error);
-        }
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                // 저장 후 목록을 새로고침하여 원래 값을 갱신합니다.
+                loadPlayers(document.getElementById('player-search-input').value);
+            } else {
+                alert('오류: ' + data.error);
+            }
+        });
 }
