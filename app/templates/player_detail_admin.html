@@ -65,47 +65,140 @@
     <div class="space-y-6">
         <!-- 경기 수 업적 -->
         <div>
-            <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-blue-500 pl-2">경기 수 달성</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="border rounded p-3 {% if player.match_count >= 30 %}bg-blue-50 border-blue-200{% endif %}">
+            <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-gray-500 pl-2">경기 수 달성</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {% set match_goals = [(30, '30경기 달성! (5pt)'), (50, '50경기 달성! (10pt)'), (70, '70경기 달성! (20pt)'), (100,
+                '100경기 달성! (30pt)')] %}
+                {% set ns_match = namespace(found=false) %}
+                {% for goal, title in match_goals %}
+                {% if player.match_count >= goal %}
+                <div class="border rounded p-3 bg-gray-100 border-gray-300">
                     <div class="flex justify-between mb-1">
-                        <span class="font-bold">날이 좋아서 (5pt)</span>
-                        <span class="text-xs text-gray-500">30경기</span>
+                        <span class="font-bold">{{ title }}</span>
+                        <span class="text-xs text-gray-700 font-bold">완료 ({{ player.match_count }}/{{ goal }})</span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-blue-600 h-2.5 rounded-full"
-                            style="width: {{ [player.match_count * 100 / 30, 100]|min }}%"></div>
+                    <div class="w-full bg-gray-300 rounded-full h-2.5">
+                        <div class="bg-gray-600 h-2.5 rounded-full" style="width: 100%"></div>
                     </div>
                 </div>
-                <div class="border rounded p-3 {% if player.match_count >= 50 %}bg-blue-50 border-blue-200{% endif %}">
+                {% elif not ns_match.found %}
+                {% set ns_match.found = true %}
+                <div class="border rounded p-3">
                     <div class="flex justify-between mb-1">
-                        <span class="font-bold">날이 좋지 않아서 (10pt)</span>
-                        <span class="text-xs text-gray-500">50경기</span>
+                        <span class="font-bold text-gray-500">{{ title }}</span>
+                        <span class="text-xs text-gray-500">진행중 ({{ player.match_count }}/{{ goal }})</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-blue-600 h-2.5 rounded-full"
-                            style="width: {{ [player.match_count * 100 / 50, 100]|min }}%"></div>
+                        <div class="bg-gray-400 h-2.5 rounded-full"
+                            style="width: {{ [player.match_count * 100 / goal, 100]|min }}%"></div>
                     </div>
                 </div>
-                <!-- More achievements logic replicated here simplified for brevity but keeping structure -->
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
 
-        <!-- 승리 수 업적 -->
+        <!-- 승리 수 달성 -->
         <div>
-            <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-red-500 pl-2">승리 수 달성</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="border rounded p-3 {% if player.win_count >= 30 %}bg-red-50 border-red-200{% endif %}">
+            <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-blue-500 pl-2">승리 수 달성</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% set win_goals = [(20, '누적 20승 달성! (10pt)'), (35, '누적 35승 달성! (20pt)'), (50, '누적 50승 달성! (30pt)')] %}
+                {% set ns_win = namespace(found=false) %}
+                {% for goal, title in win_goals %}
+                {% if player.win_count >= goal %}
+                <div class="border rounded p-3 bg-blue-50 border-blue-200">
                     <div class="flex justify-between mb-1">
-                        <span class="font-bold">내가 나가 (10pt)</span>
-                        <span class="text-xs text-gray-500">30승</span>
+                        <span class="font-bold">{{ title }}</span>
+                        <span class="text-xs text-blue-600 font-bold">완료 ({{ player.win_count }}/{{ goal }})</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-red-600 h-2.5 rounded-full"
-                            style="width: {{ [player.win_count * 100 / 30, 100]|min }}%"></div>
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 100%"></div>
                     </div>
                 </div>
-                <!-- Add other win achievments -->
+                {% elif not ns_win.found %}
+                {% set ns_win.found = true %}
+                <div class="border rounded p-3">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold text-gray-500">{{ title }}</span>
+                        <span class="text-xs text-gray-500">진행중 ({{ player.win_count }}/{{ goal }})</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-blue-400 h-2.5 rounded-full"
+                            style="width: {{ [player.win_count * 100 / goal, 100]|min }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 패배 수 달성 -->
+        <div>
+            <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-red-500 pl-2">패배 수 달성</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% set loss_goals = [(20, '누적 20패 달성! (10pt)'), (35, '누적 35패 달성! (20pt)'), (50, '누적 50패 달성! (30pt)')] %}
+                {% set ns_loss = namespace(found=false) %}
+                {% for goal, title in loss_goals %}
+                {% if player.loss_count >= goal %}
+                <div class="border rounded p-3 bg-red-50 border-red-200">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold">{{ title }}</span>
+                        <span class="text-xs text-red-600 font-bold">완료 ({{ player.loss_count }}/{{ goal }})</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-red-600 h-2.5 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+                {% elif not ns_loss.found %}
+                {% set ns_loss.found = true %}
+                <div class="border rounded p-3">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold text-gray-500">{{ title }}</span>
+                        <span class="text-xs text-gray-500">진행중 ({{ player.loss_count }}/{{ goal }})</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-red-400 h-2.5 rounded-full"
+                            style="width: {{ [player.loss_count * 100 / goal, 100]|min }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 다양한 사람과 경기 -->
+        <div>
+            <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-green-500 pl-2">다양한 사람과 경기</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% set opp_goals = [(10, '누적 상대 수 10명 달성! (5pt)'), (25, '누적 상대 수 25명 달성! (20pt)'), (40, '누적 상대 수 40명 달성!
+                (30pt)')] %}
+                {% set ns_opp = namespace(found=false) %}
+                {% for goal, title in opp_goals %}
+                {% if player.opponent_count >= goal %}
+                <div class="border rounded p-3 bg-green-50 border-green-200">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold">{{ title }}</span>
+                        <span class="text-xs text-green-700 font-bold">완료 ({{ player.opponent_count }}/{{ goal
+                            }})</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-green-600 h-2.5 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+                {% elif not ns_opp.found %}
+                {% set ns_opp.found = true %}
+                <div class="border rounded p-3">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold text-gray-500">{{ title }}</span>
+                        <span class="text-xs text-gray-500">진행중 ({{ player.opponent_count }}/{{ goal }})</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-green-400 h-2.5 rounded-full"
+                            style="width: {{ [player.opponent_count * 100 / goal, 100]|min }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>

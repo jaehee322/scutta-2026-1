@@ -26,31 +26,28 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% if leagues %}
-        {% for league in leagues %}
+        {% if league_data %}
+        {% for item in league_data %}
+        {% set league = item.league %}
         <a href="{{ url_for('league.league_detail', league_id=league.id) }}"
             class="block p-6 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-300 hover:bg-blue-50 transition">
             <div class="flex justify-between items-start mb-4">
                 <h3 class="text-xl font-bold text-gray-900 truncate pr-2">{{ league.name }}</h3>
-                {% if league.status == 'ongoing' %}
                 <span
                     class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full whitespace-nowrap">{{
                     _('진행중') }}</span>
-                {% else %}
-                <span
-                    class="px-2 py-1 text-xs font-semibold bg-gray-200 text-gray-800 rounded-full whitespace-nowrap">{{
-                    _('종료됨') }}</span>
-                {% endif %}
             </div>
             <div class="space-y-2 text-sm text-gray-600">
                 <div class="flex justify-between">
-                    <span>{{ _('참가자') }}</span>
-                    <span class="font-medium text-gray-900">{{ league.participants|length }}{{ _('명') }}</span>
+                    <span>{{ _('참가자 수') }}</span>
+                    <span class="font-medium text-gray-900">5{{ _('명') }}</span>
                 </div>
+                <!-- 
                 <div class="flex justify-between">
-                    <span>{{ _('시작일') }}</span>
-                    <span class="font-medium text-gray-900">{{ league.created_at.strftime('%Y-%m-%d') }}</span>
+                    <span>{{ _('생성일') }}</span>
+                    <span class="font-medium text-gray-900">{{ league.created_at }}</span>
                 </div>
+                -->
             </div>
         </a>
         {% endfor %}

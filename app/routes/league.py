@@ -226,7 +226,39 @@ def generate_tournament():
 @login_required
 def tournament_detail(tournament_id):
     tournament = Tournament.query.get_or_404(tournament_id)
-    return render_template('tournament_detail.html', tournament=tournament)
+    
+    rounds_dict = {}
+    if tournament.bracket_data and 'rounds' in tournament.bracket_data:
+        for i, round_matches in enumerate(tournament.bracket_data['rounds']):
+            round_num = i + 1
+            formatted_matches = []
+            for m in round_matches:
+                # 템플릿의 변수명(p1_name)과 DB 저장 구조(p1) 매핑
+                formatted_match = {
+                    'p1_name': m.get('p1', ''),
+                    'p2_name': m.get('p2', ''),
+                    'winner_name': m.get('winner', ''),
+                    'score_p1': '',
+                    'score_p2': ''
+                }
+                # 승자 표시를 템플릿 조건(`winner_id == p1_id`)과 맞추기 위해 꼼수 사용
+                if formatted_match['winner_name'] and formatted_match['winner_name'] == formatted_match['p1_name']:
+                    formatted_match['winner_id'] = 1
+                    formatted_match['p1_id'] = 1
+                    formatted_match['p2_id'] = 2
+                elif formatted_match['winner_name'] and formatted_match['winner_name'] == formatted_match['p2_name']:
+                    formatted_match['winner_id'] = 2
+                    formatted_match['p1_id'] = 1
+                    formatted_match['p2_id'] = 2
+                else:
+                    formatted_match['winner_id'] = 0
+                    formatted_match['p1_id'] = 1
+                    formatted_match['p2_id'] = 2                    
+                    
+                formatted_matches.append(formatted_match)
+            rounds_dict[round_num] = formatted_matches
+
+    return render_template('tournament_detail.html', tournament=tournament, rounds=rounds_dict)
 
 
 @league_bp.route('/tournament/<int:tournament_id>/submit_results')

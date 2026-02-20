@@ -122,6 +122,7 @@ def rankings_page():
     attach_rank(players, 'win_count', 'real_win_rank')
     attach_rank(players, 'rate_count', 'real_rate_rank')
     attach_rank(players, 'match_count', 'real_match_rank')
+    attach_rank(players, 'opponent_count', 'real_opponent_rank')
     attach_rank(players, 'achieve_count', 'real_achieve_rank')
     attach_rank(players, 'betting_count', 'real_betting_rank')
 

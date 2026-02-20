@@ -24,6 +24,9 @@
             data-tab="match">{{ _('경기수순') }}</button>
         <button
             class="tab-button bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+            data-tab="opponent">{{ _('상대수순') }}</button>
+        <button
+            class="tab-button bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
             data-tab="achieve">{{ _('업적순') }}</button>
         <button
             class="tab-button bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
@@ -72,6 +75,18 @@
                         <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
                     </td>
                     <td class="!text-center font-bold text-blue-500">{{ p.match_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tbody class="ranking-list hidden" id="ranking-list-opponent">
+                {% for p in players|sort(attribute='opponent_count', reverse=True) %}
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_opponent_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
+                        {{ p.name }}
+                        <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
+                    </td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.opponent_count }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -124,6 +139,7 @@
                 'win': '{{ _("승리") }}',
                 'rate': '{{ _("승률") }}',
                 'match': '{{ _("경기수") }}',
+                'opponent': '{{ _("상대수") }}',
                 'achieve': '{{ _("업적") }}',
                 'betting': '{{ _("베팅") }}'
             };
