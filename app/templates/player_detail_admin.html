@@ -66,9 +66,9 @@
         <!-- 경기 수 업적 -->
         <div>
             <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-gray-500 pl-2">경기 수 달성</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {% set match_goals = [(30, '30경기 달성! (5pt)'), (50, '50경기 달성! (10pt)'), (70, '70경기 달성! (20pt)'), (100,
-                '100경기 달성! (30pt)')] %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% set match_goals = [(30, '날이 좋아서 (5pt)'), (50, '날이 좋지 않아서 (10pt)'), (70, '날이 적당해서 (20pt)'), (100,
+                '모든 날이 탁구였다. (30pt)')] %}
                 {% set ns_match = namespace(found=false) %}
                 {% for goal, title in match_goals %}
                 {% if player.match_count >= goal %}
@@ -102,7 +102,7 @@
         <div>
             <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-blue-500 pl-2">승리 수 달성</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% set win_goals = [(20, '누적 20승 달성! (10pt)'), (35, '누적 35승 달성! (20pt)'), (50, '누적 50승 달성! (30pt)')] %}
+                {% set win_goals = [(20, '내가 나가 (10pt)'), (35, '내가 잘 나가 (20pt)'), (50, '내가 제일 잘 나가 (30pt)')] %}
                 {% set ns_win = namespace(found=false) %}
                 {% for goal, title in win_goals %}
                 {% if player.win_count >= goal %}
@@ -136,7 +136,8 @@
         <div>
             <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-red-500 pl-2">패배 수 달성</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% set loss_goals = [(20, '누적 20패 달성! (10pt)'), (35, '누적 35패 달성! (20pt)'), (50, '누적 50패 달성! (30pt)')] %}
+                {% set loss_goals = [(20, '숨 참고 Scutta dive~ (10pt)'), (35, 'Under the sea~ (20pt)'), (50, '해저 2만리
+                (30pt)')] %}
                 {% set ns_loss = namespace(found=false) %}
                 {% for goal, title in loss_goals %}
                 {% if player.loss_count >= goal %}
@@ -170,7 +171,7 @@
         <div>
             <h4 class="font-bold text-gray-700 mb-2 border-l-4 border-green-500 pl-2">다양한 사람과 경기</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% set opp_goals = [(10, '누적 상대 수 10명 달성! (5pt)'), (25, '누적 상대 수 25명 달성! (20pt)'), (40, '누적 상대 수 40명 달성!
+                {% set opp_goals = [(10, '단어장 마스터 (5pt)'), (25, '인물사전 마스터 (20pt)'), (40, '백과사전 마스터
                 (30pt)')] %}
                 {% set ns_opp = namespace(found=false) %}
                 {% for goal, title in opp_goals %}

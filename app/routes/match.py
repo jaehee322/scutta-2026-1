@@ -170,120 +170,120 @@ def _approve_single_match(match):
     if winner.match_count == 30:
         winner.betting_count += 10
         winner.achieve_count += 5
-        add_point_log(winner.id, betting_change=10, reason='30경기 달성!')
-        add_point_log(winner.id, achieve_change=5, reason='30경기 달성!')
+        add_point_log(winner.id, betting_change=10, reason='날이 좋아서')
+        add_point_log(winner.id, achieve_change=5, reason='날이 좋아서')
     if winner.match_count == 50:
         winner.betting_count += 20
         winner.achieve_count += 10
-        add_point_log(winner.id, betting_change=20, reason='50경기 달성!')
-        add_point_log(winner.id, achieve_change=10, reason='50경기 달성!')
+        add_point_log(winner.id, betting_change=20, reason='날이 좋지 않아서')
+        add_point_log(winner.id, achieve_change=10, reason='날이 좋지 않아서')
     if winner.match_count == 70:
         winner.betting_count += 40
         winner.achieve_count += 20
-        add_point_log(winner.id, betting_change=40, reason='70경기 달성!')
-        add_point_log(winner.id, achieve_change=20, reason='70경기 달성!')
+        add_point_log(winner.id, betting_change=40, reason='날이 적당해서')
+        add_point_log(winner.id, achieve_change=20, reason='날이 적당해서')
 
     if winner.match_count == 100:
         winner.betting_count += 60
         winner.achieve_count += 30
-        add_point_log(winner.id, betting_change=60, reason='100경기 달성!')
-        add_point_log(winner.id, achieve_change=30, reason='100경기 달성!')
+        add_point_log(winner.id, betting_change=60, reason='모든 날이 탁구였다.')
+        add_point_log(winner.id, achieve_change=30, reason='모든 날이 탁구였다.')
 
     if winner.win_count == 20:
         winner.betting_count += 20
         winner.achieve_count += 10
-        add_point_log(winner.id, betting_change=20, reason='누적 20승 달성!')
-        add_point_log(winner.id, achieve_change=10, reason='누적 20승 달성!')
+        add_point_log(winner.id, betting_change=20, reason='내가 나가')
+        add_point_log(winner.id, achieve_change=10, reason='내가 나가')
 
     if winner.win_count == 35:
         winner.betting_count += 40
         winner.achieve_count += 20
-        add_point_log(winner.id, betting_change=40, reason='누적 35승 달성!')
-        add_point_log(winner.id, achieve_change=20, reason='누적 35승 달성!')
+        add_point_log(winner.id, betting_change=40, reason='내가 잘 나가')
+        add_point_log(winner.id, achieve_change=20, reason='내가 잘 나가')
 
     if winner.win_count == 50:
         winner.betting_count += 60
         winner.achieve_count += 30
-        add_point_log(winner.id, betting_change=60, reason='누적 50승 달성!')
-        add_point_log(winner.id, achieve_change=30, reason='누적 50승 달성!')
+        add_point_log(winner.id, betting_change=60, reason='내가 제일 잘 나가')
+        add_point_log(winner.id, achieve_change=30, reason='내가 제일 잘 나가')
 
     if winner_previous_opponent == 9 and winner.opponent_count == 10:
         winner.betting_count += 10
         winner.achieve_count += 5
-        add_point_log(winner.id, betting_change=10, reason='누적 상대 수 10명 달성!')
-        add_point_log(winner.id, achieve_change=5, reason='누적 상대 수 10명 달성!')
+        add_point_log(winner.id, betting_change=10, reason='단어장 마스터')
+        add_point_log(winner.id, achieve_change=5, reason='단어장 마스터')
 
     if winner_previous_opponent == 24 and winner.opponent_count == 25:
         winner.betting_count += 40
         winner.achieve_count += 20
-        add_point_log(winner.id, betting_change=40, reason='누적 상대 수 25명 달성!')
-        add_point_log(winner.id, achieve_change=20, reason='누적 상대 수 25명 달성!')
+        add_point_log(winner.id, betting_change=40, reason='인물사전 마스터')
+        add_point_log(winner.id, achieve_change=20, reason='인물사전 마스터')
 
     if winner_previous_opponent == 39 and winner.opponent_count == 40:
         winner.betting_count += 60
         winner.achieve_count += 30
-        add_point_log(winner.id, betting_change=60, reason='누적 상대 수 40명 달성!')
-        add_point_log(winner.id, achieve_change=30, reason='누적 상대 수 40명 달성!')
+        add_point_log(winner.id, betting_change=60, reason='백과사전 마스터')
+        add_point_log(winner.id, achieve_change=30, reason='백과사전 마스터')
 
     if loser.match_count == 30:
         loser.betting_count += 10
         loser.achieve_count += 5
-        add_point_log(loser.id, betting_change=10, reason='30경기 달성!')
-        add_point_log(loser.id, achieve_change=5, reason='30경기 달성!')
+        add_point_log(loser.id, betting_change=10, reason='날이 좋아서')
+        add_point_log(loser.id, achieve_change=5, reason='날이 좋아서')
 
     if loser.match_count == 50:
         loser.betting_count += 20
         loser.achieve_count += 10
-        add_point_log(loser.id, betting_change=20, reason='50경기 달성!')
-        add_point_log(loser.id, achieve_change=10, reason='50경기 달성!')
+        add_point_log(loser.id, betting_change=20, reason='날이 좋지 않아서')
+        add_point_log(loser.id, achieve_change=10, reason='날이 좋지 않아서')
 
     if loser.match_count == 70:
         loser.betting_count += 40
         loser.achieve_count += 20
-        add_point_log(loser.id, betting_change=40, reason='70경기 달성!')
-        add_point_log(loser.id, achieve_change=20, reason='70경기 달성!')
+        add_point_log(loser.id, betting_change=40, reason='날이 적당해서')
+        add_point_log(loser.id, achieve_change=20, reason='날이 적당해서')
 
     if loser.match_count == 100:
         loser.betting_count += 60
         loser.achieve_count += 30
-        add_point_log(loser.id, betting_change=60, reason='100경기 달성!')
-        add_point_log(loser.id, achieve_change=30, reason='100경기 달성!')
+        add_point_log(loser.id, betting_change=60, reason='모든 날이 탁구였다.')
+        add_point_log(loser.id, achieve_change=30, reason='모든 날이 탁구였다.')
 
     if loser.loss_count == 20:
         loser.betting_count += 10
         loser.achieve_count += 10
-        add_point_log(loser.id, betting_change=10, reason='누적 20패 달성!')
-        add_point_log(loser.id, achieve_change=10, reason='누적 20패 달성!')
+        add_point_log(loser.id, betting_change=10, reason='숨 참고 Scutta dive~')
+        add_point_log(loser.id, achieve_change=10, reason='숨 참고 Scutta dive~')
 
     if loser.loss_count == 35:
         loser.betting_count += 20
         loser.achieve_count += 20
-        add_point_log(loser.id, betting_change=20, reason='누적 35패 달성!')
-        add_point_log(loser.id, achieve_change=20, reason='누적 35패 달성!')
+        add_point_log(loser.id, betting_change=20, reason='Under the sea~')
+        add_point_log(loser.id, achieve_change=20, reason='Under the sea~')
 
     if loser.loss_count == 50:
         loser.betting_count += 30
         loser.achieve_count += 30
-        add_point_log(loser.id, betting_change=30, reason='누적 50패 달성!')
-        add_point_log(loser.id, achieve_change=30, reason='누적 50패 달성!')
+        add_point_log(loser.id, betting_change=30, reason='해저 2만리')
+        add_point_log(loser.id, achieve_change=30, reason='해저 2만리')
 
     if loser_previous_opponent == 9 and loser.opponent_count == 10:
         loser.betting_count += 10
         loser.achieve_count += 5
-        add_point_log(loser.id, betting_change=10, reason='누적 상대 수 10명 달성!')
-        add_point_log(loser.id, achieve_change=5, reason='누적 상대 수 10명 달성!')
+        add_point_log(loser.id, betting_change=10, reason='단어장 마스터')
+        add_point_log(loser.id, achieve_change=5, reason='단어장 마스터')
 
     if loser_previous_opponent == 24 and loser.opponent_count == 25:
         loser.betting_count += 40
         loser.achieve_count += 20
-        add_point_log(loser.id, betting_change=40, reason='누적 상대 수 25명 달성!')
-        add_point_log(loser.id, achieve_change=20, reason='누적 상대 수 25명 달성!')
+        add_point_log(loser.id, betting_change=40, reason='인물사전 마스터')
+        add_point_log(loser.id, achieve_change=20, reason='인물사전 마스터')
 
     if loser_previous_opponent == 39 and loser.opponent_count == 40:
         loser.betting_count += 60
         loser.achieve_count += 30
-        add_point_log(loser.id, betting_change=60, reason='누적 상대 수 40명 달성!')
-        add_point_log(loser.id, achieve_change=30, reason='누적 상대 수 40명 달성!')
+        add_point_log(loser.id, betting_change=60, reason='백과사전 마스터')
+        add_point_log(loser.id, achieve_change=30, reason='백과사전 마스터')
 
     today_partner = TodayPartner.query.filter_by(p1_id=match.winner, p2_id=match.loser, submitted=True).first()
     if not today_partner:
@@ -353,103 +353,103 @@ def _delete_single_match(match):
         if winner.match_count == 29:
             winner.betting_count -= 10
             winner.achieve_count -= 5
-            add_point_log(winner.id, betting_change=-10, reason='누적 30경기 달성 취소')
-            add_point_log(winner.id, achieve_change=-5, reason='누적 30경기 달성 취소')
+            add_point_log(winner.id, betting_change=-10, reason='날이 좋아서 취소')
+            add_point_log(winner.id, achieve_change=-5, reason='날이 좋아서 취소')
         if winner.match_count == 49:
             winner.betting_count -= 20
             winner.achieve_count -= 10
-            add_point_log(winner.id, betting_change=-20, reason='누적 50경기 달성 취소')
-            add_point_log(winner.id, achieve_change=-10, reason='누적 50경기 달성 취소')
+            add_point_log(winner.id, betting_change=-20, reason='날이 좋지 않아서 취소')
+            add_point_log(winner.id, achieve_change=-10, reason='날이 좋지 않아서 취소')
         if winner.match_count == 69:
             winner.betting_count -= 40
             winner.achieve_count -= 20
-            add_point_log(winner.id, betting_change=-40, reason='누적 70경기 달성 취소')
-            add_point_log(winner.id, achieve_change=-20, reason='누적 70경기 달성 취소')
+            add_point_log(winner.id, betting_change=-40, reason='날이 적당해서 취소')
+            add_point_log(winner.id, achieve_change=-20, reason='날이 적당해서 취소')
         if winner.match_count == 99:
             winner.betting_count -= 60
             winner.achieve_count -= 30
-            add_point_log(winner.id, betting_change=-60, reason='누적 100경기 달성 취소')
-            add_point_log(winner.id, achieve_change=-30, reason='누적 100경기 달성 취소')
+            add_point_log(winner.id, betting_change=-60, reason='모든 날이 탁구였다. 취소')
+            add_point_log(winner.id, achieve_change=-30, reason='모든 날이 탁구였다. 취소')
         if winner.win_count == 19:
             winner.betting_count -= 20
             winner.achieve_count -= 10
-            add_point_log(winner.id, betting_change=-20, reason='누적 20승 달성 취소')
-            add_point_log(winner.id, achieve_change=-10, reason='누적 20승 달성 취소')
+            add_point_log(winner.id, betting_change=-20, reason='내가 나가 취소')
+            add_point_log(winner.id, achieve_change=-10, reason='내가 나가 취소')
         if winner.win_count == 34:
             winner.betting_count -= 40
             winner.achieve_count -= 20
-            add_point_log(winner.id, betting_change=-40, reason='누적 35승 달성 취소')
-            add_point_log(winner.id, achieve_change=-20, reason='누적 35승 달성 취소')
+            add_point_log(winner.id, betting_change=-40, reason='내가 잘 나가 취소')
+            add_point_log(winner.id, achieve_change=-20, reason='내가 잘 나가 취소')
         if winner.win_count == 49:
             winner.betting_count -= 60
             winner.achieve_count -= 30
-            add_point_log(winner.id, betting_change=-60, reason='누적 50승 달성 취소')
-            add_point_log(winner.id, achieve_change=-30, reason='누적 50승 달성 취소')
+            add_point_log(winner.id, betting_change=-60, reason='내가 제일 잘 나가 취소')
+            add_point_log(winner.id, achieve_change=-30, reason='내가 제일 잘 나가 취소')
         if winner_previous_opponent == 10 and winner.opponent_count == 9:
             winner.betting_count -= 10
             winner.achieve_count -= 5
-            add_point_log(winner.id, betting_change=-10, reason='누적 상대 10명 달성 취소')
-            add_point_log(winner.id, achieve_change=-5, reason='누적 상대 10명 달성 취소')
+            add_point_log(winner.id, betting_change=-10, reason='단어장 마스터 취소')
+            add_point_log(winner.id, achieve_change=-5, reason='단어장 마스터 취소')
         if winner_previous_opponent == 25 and winner.opponent_count == 24:
             winner.betting_count -= 40
             winner.achieve_count -= 20
-            add_point_log(winner.id, betting_change=-40, reason='누적 상대 25명 달성 취소')
-            add_point_log(winner.id, achieve_change=-20, reason='누적 상대 25명 달성 취소')
+            add_point_log(winner.id, betting_change=-40, reason='인물사전 마스터 취소')
+            add_point_log(winner.id, achieve_change=-20, reason='인물사전 마스터 취소')
         if winner_previous_opponent == 40 and winner.opponent_count == 39:
             winner.betting_count -= 60
             winner.achieve_count -= 30
-            add_point_log(winner.id, betting_change=-60, reason='누적 상대 40명 달성 취소')
-            add_point_log(winner.id, achieve_change=-30, reason='누적 상대 40명 달성 취소')
+            add_point_log(winner.id, betting_change=-60, reason='백과사전 마스터 취소')
+            add_point_log(winner.id, achieve_change=-30, reason='백과사전 마스터 취소')
         if loser.match_count == 29:
             loser.betting_count -= 10
             loser.achieve_count -= 5
-            add_point_log(loser.id, betting_change=-10, reason='누적 30경기 달성 취소')
-            add_point_log(loser.id, achieve_change=-5, reason='누적 30경기 달성 취소')
+            add_point_log(loser.id, betting_change=-10, reason='날이 좋아서 취소')
+            add_point_log(loser.id, achieve_change=-5, reason='날이 좋아서 취소')
         if loser.match_count == 49:
             loser.betting_count -= 20
             loser.achieve_count -= 10
-            add_point_log(loser.id, betting_change=-10, reason='누적 50경기 달성 취소')
-            add_point_log(loser.id, achieve_change=-5, reason='누적 50경기 달성 취소')
+            add_point_log(loser.id, betting_change=-10, reason='날이 좋지 않아서 취소')
+            add_point_log(loser.id, achieve_change=-5, reason='날이 좋지 않아서 취소')
         if loser.match_count == 69:
             loser.betting_count -= 40
             loser.achieve_count -= 20
-            add_point_log(loser.id, betting_change=-40, reason='누적 70경기 달성 취소')
-            add_point_log(loser.id, achieve_change=-20, reason='누적 70경기 달성 취소')
+            add_point_log(loser.id, betting_change=-40, reason='날이 적당해서 취소')
+            add_point_log(loser.id, achieve_change=-20, reason='날이 적당해서 취소')
         if loser.match_count == 99:
             loser.betting_count -= 60
             loser.achieve_count -= 30
-            add_point_log(loser.id, betting_change=-60, reason='누적 100경기 달성 취소')
-            add_point_log(loser.id, achieve_change=-30, reason='누적 100경기 달성 취소')
+            add_point_log(loser.id, betting_change=-60, reason='모든 날이 탁구였다. 취소')
+            add_point_log(loser.id, achieve_change=-30, reason='모든 날이 탁구였다. 취소')
         if loser.loss_count == 19:
             loser.betting_count -= 10
             loser.achieve_count -= 10
-            add_point_log(loser.id, betting_change=-10, reason='누적 20패 달성 취소')
-            add_point_log(loser.id, achieve_change=-10, reason='누적 20패 달성 취소')
+            add_point_log(loser.id, betting_change=-10, reason='숨 참고 Scutta dive~ 취소')
+            add_point_log(loser.id, achieve_change=-10, reason='숨 참고 Scutta dive~ 취소')
         if loser.loss_count == 34:
             loser.betting_count -= 20
             loser.achieve_count -= 20
-            add_point_log(loser.id, betting_change=-20, reason='누적 35패 달성 취소')
-            add_point_log(loser.id, achieve_change=-20, reason='누적 35패 달성 취소')
+            add_point_log(loser.id, betting_change=-20, reason='Under the sea~ 취소')
+            add_point_log(loser.id, achieve_change=-20, reason='Under the sea~ 취소')
         if loser.loss_count == 49:
             loser.betting_count -= 30
             loser.achieve_count -= 30
-            add_point_log(loser.id, betting_change=-30, reason='누적 50패 달성 취소')
-            add_point_log(loser.id, achieve_change=-30, reason='누적 50패 달성 취소')
+            add_point_log(loser.id, betting_change=-30, reason='해저 2만리 취소')
+            add_point_log(loser.id, achieve_change=-30, reason='해저 2만리 취소')
         if loser_previous_opponent == 10 and loser.opponent_count == 9:
             loser.betting_count -= 10
             loser.achieve_count -= 5
-            add_point_log(loser.id, betting_change=-10, reason='누적 상대수 10명 달성 취소')
-            add_point_log(loser.id, achieve_change=-5, reason='누적 상대수 10명 달성 취소')
+            add_point_log(loser.id, betting_change=-10, reason='단어장 마스터 취소')
+            add_point_log(loser.id, achieve_change=-5, reason='단어장 마스터 취소')
         if loser_previous_opponent == 25 and loser.opponent_count == 24:
             loser.betting_count -= 40
             loser.achieve_count -= 20
-            add_point_log(loser.id, betting_change=-40, reason='누적 상대수 25명 달성 취소')
-            add_point_log(loser.id, achieve_change=-20, reason='누적 상대수 25명 달성 취소')
+            add_point_log(loser.id, betting_change=-40, reason='인물사전 마스터 취소')
+            add_point_log(loser.id, achieve_change=-20, reason='인물사전 마스터 취소')
         if loser_previous_opponent == 40 and loser.opponent_count == 39:
             loser.betting_count -= 60
             loser.achieve_count -= 30
-            add_point_log(loser.id, betting_change=-60, reason='누적 상대수 40명 달성 취소')
-            add_point_log(loser.id, achieve_change=-30, reason='누적 상대수 40명 달성 취소')
+            add_point_log(loser.id, betting_change=-60, reason='백과사전 마스터 취소')
+            add_point_log(loser.id, achieve_change=-30, reason='백과사전 마스터 취소')
 
         today_partner = TodayPartner.query.filter_by(p1_id=match.winner, p2_id=match.loser, submitted=True).first()
         if not today_partner:
