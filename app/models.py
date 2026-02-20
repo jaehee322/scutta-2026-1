@@ -91,6 +91,34 @@ class League(db.Model):
     p5p3 = db.Column(db.Integer, default=None)
     p5p4 = db.Column(db.Integer, default=None)
 
+    @property
+    def display_name(self):
+        if self.name and self.name.endswith('__CLOSED__'):
+            return self.name[:-10]
+        return self.name or ''
+
+    @property
+    def is_closed(self):
+        return self.name is not None and self.name.endswith('__CLOSED__')
+
+    @property
+    def is_completed(self):
+        matches_played = 0
+        for i in range(5):
+            for j in range(5):
+                if i != j and getattr(self, f'p{i+1}p{j+1}') is not None:
+                    matches_played += 1
+        return self.is_closed or (matches_played == 10)
+
+    @is_closed.setter
+    def is_closed(self, value):
+        if value:
+            if not self.is_closed:
+                self.name = f"{self.name or ''}__CLOSED__"
+        else:
+            if self.is_closed:
+                self.name = self.name[:-10]
+
 class Betting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     p1_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)

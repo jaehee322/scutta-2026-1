@@ -427,7 +427,6 @@ header {
 }
 
 .table-modern thead th {
-    text-align: left;
     padding: 12px 16px;
     background-color: var(--color-bg);
     border-top: 2px solid var(--color-text);
@@ -438,7 +437,6 @@ header {
 }
 
 .table-modern tbody td {
-    text-align: left;
     padding: 12px 16px;
 }
 

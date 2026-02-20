@@ -59,10 +59,12 @@ def index():
     # --- 3. 나의 리그 정보 조회 ---
     my_league_info = None
     my_name = current_user.player.name
-    my_league = League.query.filter(
+    my_leagues = League.query.filter(
         (League.p1 == my_name) | (League.p2 == my_name) | (League.p3 == my_name) |
         (League.p4 == my_name) | (League.p5 == my_name)
-    ).order_by(League.id.desc()).first()
+    ).order_by(League.id.desc()).all()
+    
+    my_league = next((l for l in my_leagues if not l.is_completed), None)
 
     if my_league:
         player_names = [my_league.p1, my_league.p2, my_league.p3, my_league.p4, my_league.p5]

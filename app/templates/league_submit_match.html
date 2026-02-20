@@ -15,15 +15,21 @@
     <h2 class="text-2xl font-bold mb-6 text-center">{{ _('경기 결과 입력') }}</h2>
 
     <form action="{{ url_for('league.submit_league_match', league_id=league.id) }}" method="POST" class="space-y-6">
+        <input type="hidden" name="p1_id" value="{{ p1.id }}">
+        <input type="hidden" name="p2_id" value="{{ p2.id }}">
         <div class="text-center mb-6 p-4 bg-gray-50 rounded-lg">
             <div class="flex justify-between items-center text-lg font-bold">
-                <div class="w-1/2 text-right pr-4 border-r border-gray-300">
-                    {{ me.name }}
+                <div class="w-1/2 text-center pr-4 border-r border-gray-300">
+                    {{ p1.name }}
+                    {% if current_user.player_id == p1.id %}
                     <span class="block text-xs font-normal text-gray-500 mt-1">{{ _('나') }}</span>
+                    {% endif %}
                 </div>
-                <div class="w-1/2 text-left pl-4">
-                    {{ opponent.name }}
-                    <span class="block text-xs font-normal text-gray-500 mt-1">{{ _('상대') }}</span>
+                <div class="w-1/2 text-center pl-4">
+                    {{ p2.name }}
+                    {% if current_user.player_id == p2.id %}
+                    <span class="block text-xs font-normal text-gray-500 mt-1">{{ _('나') }}</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -32,19 +38,17 @@
             <label class="block text-sm font-bold text-gray-700 mb-2">{{ _('승리자 선택') }}</label>
             <div class="grid grid-cols-2 gap-4">
                 <label class="cursor-pointer">
-                    <input type="radio" name="winner_id" value="{{ me.id }}" class="peer sr-only" required>
+                    <input type="radio" name="winner_id" value="{{ p1.id }}" class="peer sr-only" required>
                     <div
                         class="p-4 border-2 rounded-lg text-center hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 transition">
-                        <span class="font-bold">{{ me.name }}</span>
-                        <span class="block text-xs mt-1">({{ _('나') }})</span>
+                        <span class="font-bold">{{ p1.name }}</span>
                     </div>
                 </label>
                 <label class="cursor-pointer">
-                    <input type="radio" name="winner_id" value="{{ opponent.id }}" class="peer sr-only">
+                    <input type="radio" name="winner_id" value="{{ p2.id }}" class="peer sr-only">
                     <div
                         class="p-4 border-2 rounded-lg text-center hover:bg-gray-50 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 transition">
-                        <span class="font-bold">{{ opponent.name }}</span>
-                        <span class="block text-xs mt-1">({{ _('상대') }})</span>
+                        <span class="font-bold">{{ p2.name }}</span>
                     </div>
                 </label>
             </div>
@@ -53,15 +57,19 @@
         <div>
             <label class="block text-sm font-bold text-gray-700 mb-2">{{ _('스코어') }}</label>
             <div class="grid grid-cols-2 gap-4">
-                <label
-                    class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                    <input type="radio" name="score" value="3:0" class="h-4 w-4 text-blue-500" checked>
-                    <span class="ml-2 font-bold">3 : 0</span>
+                <label class="cursor-pointer">
+                    <input type="radio" name="score" value="3:0" class="peer sr-only" required>
+                    <div
+                        class="flex items-center justify-center p-4 border-2 rounded-lg text-center hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 transition">
+                        <span class="font-bold">3 : 0</span>
+                    </div>
                 </label>
-                <label
-                    class="flex items-center justify-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                    <input type="radio" name="score" value="2:1" class="h-4 w-4 text-blue-500">
-                    <span class="ml-2 font-bold">2 : 1</span>
+                <label class="cursor-pointer">
+                    <input type="radio" name="score" value="2:1" class="peer sr-only">
+                    <div
+                        class="flex items-center justify-center p-4 border-2 rounded-lg text-center hover:bg-gray-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 transition">
+                        <span class="font-bold">2 : 1</span>
+                    </div>
                 </label>
             </div>
         </div>

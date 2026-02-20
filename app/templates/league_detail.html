@@ -13,13 +13,26 @@
 {% block content %}
 <div class="card" style="padding: 1.5rem;">
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h2 class="text-2xl font-bold">{{ league.name }} {{ _('순위표') }}</h2>
+        <h2 class="text-2xl font-bold flex items-center gap-3">
+            {{ league.name }} {{ _('순위표') }}
+            {% if is_completed %}
+            <span class="px-2 py-1 text-xs font-semibold bg-gray-200 text-gray-800 rounded-full">{{ _('종료') }}</span>
+            {% else %}
+            <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">{{ _('진행중') }}</span>
+            {% endif %}
+        </h2>
         {% if current_user.is_admin %}
         <div class="flex gap-2">
-            <button onclick="saveLeague({{ league.id }})"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
-                {{ _('리그 저장 (순위 확정)') }}
+            {% if is_completed %}
+            <button class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg text-sm cursor-not-allowed" disabled>
+                {{ _('리그 마감 완료') }}
             </button>
+            {% else %}
+            <button onclick="if(confirm(&quot;정말로 리그전을 일찍 마감하시겠습니까?&quot;)) closeLeague({{ league.id }});"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
+                {{ _('리그 마감') }}
+            </button>
+            {% endif %}
             <button onclick="deleteLeague({{ league.id }})"
                 class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
                 {{ _('리그 삭제') }}
@@ -33,15 +46,14 @@
             <thead>
                 <tr>
                     <th class="text-center w-12">{{ _('순위') }}</th>
-                    <th class="text-left">{{ _('이름') }}</th>
+                    <th class="text-center">{{ _('이름') }}</th>
                     <th class="text-center">{{ _('승') }}</th>
                     <th class="text-center">{{ _('패') }}</th>
-                    <th class="text-center">{{ _('득실') }}</th>
                     <th class="text-center">{{ _('승률') }}</th>
                 </tr>
             </thead>
             <tbody>
-                {% for p in participants %}
+                {% for p in standings %}
                 <tr class="{% if current_user.player_id == p.player_id %}bg-blue-50{% endif %}">
                     <td class="text-center font-bold text-lg">
                         {% if loop.index == 1 %}🥇
@@ -49,10 +61,9 @@
                         {% elif loop.index == 3 %}🥉
                         {% else %}{{ loop.index }}{% endif %}
                     </td>
-                    <td class="font-semibold">{{ p.name }}</td>
+                    <td class="text-center font-semibold">{{ p.name }}</td>
                     <td class="text-center text-blue-500 font-bold">{{ p.wins }}</td>
                     <td class="text-center text-red-600 font-bold">{{ p.losses }}</td>
-                    <td class="text-center text-gray-600">{{ p.score_diff }}</td>
                     <td class="text-center">{{ "%.1f"|format(p.win_rate) }}%</td>
                 </tr>
                 {% endfor %}
@@ -66,9 +77,9 @@
             <thead>
                 <tr>
                     <th class="text-center">{{ _('상태') }}</th>
-                    <th class="text-right w-1/3">{{ _('선수 A') }}</th>
+                    <th class="text-center w-1/3">{{ _('선수 A') }}</th>
                     <th class="text-center">{{ _('스코어') }}</th>
-                    <th class="text-left w-1/3">{{ _('선수 B') }}</th>
+                    <th class="text-center w-1/3">{{ _('선수 B') }}</th>
                     <th class="text-center">{{ _('조작') }}</th>
                 </tr>
             </thead>
@@ -84,7 +95,7 @@
                             }}</span>
                         {% endif %}
                     </td>
-                    <td class="text-right">
+                    <td class="text-center">
                         <span class="{% if match.winner_id == match.p1_id %}font-bold text-blue-500{% endif %}">
                             {{ match.p1_name }}
                         </span>
@@ -96,7 +107,7 @@
                         vs
                         {% endif %}
                     </td>
-                    <td class="text-left">
+                    <td class="text-center">
                         <span class="{% if match.winner_id == match.p2_id %}font-bold text-blue-500{% endif %}">
                             {{ match.p2_name }}
                         </span>
@@ -105,7 +116,7 @@
                         {% if match.status != 'completed' %}
                         {% if current_user.is_admin or current_user.player_id == match.p1_id or current_user.player_id
                         == match.p2_id %}
-                        <a href="{{ url_for('league.league_submit_match_page', league_id=league.id, opponent_id=(match.p2_id if current_user.player_id == match.p1_id else match.p1_id)) }}"
+                        <a href="{{ url_for('league.league_submit_match_page', league_id=league.id, p1_id=match.p1_id, p2_id=match.p2_id) }}"
                             class="bg-blue-500 hover:bg-blue-600 text-white button text-xs py-1 px-2">
                             {{ _('결과 입력') }}
                         </a>
@@ -113,7 +124,10 @@
                         {% elif current_user.is_admin %}
                         <form action="{{ url_for('league.revert_league_match', league_id=league.id) }}" method="POST"
                             onsubmit="return confirm('{{ _('정말 이 경기 결과를 취소하시겠습니까?') }}');">
-                            <input type="hidden" name="match_id" value="{{ match.id }}">
+                            <input type="hidden" name="winner"
+                                value="{{ match.p1_name if match.winner_id == match.p1_id else match.p2_name }}">
+                            <input type="hidden" name="loser"
+                                value="{{ match.p2_name if match.winner_id == match.p1_id else match.p1_name }}">
                             <button type="submit"
                                 class="text-xs text-red-500 hover:text-red-700 font-semibold underline">{{ _('결과 취소')
                                 }}</button>

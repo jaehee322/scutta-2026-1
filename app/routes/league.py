@@ -26,9 +26,13 @@ def league():
     for l in leagues:
         player_names = [l.p1, l.p2, l.p3, l.p4, l.p5]
         is_participant = current_user.player.name in player_names
+        
+        is_completed = l.is_completed
+        
         league_data.append({
             'league': l,
-            'is_participant': is_participant
+            'is_participant': is_participant,
+            'is_completed': is_completed
         })
 
     return render_template('league.html', league_data=league_data)
@@ -50,6 +54,8 @@ def league_detail(league_id):
                 'name': p.name, 'rank': p.rank,
                 'win_count': p.win_count, 'rate_count': p.rate_count
             })
+
+    is_completed = league.is_completed
 
     standings_data = []
     for i, name in enumerate(player_names):
@@ -110,13 +116,73 @@ def league_detail(league_id):
                     loser_name = player_names[j]
                     match_history.append({'winner': winner_name, 'loser': loser_name})
 
+    matches = []
+    for i in range(5):
+        for j in range(i + 1, 5):
+            p1_name = player_names[i]
+            p2_name = player_names[j]
+            p1_player = player_map.get(p1_name)
+            p2_player = player_map.get(p2_name)
+            
+            if not p1_player or not p2_player:
+                continue
+                
+            p1_score_val = getattr(league, f'p{i+1}p{j+1}')
+            p2_score_val = getattr(league, f'p{j+1}p{i+1}')
+            
+            status = 'pending'
+            winner_id = None
+            score_p1 = ''
+            score_p2 = ''
+            
+            if p1_score_val is not None or p2_score_val is not None:
+                status = 'completed'
+                if p1_score_val is not None and p2_score_val is None:
+                    winner_id = p1_player.id
+                    score_p1 = 'Win'
+                    score_p2 = 'Lose'
+                elif p2_score_val is not None and p1_score_val is None:
+                    winner_id = p2_player.id
+                    score_p1 = 'Lose'
+                    score_p2 = 'Win'
+                    
+                match_record = Match.query.filter(
+                    db.or_(
+                        db.and_(Match.winner == p1_player.id, Match.loser == p2_player.id),
+                        db.and_(Match.winner == p2_player.id, Match.loser == p1_player.id)
+                    )
+                ).order_by(Match.timestamp.desc()).first()
+                if match_record and match_record.score:
+                    score_parts = match_record.score.split(':')
+                    if len(score_parts) == 2:
+                        if winner_id == p1_player.id:
+                            score_p1 = score_parts[0]
+                            score_p2 = score_parts[1]
+                        else:
+                            score_p1 = score_parts[1]
+                            score_p2 = score_parts[0]
+            
+            matches.append({
+                'id': f"{i+1}_{j+1}",
+                'status': status,
+                'p1_id': p1_player.id,
+                'p1_name': p1_name,
+                'p2_id': p2_player.id,
+                'p2_name': p2_name,
+                'winner_id': winner_id,
+                'score_p1': score_p1,
+                'score_p2': score_p2
+            })
+
     return render_template('league_detail.html',
                         league=league,
                         players_info=players_info,
                         standings=ranked_standings,
                         is_participant=is_participant,
                         my_matches=my_matches,
-                        match_history=match_history)
+                        match_history=match_history,
+                        matches=matches,
+                        is_completed=is_completed)
 
 
 @league_bp.route('/league/<int:league_id>/revert', methods=['POST'])
@@ -390,18 +456,17 @@ def create_league():
 
 # league_detail.js API
 
-@league_bp.route('/save_league/<int:league_id>', methods=['POST'])
-def save_league(league_id):
-    data = request.get_json()
+@league_bp.route('/close_league/<int:league_id>', methods=['POST'])
+@login_required
+def close_league(league_id):
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': '권한이 없습니다.'}), 403
+
     league = League.query.get_or_404(league_id)
-
-    scores = data.get('scores', {})
-    for key, value in scores.items():
-        if hasattr(league, key):
-            setattr(league, key, value)
-
+    league.is_closed = True
     db.session.commit()
-    return jsonify({'success': True, 'message': '리그전이 저장되었습니다.'})
+    
+    return jsonify({'success': True, 'message': '리그전이 마감되었습니다.'})
 
 
 @league_bp.route('/delete_league/<int:league_id>', methods=['DELETE'])
@@ -420,18 +485,27 @@ def delete_league(league_id):
         return jsonify({'success': False, 'error': f'리그 삭제 중 오류 발생: {str(e)}'})
 
 
-@league_bp.route('/league/<int:league_id>/submit/<int:opponent_id>')
+@league_bp.route('/league/<int:league_id>/submit/<int:p1_id>/<int:p2_id>')
 @login_required
-def league_submit_match_page(league_id, opponent_id):
+def league_submit_match_page(league_id, p1_id, p2_id):
     league = League.query.get_or_404(league_id)
-    opponent = Player.query.get_or_404(opponent_id)
+    p1 = Player.query.get_or_404(p1_id)
+    p2 = Player.query.get_or_404(p2_id)
 
     player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
-    if current_user.player.name not in player_names or opponent.name not in player_names:
-        flash(_('잘못된 접근입니다.'), 'error')
-        return redirect(url_for('league.league_detail', league_id=league_id))
+    if not current_user.is_admin:
+        if current_user.player.name not in player_names or current_user.player.id not in [p1_id, p2_id]:
+            flash(_('잘못된 접근입니다.'), 'error')
+            return redirect(url_for('league.league_detail', league_id=league_id))
 
-    return render_template('league_submit_match.html', league=league, opponent=opponent)
+    matches_played = 0
+    for i in range(5):
+        for j in range(5):
+            if i != j and getattr(league, f'p{i+1}p{j+1}') is not None:
+                matches_played += 1
+    is_completed = league.is_closed or (matches_played == 10)
+
+    return render_template('league_submit_match.html', league=league, p1=p1, p2=p2, is_completed=is_completed)
 
 
 @league_bp.route('/league/<int:league_id>/submit', methods=['POST'])
@@ -441,13 +515,14 @@ def submit_league_match(league_id):
 
     winner_id = int(request.form.get('winner_id'))
     score = request.form.get('score')
-    opponent_id = int(request.form.get('opponent_id'))
+    p1_id = int(request.form.get('p1_id'))
+    p2_id = int(request.form.get('p2_id'))
 
-    me = current_user.player
-    opponent = Player.query.get_or_404(opponent_id)
+    p1 = Player.query.get_or_404(p1_id)
+    p2 = Player.query.get_or_404(p2_id)
 
-    winner = me if winner_id == me.id else opponent
-    loser = opponent if winner_id == me.id else me
+    winner = p1 if winner_id == p1.id else p2
+    loser = p2 if winner_id == p1.id else p1
 
     new_match = Match(
         winner=winner.id, winner_name=winner.name,
@@ -464,5 +539,5 @@ def submit_league_match(league_id):
 
     db.session.commit()
 
-    flash('%(opponent_name)s 님과의 리그 경기가 제출되었습니다. 관리자 승인을 기다립니다.' % {'opponent_name': opponent.name}, 'success')
+    flash('%(opponent_name)s 님과의 리그 경기가 제출되었습니다. 관리자 승인을 기다립니다.' % {'opponent_name': loser.name}, 'success')
     return redirect(url_for('league.league_detail', league_id=league_id))
