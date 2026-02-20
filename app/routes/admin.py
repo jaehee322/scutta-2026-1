@@ -18,7 +18,11 @@ def approval():
     if not current_user.is_admin:
         flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
         return redirect(url_for('main.index'))
-    pending_matches = Match.query.filter_by(approved=False).order_by(Match.timestamp.desc()).all()
+    betting_match_ids = db.session.query(Betting.result).filter(Betting.result.isnot(None)).subquery()
+    pending_matches = Match.query.filter(
+        Match.approved == False,
+        ~Match.id.in_(betting_match_ids)
+    ).order_by(Match.timestamp.desc()).all()
     return render_template('approval.html', pending_matches=pending_matches, global_texts=current_app.config['GLOBAL_TEXTS'])
 
 

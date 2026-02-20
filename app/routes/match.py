@@ -112,7 +112,8 @@ def get_matches():
     query = Match.query.order_by(Match.approved, Match.timestamp.desc())
 
     if tab == 'pending':
-        query = query.filter(Match.approved == False)
+        betting_subquery = db.session.query(Betting.result).filter(Betting.result.isnot(None)).subquery()
+        query = query.filter(Match.approved == False, ~Match.id.in_(betting_subquery))
     elif tab == 'approved':
         query = query.filter(Match.approved == True)
 
@@ -558,6 +559,10 @@ def delete_matches():
     if not ids:
         return jsonify({'error': '삭제할 경기가 선택되지 않았습니다.'}), 400
 
+    betting_linked_matches = Betting.query.filter(Betting.result.in_(ids)).first()
+    if betting_linked_matches:
+        return jsonify({'error': '베팅 결과로 등록된 경기가 포함되어 있습니다. 베팅 승인 메뉴에서 베팅을 먼저 삭제해주세요.'}), 400
+
     matches_to_delete = Match.query.filter(Match.id.in_(ids)).all()
 
     approved_matches_count = 0
@@ -587,6 +592,11 @@ def delete_match_by_admin(match_id):
 
     match = Match.query.get(match_id)
     if match:
+         betting = Betting.query.filter_by(result=match.id).first()
+         if betting:
+             flash('이 경기는 베팅 결과입니다. 베팅 메뉴에서 먼저 삭제해주세요.', 'error')
+             return redirect(url_for('admin.approval'))
+
          _delete_single_match(match)
          db.session.commit()
          update_player_orders_by_match()
@@ -600,7 +610,8 @@ def delete_match_by_admin(match_id):
 
 @match_bp.route('/select_all_matches', methods=['GET'])
 def select_all_matches():
-    matches = Match.query.filter_by(approved=False).all()
+    betting_subquery = db.session.query(Betting.result).filter(Betting.result.isnot(None)).subquery()
+    matches = Match.query.filter(Match.approved == False, ~Match.id.in_(betting_subquery)).all()
     result = [match.id for match in matches]
     return jsonify({'ids': result})
 

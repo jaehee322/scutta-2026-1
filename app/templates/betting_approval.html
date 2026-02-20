@@ -12,69 +12,55 @@
 
 {% block content %}
 <div class="card">
-    <h2 class="text-2xl font-bold mb-6">결과 대기 중인 베팅</h2>
-
-    <div class="space-y-6">
-        {% if pending_bettings %}
-        {% for betting in pending_bettings %}
-        <div class="border rounded-lg p-4 bg-gray-50">
-            <div class="flex justify-between items-center mb-4">
-                <span class="font-bold text-lg">{{ betting.title }}</span>
-                <span class="text-sm text-gray-500">{{ betting.created_at.strftime('%Y-%m-%d') }}</span>
-            </div>
-            <div class="grid grid-cols-3 gap-4 text-center mb-4">
-                <div class="font-semibold">{{ betting.p1_name }}</div>
-                <div class="text-gray-400">vs</div>
-                <div class="font-semibold">{{ betting.p2_name }}</div>
-            </div>
-
-            <form action="{{ url_for('betting.approve_betting_result', betting_id=betting.id) }}" method="POST"
-                class="border-t pt-4">
-                <div class="flex items-center gap-4 mb-4 justify-center">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="winner_id" value="{{ betting.p1_id }}" required
-                            class="form-radio accent-blue-500">
-                        <span>{{ betting.p1_name }} 승</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="winner_id" value="{{ betting.p2_id }}" required
-                            class="form-radio text-blue-500">
-                        <span>{{ betting.p2_name }} 승</span>
-                    </label>
-                </div>
-                <div class="flex gap-2">
-                    <button type="submit"
-                        class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition">
-                        결과 확정 및 배당 지급
-                    </button>
-                    <button type="button" onclick="cancelBetting({{ betting.id }})"
-                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition">
-                        베팅 취소
-                    </button>
-                </div>
-            </form>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">베팅 결과 승인</h2>
+        <div class="space-x-2">
+            <button onclick="approveAllBettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">전체 승인</button>
         </div>
-        {% endfor %}
-        {% else %}
-        <div class="text-center py-12 text-gray-500 bg-gray-50 rounded-lg">
-            <p>결과 승인 대기 중인 베팅이 없습니다.</p>
-        </div>
-        {% endif %}
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-200 mb-6 sticky top-0 bg-white z-10 w-full overflow-x-auto whitespace-nowrap hide-scrollbar">
+        <button class="tab px-4 py-2 font-medium text-gray-500 hover:text-gray-700 focus:outline-none border-b-2 border-transparent hover:border-gray-300 transition shrink-0 active" onclick="selectTab(this, 'all')">전체</button>
+        <button class="tab px-4 py-2 font-medium text-gray-500 hover:text-gray-700 focus:outline-none border-b-2 border-transparent hover:border-gray-300 transition shrink-0" onclick="selectTab(this, 'pending')">대기 중</button>
+        <button class="tab px-4 py-2 font-medium text-gray-500 hover:text-gray-700 focus:outline-none border-b-2 border-transparent hover:border-gray-300 transition shrink-0" onclick="selectTab(this, 'approved')">승인 완료</button>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="table-modern w-full whitespace-nowrap">
+            <thead>
+                <tr>
+                    <th class="w-10 text-center">
+                        <input type="checkbox" onchange="toggleSelectAll(this)" class="h-4 w-4 rounded border-gray-300">
+                    </th>
+                    <th class="text-center">승인</th>
+                    <th class="text-center">승자</th>
+                    <th class="text-center">스코어</th>
+                    <th class="text-center">패자</th>
+                    <th class="text-center">승자 베팅</th>
+                    <th class="text-center">패자 베팅</th>
+                    <th class="text-center">포인트</th>
+                </tr>
+            </thead>
+            <tbody id="betting-table-body">
+                <!-- Data will be loaded here via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 flex gap-2">
+        <button onclick="approveBettings()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded transition">선택 승인</button>
+        <button onclick="deleteBettings()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded transition">선택 삭제</button>
+    </div>
+
+    <div class="text-center mt-6">
+        <button id="load-more" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded btn-transition w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-gray-400">
+            더 보기
+        </button>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-    function cancelBetting(bettingId) {
-        if (confirm('정말 이 베팅을 취소하시겠습니까? (포인트가 환불됩니다)')) {
-            // 베팅 취소 로직 (API 호출 or Form Submit)
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/admin/betting/cancel/${bettingId}`; // 가상의 URL
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-</script>
+<script src="{{ url_for('static', filename='js/betting_approval.js') }}"></script>
 {% endblock %}
