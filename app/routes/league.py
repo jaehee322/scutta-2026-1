@@ -335,7 +335,38 @@ def submit_tournament_results_page(tournament_id):
         return redirect(url_for('league.tournament_detail', tournament_id=tournament_id))
 
     tournament = Tournament.query.get_or_404(tournament_id)
-    return render_template('submit_tournament_results.html', tournament=tournament)
+    if tournament.status == '완료':
+        flash(_('이미 마감된 토너먼트입니다.'), 'error')
+        return redirect(url_for('league.tournament_detail', tournament_id=tournament_id))
+    
+    matches = []
+    if tournament.bracket_data and 'rounds' in tournament.bracket_data:
+        for round_matches in tournament.bracket_data['rounds']:
+            round_len = len(round_matches)
+            if round_len == 1:
+                round_name = "결승"
+            elif round_len == 2:
+                round_name = "4강"
+            elif round_len == 4:
+                round_name = "8강"
+            elif round_len == 8:
+                round_name = "16강"
+            elif round_len == 16:
+                round_name = "32강"
+            else:
+                round_name = f"{round_len * 2}강"
+
+            for match in round_matches:
+                # Playable matches only (both players decided, no winner yet)
+                if not match.get('winner') and '승자' not in match.get('p1', '') and '승자' not in match.get('p2', ''):
+                    matches.append({
+                        'id': match['id'],
+                        'p1_name': match['p1'],
+                        'p2_name': match['p2'],
+                        'round_name': round_name
+                    })
+
+    return render_template('submit_tournament_results.html', tournament=tournament, matches=matches)
 
 
 @league_bp.route('/tournament/<int:tournament_id>/submit_results', methods=['POST'])
@@ -345,34 +376,53 @@ def submit_tournament_results(tournament_id):
         return redirect(url_for('main.index'))
 
     tournament = Tournament.query.get_or_404(tournament_id)
+    if tournament.status == '완료':
+        flash(_('이미 마감된 토너먼트입니다.'), 'error')
+        return redirect(url_for('league.tournament_detail', tournament_id=tournament_id))
+
     bracket = tournament.bracket_data
 
     submitted_matches = 0
-    for key, winner_name in request.form.items():
-        if '_winner' in key and winner_name:
-            match_id = key.replace('_winner', '')
-            score = request.form.get(f"{match_id}_score", "2:0")
+    match_ids = request.form.getlist('match_ids[]')
 
-            for round_matches in bracket['rounds']:
-                for match in round_matches:
-                    if match.get('id') == match_id and not match.get('winner'):
-                        p1 = match.get('p1')
-                        p2 = match.get('p2')
-                        loser_name = p2 if winner_name == p1 else p1
+    for match_id in match_ids:
+        winner_name = request.form.get(f"{match_id}_winner")
+        if not winner_name:
+            continue
 
-                        winner_player = Player.query.filter_by(name=winner_name).first()
-                        loser_player = Player.query.filter_by(name=loser_name).first()
+        score_selected = request.form.get(f"{match_id}_score", "3:0")
 
-                        if winner_player and loser_player:
-                            new_match = Match(
-                                winner=winner_player.id, winner_name=winner_name,
-                                loser=loser_player.id, loser_name=loser_name,
-                                score=score, approved=False
-                            )
-                            db.session.add(new_match)
-                            submitted_matches += 1
+        for round_matches in bracket['rounds']:
+            for match in round_matches:
+                if match.get('id') == match_id and not match.get('winner'):
+                    p1 = match.get('p1')
+                    p2 = match.get('p2')
+                    loser_name = p2 if winner_name == p1 else p1
 
-                        match['winner'] = winner_name
+                    winner_player = Player.query.filter_by(name=winner_name).first()
+                    loser_player = Player.query.filter_by(name=loser_name).first()
+
+                    if winner_player and loser_player:
+                        score_parts = score_selected.split(':')
+                        win_score = score_parts[0]
+                        lose_score = score_parts[1]
+                        
+                        score_p1_str = win_score if winner_name == p1 else lose_score
+                        score_p2_str = win_score if winner_name == p2 else lose_score
+
+                        score_formatted = f"{score_p1_str}:{score_p2_str}"
+
+                        new_match = Match(
+                            winner=winner_player.id, winner_name=winner_name,
+                            loser=loser_player.id, loser_name=loser_name,
+                            score=score_formatted, approved=False
+                        )
+                        db.session.add(new_match)
+                        submitted_matches += 1
+
+                    match['winner'] = winner_name
+                    match['score_p1'] = score_p1_str
+                    match['score_p2'] = score_p2_str
 
     # 다음 라운드의 플레이스홀더를 실제 승자 이름으로 교체
     for i in range(len(bracket['rounds']) - 1):
@@ -401,7 +451,7 @@ def submit_tournament_results(tournament_id):
 
     if submitted_matches > 0:
         if submitted_matches == 1:
-            message = _('1 개의 경기 결과가 제출되어 승인 대기 중입니다.')
+            message = _('단일 경기 결과가 성공적으로 제출되어 승인 대기 중입니다.')
         else:
             message = _('%(num)d 개의 경기 결과가 제출되어 승인 대기 중입니다.') % {'num': submitted_matches}
         flash(message, 'success')
@@ -421,6 +471,21 @@ def delete_tournament(tournament_id):
     db.session.delete(tournament)
     db.session.commit()
     return jsonify({'success': True, 'message': '토너먼트가 삭제되었습니다.'})
+
+@league_bp.route('/tournament/close/<int:tournament_id>', methods=['POST'])
+@login_required
+def close_tournament(tournament_id):
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'error': '권한이 없습니다.'}), 403
+
+    tournament = Tournament.query.get_or_404(tournament_id)
+    if tournament.status == '완료':
+        return jsonify({'success': False, 'error': '이미 마감된 토너먼트입니다.'}), 400
+
+    tournament.status = '완료'
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': '토너먼트가 성공적으로 마감되었습니다.'})
 
 
 # league.js API
@@ -442,7 +507,8 @@ def create_league():
             return jsonify({'success': False, 'error': f'선수 "{name}"를 찾을 수 없습니다.'}), 400
 
     league_count = League.query.count()
-    new_league_name = f"League {chr(ord('A') + league_count)}"
+    provided_name = data.get('name', '').strip()
+    new_league_name = provided_name if provided_name else f"League {chr(ord('A') + league_count)}"
 
     new_league = League(
         name=new_league_name,
@@ -504,6 +570,10 @@ def league_submit_match_page(league_id, p1_id, p2_id):
             if i != j and getattr(league, f'p{i+1}p{j+1}') is not None:
                 matches_played += 1
     is_completed = league.is_closed or (matches_played == 10)
+    
+    if is_completed:
+        flash(_('이미 마감된 리그전입니다.'), 'error')
+        return redirect(url_for('league.league_detail', league_id=league_id))
 
     return render_template('league_submit_match.html', league=league, p1=p1, p2=p2, is_completed=is_completed)
 
@@ -512,6 +582,15 @@ def league_submit_match_page(league_id, p1_id, p2_id):
 @login_required
 def submit_league_match(league_id):
     league = League.query.get_or_404(league_id)
+    
+    matches_played = 0
+    for i in range(5):
+        for j in range(5):
+            if i != j and getattr(league, f'p{i+1}p{j+1}') is not None:
+                matches_played += 1
+    if league.is_closed or (matches_played == 10):
+        flash(_('이미 마감된 리그전입니다.'), 'error')
+        return redirect(url_for('league.league_detail', league_id=league_id))
 
     winner_id = int(request.form.get('winner_id'))
     score = request.form.get('score')

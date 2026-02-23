@@ -1,5 +1,8 @@
 function createLeague() {
+    const nameInput = document.getElementById("new-league-name");
+    const leagueName = nameInput ? nameInput.value.trim() : "";
     const playerNames = prompt("선수 5명을 입력하세요.").trim().split(" ");
+
     if (playerNames.length !== 5) {
         alert("정확히 5명을 입력하세요.");
         return;
@@ -8,7 +11,10 @@ function createLeague() {
     fetch('/create_league', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ players: playerNames })
+        body: JSON.stringify({
+            name: leagueName,
+            players: playerNames
+        })
     })
         .then(response => response.json())
         .then(data => {

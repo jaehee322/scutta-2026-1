@@ -1,25 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}{{ tournament.name }} - SCUTTA{% endblock %}
+{% block title %}{{ tournament.title }} - SCUTTA{% endblock %}
 
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
 <a href="{{ url_for('league.tournament') }}" class="text-xl font-bold truncate">
-    {{ tournament.name }}
+    {{ tournament.title }}
 </a>
 {% endblock %}
 
 {% block content %}
-<div class="card overflow-x-auto">
+<div class="card overflow-x-auto no-scrollbar">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">{{ tournament.name }} {{ _('대진표') }}</h2>
+        <h2 class="text-2xl font-bold">{{ tournament.title }} {{ _('대진표') }}</h2>
         {% if current_user.is_admin %}
         <div class="flex gap-2">
+            {% if tournament.status == '진행중' %}
             <a href="{{ url_for('league.submit_tournament_results_page', tournament_id=tournament.id) }}"
                 class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition text-sm">
                 {{ _('결과 입력') }}
             </a>
+            <button onclick="if(confirm(&quot;정말로 토너먼트를 일찍 마감하시겠습니까?&quot;)) closeTournament({{ tournament.id }});"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition text-sm">
+                {{ _('토너먼트 마감') }}
+            </button>
+            {% endif %}
             <button onclick="deleteTournament({{ tournament.id }})"
                 class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition text-sm">
                 {{ _('삭제') }}
@@ -28,45 +34,49 @@
         {% endif %}
     </div>
 
-    <div class="flex justify-center min-w-[800px] p-4">
-        <div class="tournament-container flex gap-8">
+    <div class="flex justify-start md:justify-center min-w-max mx-auto p-2 md:p-4 mt-12 pb-4">
+        <div class="tournament-container flex gap-8 md:gap-16 relative w-full min-h-[400px]">
             {% for round_num, matches in rounds.items() %}
-            <div class="flex flex-col justify-around gap-4 w-48 relative">
-                <h3 class="text-center font-bold mb-4 bg-gray-100 py-1 rounded">
+            <div class="bracket-round flex flex-col justify-around w-32 sm:w-40 md:w-48 relative z-10">
+                <h3
+                    class="absolute -top-12 left-0 w-full text-center font-bold bg-gray-100 py-1 rounded shadow-sm text-sm md:text-base">
                     {% if round_num == rounds|length %}
                     {{ _('결승') }}
-                    {% elif round_num == rounds|length - 1 %}
+                    {% elif rounds|length - round_num == 1 %}
                     {{ _('4강') }}
+                    {% elif rounds|length - round_num == 2 %}
+                    {{ _('8강') }}
+                    {% elif rounds|length - round_num == 3 %}
+                    {{ _('16강') }}
                     {% else %}
-                    {{ _('Round') }} {{ round_num }}
+                    Round {{ round_num }}
                     {% endif %}
                 </h3>
 
                 {% for match in matches %}
-                <div class="border rounded-lg bg-white shadow-sm overflow-hidden text-sm relative z-10">
+                <div
+                    class="bracket-match border rounded-lg bg-white shadow-sm overflow-visible text-xs md:text-sm relative z-10 w-full">
                     <div
-                        class="flex justify-between p-2 {% if match.winner_id == match.p1_id %}bg-green-50 font-bold text-green-700{% endif %}">
+                        class="flex justify-between p-1.5 md:p-2 {% if match.winner_id == match.p1_id %}bg-green-50 font-bold text-green-700{% endif %}">
                         <span class="truncate">{{ match.p1_name }}</span>
-                        <span class="text-gray-500">{{ match.score_p1 }}</span>
+                        <span>{{ match.score_p1 }}</span>
                     </div>
+                    <div class="border-t"></div>
                     <div
-                        class="flex justify-between p-2 border-t {% if match.winner_id == match.p2_id %}bg-green-50 font-bold text-green-700{% endif %}">
+                        class="flex justify-between p-1.5 md:p-2 {% if match.winner_id == match.p2_id %}bg-green-50 font-bold text-green-700{% endif %}">
                         <span class="truncate">{{ match.p2_name }}</span>
-                        <span class="text-gray-500">{{ match.score_p2 }}</span>
+                        <span>{{ match.score_p2 }}</span>
                     </div>
                 </div>
                 {% endfor %}
             </div>
 
-            <!-- Connector Lines Logic (Simplified for CSS) -->
-            {% if not loop.last %}
-            <div class="w-8"></div>
-            {% endif %}
-
             {% endfor %}
         </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/tournament_bracket.js') }}"></script>
 {% endblock %}
 
 {% block extra_scripts %}

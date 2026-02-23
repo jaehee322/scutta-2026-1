@@ -22,22 +22,20 @@
         {% endif %}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% if tournaments %}
-        {% for tournament in tournaments %}
+    {% set active_tournaments = tournaments | selectattr('status', 'equalto', '진행중') | list %}
+    {% set completed_tournaments = tournaments | selectattr('status', 'equalto', '완료') | list %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {% if active_tournaments %}
+        {% for tournament in active_tournaments %}
         <a href="{{ url_for('league.tournament_detail', tournament_id=tournament.id) }}"
             class="block p-6 bg-gray-50 rounded-lg border hover:border-blue-500 hover:shadow-md transition">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-bold text-gray-900 truncate pr-2">{{ tournament.name }}</h3>
-                {% if tournament.status == 'ongoing' %}
+                <h3 class="text-xl font-bold text-gray-900 truncate pr-2">{{ tournament.title }}</h3>
                 <span
-                    class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full whitespace-nowrap">{{
-                    _('진행중') }}</span>
-                {% else %}
-                <span
-                    class="px-2 py-1 text-xs font-semibold bg-gray-200 text-gray-800 rounded-full whitespace-nowrap">{{
-                    _('종료됨') }}</span>
-                {% endif %}
+                    class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full whitespace-nowrap">
+                    {{ _('진행중') }}
+                </span>
             </div>
             <div class="space-y-2 text-sm text-gray-600">
                 <div class="flex justify-between">
@@ -48,8 +46,38 @@
         </a>
         {% endfor %}
         {% else %}
-        <div class="col-span-full text-center py-12 text-gray-500 bg-gray-50 rounded-lg">
+        <div class="col-span-full text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-gray-100">
             <p>{{ _('진행 중인 토너먼트가 없습니다.') }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-col items-center md:items-start mb-6 mt-8">
+        <h2 class="text-2xl font-bold">{{ _('종료된 토너먼트') }}</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% if completed_tournaments %}
+        {% for tournament in completed_tournaments %}
+        <a href="{{ url_for('league.tournament_detail', tournament_id=tournament.id) }}"
+            class="block p-6 bg-white rounded-xl border border-gray-200 hover:border-gray-400 transition opacity-80">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-600 truncate pr-2">{{ tournament.title }}</h3>
+                <span class="px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-full whitespace-nowrap">
+                    {{ _('종료') }}
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-500">
+                <div class="flex justify-between">
+                    <span>{{ _('시작일') }}</span>
+                    <span class="font-medium text-gray-900">{{ tournament.created_at.strftime('%Y-%m-%d') }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <div class="col-span-full text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-gray-100">
+            <p>{{ _('종료된 토너먼트가 없습니다.') }}</p>
         </div>
         {% endif %}
     </div>

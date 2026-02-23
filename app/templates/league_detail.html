@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ league.name }} - SCUTTA{% endblock %}
+{% block title %}{{ league.display_name }} - SCUTTA{% endblock %}
 
 {% block container_style %}margin-top: 0;{% endblock %}
 
 {% block header_left %}
 <a href="{{ url_for('league.league') }}" class="text-xl font-bold truncate">
-    {{ league.name }}
+    {{ league.display_name }}
 </a>
 {% endblock %}
 
@@ -14,7 +14,7 @@
 <div class="card" style="padding: 1.5rem;">
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h2 class="text-2xl font-bold flex items-center gap-3">
-            {{ league.name }} {{ _('순위표') }}
+            {{ league.display_name }} {{ _('순위표') }}
             {% if is_completed %}
             <span class="px-2 py-1 text-xs font-semibold bg-gray-200 text-gray-800 rounded-full">{{ _('종료') }}</span>
             {% else %}
@@ -113,6 +113,7 @@
                         </span>
                     </td>
                     <td class="text-center">
+                        {% if not is_completed %}
                         {% if match.status != 'completed' %}
                         {% if current_user.is_admin or current_user.player_id == match.p1_id or current_user.player_id
                         == match.p2_id %}
@@ -132,6 +133,7 @@
                                 class="text-xs text-red-500 hover:text-red-700 font-semibold underline">{{ _('결과 취소')
                                 }}</button>
                         </form>
+                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>

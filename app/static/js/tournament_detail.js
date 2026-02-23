@@ -62,13 +62,33 @@ async function deleteTournament(tournamentId) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.href = '/tournament';
-        } else {
-            alert('오류: ' + data.error);
-        }
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '/tournament';
+            } else {
+                alert('오류: ' + data.error);
+            }
+        });
+}
+
+function closeTournament(tournamentId) {
+    fetch(`/tournament/close/${tournamentId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('오류: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('토너먼트 마감 중 오류가 발생했습니다.');
+        });
 }
