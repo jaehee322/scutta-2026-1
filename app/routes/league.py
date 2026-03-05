@@ -4,6 +4,7 @@ from flask_babel import _
 from sqlalchemy.orm.attributes import flag_modified
 from ..extensions import db
 from ..models import Match, Player, User, League, Tournament
+from ..utils import add_point_log, update_player_orders_by_point
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import random
@@ -537,9 +538,52 @@ def close_league(league_id):
 
     league = League.query.get_or_404(league_id)
     league.is_closed = True
+
+    # --- 스쿠타 포인트 보상 ---
+    player_names = league.player_names_list
+    n = len(player_names)
+
+    # 순위 계산
+    standings_data = []
+    for i, name in enumerate(player_names):
+        wins, losses = 0, 0
+        for j in range(n):
+            if i == j: continue
+            if getattr(league, f'p{i+1}p{j+1}', None) is not None: wins += 1
+            if getattr(league, f'p{j+1}p{i+1}', None) is not None: losses += 1
+        total_games = wins + losses
+        win_rate = (wins / total_games) * 100 if total_games > 0 else 0.0
+        standings_data.append({'name': name, 'wins': wins, 'losses': losses, 'win_rate': win_rate})
+
+    sorted_standings = sorted(standings_data, key=lambda x: (x['wins'], x['win_rate'], -x['losses']), reverse=True)
+
+    # 참여자 전원에게 +2500 스쿠타 포인트
+    for stats in sorted_standings:
+        player = Player.query.filter_by(name=stats['name']).first()
+        if player:
+            player.scutta_count = (player.scutta_count or 0) + 2500
+            add_point_log(player.id, scutta_change=2500, reason=f"리그전 '{league.display_name}' 참여 보상")
+
+    # 1위에게 추가 +3000
+    if len(sorted_standings) >= 1:
+        first_name = sorted_standings[0]['name']
+        first_player = Player.query.filter_by(name=first_name).first()
+        if first_player:
+            first_player.scutta_count = (first_player.scutta_count or 0) + 3000
+            add_point_log(first_player.id, scutta_change=3000, reason=f"리그전 '{league.display_name}' 1위 보상")
+
+    # 2위에게 추가 +2000
+    if len(sorted_standings) >= 2:
+        second_name = sorted_standings[1]['name']
+        second_player = Player.query.filter_by(name=second_name).first()
+        if second_player:
+            second_player.scutta_count = (second_player.scutta_count or 0) + 2000
+            add_point_log(second_player.id, scutta_change=2000, reason=f"리그전 '{league.display_name}' 2위 보상")
+
     db.session.commit()
-    
-    return jsonify({'success': True, 'message': '리그전이 마감되었습니다.'})
+    update_player_orders_by_point()
+
+    return jsonify({'success': True, 'message': '리그전이 마감되고 스쿠타 포인트가 지급되었습니다.'})
 
 
 @league_bp.route('/delete_league/<int:league_id>', methods=['DELETE'])
