@@ -1,10 +1,13 @@
 function createLeague() {
     const nameInput = document.getElementById("new-league-name");
     const leagueName = nameInput ? nameInput.value.trim() : "";
-    const playerNames = prompt("선수 5명을 입력하세요.").trim().split(" ");
+    const input = prompt("선수 4~6명의 이름을 공백으로 구분하여 입력하세요.");
+    if (!input) return;
 
-    if (playerNames.length !== 5) {
-        alert("정확히 5명을 입력하세요.");
+    const playerNames = input.trim().split(/\s+/);
+
+    if (playerNames.length < 4 || playerNames.length > 6) {
+        alert("4명에서 6명 사이의 선수를 입력해야 합니다.");
         return;
     }
 

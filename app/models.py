@@ -71,27 +71,38 @@ class League(db.Model):
     p2 = db.Column(db.String(100), nullable=False)
     p3 = db.Column(db.String(100), nullable=False)
     p4 = db.Column(db.String(100), nullable=False)
-    p5 = db.Column(db.String(100), nullable=False)
+    p5 = db.Column(db.String(100), nullable=True)
+    p6 = db.Column(db.String(100), nullable=True)
     p1p2 = db.Column(db.Integer, default=None)
     p1p3 = db.Column(db.Integer, default=None)
     p1p4 = db.Column(db.Integer, default=None)
     p1p5 = db.Column(db.Integer, default=None)
+    p1p6 = db.Column(db.Integer, default=None)
     p2p1 = db.Column(db.Integer, default=None)
     p2p3 = db.Column(db.Integer, default=None)
     p2p4 = db.Column(db.Integer, default=None)
     p2p5 = db.Column(db.Integer, default=None)
+    p2p6 = db.Column(db.Integer, default=None)
     p3p1 = db.Column(db.Integer, default=None)
     p3p2 = db.Column(db.Integer, default=None)
     p3p4 = db.Column(db.Integer, default=None)
     p3p5 = db.Column(db.Integer, default=None)
+    p3p6 = db.Column(db.Integer, default=None)
     p4p1 = db.Column(db.Integer, default=None)
     p4p2 = db.Column(db.Integer, default=None)
     p4p3 = db.Column(db.Integer, default=None)
     p4p5 = db.Column(db.Integer, default=None)
+    p4p6 = db.Column(db.Integer, default=None)
     p5p1 = db.Column(db.Integer, default=None)
     p5p2 = db.Column(db.Integer, default=None)
     p5p3 = db.Column(db.Integer, default=None)
     p5p4 = db.Column(db.Integer, default=None)
+    p5p6 = db.Column(db.Integer, default=None)
+    p6p1 = db.Column(db.Integer, default=None)
+    p6p2 = db.Column(db.Integer, default=None)
+    p6p3 = db.Column(db.Integer, default=None)
+    p6p4 = db.Column(db.Integer, default=None)
+    p6p5 = db.Column(db.Integer, default=None)
 
     @property
     def display_name(self):
@@ -104,13 +115,45 @@ class League(db.Model):
         return self.name is not None and self.name.endswith('__CLOSED__')
 
     @property
+    def player_names_list(self):
+        """None이 아닌 참가자 이름만 리스트로 반환 (4~6명)"""
+        all_slots = [self.p1, self.p2, self.p3, self.p4, self.p5, self.p6]
+        return [name for name in all_slots if name is not None]
+
+    @property
+    def player_count(self):
+        return len(self.player_names_list)
+
+    @property
+    def total_matches(self):
+        """풀 리그 총 경기 수: n*(n-1)/2 (각 방향 기록이므로 실제 셀 수는 n*(n-1))"""
+        n = self.player_count
+        return n * (n - 1)
+
+    @property
+    def completed_matches(self):
+        """현재까지 기록된(완료된) 경기 수"""
+        n = self.player_count
+        count = 0
+        for i in range(n):
+            for j in range(n):
+                if i != j and getattr(self, f'p{i+1}p{j+1}', None) is not None:
+                    count += 1
+        return count
+
+    @property
+    def completed_match_pairs(self):
+        """완료된 대전 쌍 수 (UI 표시용, 총 경기 수의 절반)"""
+        return self.completed_matches // 2
+
+    @property
+    def total_match_pairs(self):
+        """총 대전 쌍 수 (UI 표시용)"""
+        return self.total_matches // 2
+
+    @property
     def is_completed(self):
-        matches_played = 0
-        for i in range(5):
-            for j in range(5):
-                if i != j and getattr(self, f'p{i+1}p{j+1}') is not None:
-                    matches_played += 1
-        return self.is_closed or (matches_played == 10)
+        return self.is_closed or (self.completed_matches == self.total_matches)
 
     @is_closed.setter
     def is_closed(self, value):

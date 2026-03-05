@@ -41,7 +41,12 @@
             <div class="space-y-2 text-sm text-gray-600">
                 <div class="flex justify-between items-center">
                     <span>{{ _('참가자 수') }}</span>
-                    <span class="font-medium text-gray-900 mr-2">5{{ _('명') }}</span>
+                    <span class="font-medium text-gray-900 mr-2">{{ item.league_size }}{{ _('명') }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>{{ _('진행률') }}</span>
+                    <span class="font-medium text-gray-900 mr-2">{{ item.completed_matches }} / {{ item.total_matches }}
+                        {{ _('경기') }}</span>
                 </div>
             </div>
         </a>
@@ -71,7 +76,12 @@
             <div class="space-y-2 text-sm text-gray-500">
                 <div class="flex justify-between items-center">
                     <span>{{ _('참가자 수') }}</span>
-                    <span class="font-medium text-gray-700 mr-2">5{{ _('명') }}</span>
+                    <span class="font-medium text-gray-700 mr-2">{{ item.league_size }}{{ _('명') }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>{{ _('경기 결과') }}</span>
+                    <span class="font-medium text-gray-700 mr-2">{{ item.completed_matches }} / {{ item.total_matches }}
+                        {{ _('경기') }}</span>
                 </div>
             </div>
         </a>

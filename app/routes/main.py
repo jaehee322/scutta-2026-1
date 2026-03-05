@@ -61,20 +61,21 @@ def index():
     my_name = current_user.player.name
     my_leagues = League.query.filter(
         (League.p1 == my_name) | (League.p2 == my_name) | (League.p3 == my_name) |
-        (League.p4 == my_name) | (League.p5 == my_name)
+        (League.p4 == my_name) | (League.p5 == my_name) | (League.p6 == my_name)
     ).order_by(League.id.desc()).all()
     
     my_league = next((l for l in my_leagues if not l.is_completed), None)
 
     if my_league:
-        player_names = [my_league.p1, my_league.p2, my_league.p3, my_league.p4, my_league.p5]
+        player_names = my_league.player_names_list
+        n = len(player_names)
         standings_data = []
         for i, name in enumerate(player_names):
             wins, losses = 0, 0
-            for j in range(5):
+            for j in range(n):
                 if i == j: continue
-                if getattr(my_league, f'p{i+1}p{j+1}') is not None: wins += 1
-                if getattr(my_league, f'p{j+1}p{i+1}') is not None: losses += 1
+                if getattr(my_league, f'p{i+1}p{j+1}', None) is not None: wins += 1
+                if getattr(my_league, f'p{j+1}p{i+1}', None) is not None: losses += 1
             total_games = wins + losses
             win_rate = (wins / total_games) * 100 if total_games > 0 else 0.0
             standings_data.append({'name': name, 'wins': wins, 'losses': losses, 'win_rate': win_rate})

@@ -24,7 +24,7 @@ def league():
 
     league_data = []
     for l in leagues:
-        player_names = [l.p1, l.p2, l.p3, l.p4, l.p5]
+        player_names = l.player_names_list
         is_participant = current_user.player.name in player_names
         
         is_completed = l.is_completed
@@ -32,7 +32,10 @@ def league():
         league_data.append({
             'league': l,
             'is_participant': is_participant,
-            'is_completed': is_completed
+            'is_completed': is_completed,
+            'league_size': l.player_count,
+            'completed_matches': l.completed_match_pairs,
+            'total_matches': l.total_match_pairs
         })
 
     return render_template('league.html', league_data=league_data)
@@ -42,7 +45,8 @@ def league():
 @login_required
 def league_detail(league_id):
     league = League.query.get_or_404(league_id)
-    player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+    player_names = league.player_names_list
+    n = len(player_names)
 
     players_info = []
     player_objects = Player.query.filter(Player.name.in_(player_names)).all()
@@ -52,7 +56,8 @@ def league_detail(league_id):
         if p:
             players_info.append({
                 'name': p.name, 'rank': p.rank,
-                'win_count': p.win_count, 'rate_count': p.rate_count
+                'win_count': p.win_count, 'rate_count': p.rate_count,
+                'player_id': p.id
             })
 
     is_completed = league.is_completed
@@ -60,15 +65,16 @@ def league_detail(league_id):
     standings_data = []
     for i, name in enumerate(player_names):
         wins, losses = 0, 0
-        for j in range(5):
+        for j in range(n):
             if i == j: continue
-            if getattr(league, f'p{i+1}p{j+1}') is not None: wins += 1
-            if getattr(league, f'p{j+1}p{i+1}') is not None: losses += 1
+            if getattr(league, f'p{i+1}p{j+1}', None) is not None: wins += 1
+            if getattr(league, f'p{j+1}p{i+1}', None) is not None: losses += 1
 
         total_games = wins + losses
         win_rate = (wins / total_games) * 100 if total_games > 0 else 0.0
 
-        standings_data.append({'name': name, 'wins': wins, 'losses': losses, 'win_rate': win_rate})
+        p = player_map.get(name)
+        standings_data.append({'name': name, 'wins': wins, 'losses': losses, 'win_rate': win_rate, 'player_id': p.id if p else 0})
 
     sorted_standings = sorted(standings_data, key=lambda x: (x['wins'], x['win_rate'], -x['losses']), reverse=True)
 
@@ -95,8 +101,8 @@ def league_detail(league_id):
         for opponent_idx, opponent_name in enumerate(player_names):
             if my_idx == opponent_idx: continue
 
-            my_score = getattr(league, f'p{my_idx+1}p{opponent_idx+1}')
-            opponent_score = getattr(league, f'p{opponent_idx+1}p{my_idx+1}')
+            my_score = getattr(league, f'p{my_idx+1}p{opponent_idx+1}', None)
+            opponent_score = getattr(league, f'p{opponent_idx+1}p{my_idx+1}', None)
 
             status = 'Submitted' if my_score is not None or opponent_score is not None else 'Not Submitted'
             opponent_player = player_map.get(opponent_name)
@@ -108,17 +114,17 @@ def league_detail(league_id):
                 })
     match_history = []
     if current_user.is_admin:
-        for i in range(5):
-            for j in range(5):
+        for i in range(n):
+            for j in range(n):
                 if i == j: continue
-                if getattr(league, f'p{i+1}p{j+1}') is not None:
+                if getattr(league, f'p{i+1}p{j+1}', None) is not None:
                     winner_name = player_names[i]
                     loser_name = player_names[j]
                     match_history.append({'winner': winner_name, 'loser': loser_name})
 
     matches = []
-    for i in range(5):
-        for j in range(i + 1, 5):
+    for i in range(n):
+        for j in range(i + 1, n):
             p1_name = player_names[i]
             p2_name = player_names[j]
             p1_player = player_map.get(p1_name)
@@ -127,8 +133,8 @@ def league_detail(league_id):
             if not p1_player or not p2_player:
                 continue
                 
-            p1_score_val = getattr(league, f'p{i+1}p{j+1}')
-            p2_score_val = getattr(league, f'p{j+1}p{i+1}')
+            p1_score_val = getattr(league, f'p{i+1}p{j+1}', None)
+            p2_score_val = getattr(league, f'p{j+1}p{i+1}', None)
             
             status = 'pending'
             winner_id = None
@@ -196,7 +202,7 @@ def revert_league_match(league_id):
     winner_name = request.form.get('winner')
     loser_name = request.form.get('loser')
 
-    player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+    player_names = league.player_names_list
 
     try:
         winner_idx = player_names.index(winner_name) + 1
@@ -498,8 +504,8 @@ def create_league():
 
     data = request.get_json()
     players = data.get('players', [])
-    if len(players) != 5:
-        return jsonify({'error': '정확히 5명의 선수를 입력해야 합니다.'}), 400
+    if len(players) < 4 or len(players) > 6:
+        return jsonify({'error': '4명에서 6명 사이의 선수를 입력해야 합니다.'}), 400
 
     for name in players:
         player = Player.query.filter_by(name=name, is_valid=True).first()
@@ -510,10 +516,11 @@ def create_league():
     provided_name = data.get('name', '').strip()
     new_league_name = provided_name if provided_name else f"League {chr(ord('A') + league_count)}"
 
-    new_league = League(
-        name=new_league_name,
-        p1=players[0], p2=players[1], p3=players[2], p4=players[3], p5=players[4]
-    )
+    league_kwargs = {'name': new_league_name}
+    for i, name in enumerate(players):
+        league_kwargs[f'p{i+1}'] = name
+
+    new_league = League(**league_kwargs)
     db.session.add(new_league)
     db.session.commit()
 
@@ -558,18 +565,13 @@ def league_submit_match_page(league_id, p1_id, p2_id):
     p1 = Player.query.get_or_404(p1_id)
     p2 = Player.query.get_or_404(p2_id)
 
-    player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+    player_names = league.player_names_list
     if not current_user.is_admin:
         if current_user.player.name not in player_names or current_user.player.id not in [p1_id, p2_id]:
             flash(_('잘못된 접근입니다.'), 'error')
             return redirect(url_for('league.league_detail', league_id=league_id))
 
-    matches_played = 0
-    for i in range(5):
-        for j in range(5):
-            if i != j and getattr(league, f'p{i+1}p{j+1}') is not None:
-                matches_played += 1
-    is_completed = league.is_closed or (matches_played == 10)
+    is_completed = league.is_completed
     
     if is_completed:
         flash(_('이미 마감된 리그전입니다.'), 'error')
@@ -583,12 +585,7 @@ def league_submit_match_page(league_id, p1_id, p2_id):
 def submit_league_match(league_id):
     league = League.query.get_or_404(league_id)
     
-    matches_played = 0
-    for i in range(5):
-        for j in range(5):
-            if i != j and getattr(league, f'p{i+1}p{j+1}') is not None:
-                matches_played += 1
-    if league.is_closed or (matches_played == 10):
+    if league.is_completed:
         flash(_('이미 마감된 리그전입니다.'), 'error')
         return redirect(url_for('league.league_detail', league_id=league_id))
 
@@ -610,7 +607,7 @@ def submit_league_match(league_id):
     )
     db.session.add(new_match)
 
-    player_names = [league.p1, league.p2, league.p3, league.p4, league.p5]
+    player_names = league.player_names_list
     winner_idx = player_names.index(winner.name) + 1
     loser_idx = player_names.index(loser.name) + 1
 
