@@ -55,6 +55,11 @@
                 <td class="font-bold">{{ player.betting_count }}</td>
                 <td class="text-sm text-gray-500 text-right">{{ player.betting_order or '-' }}위</td>
             </tr>
+            <tr>
+                <th class="bg-gray-50">{{ _('스쿠타') }}</th>
+                <td class="font-bold">{{ player.scutta_count }}</td>
+                <td class="text-sm text-gray-500 text-right">{{ player.scutta_order or '-' }}위</td>
+            </tr>
         </table>
     </div>
 </div>
@@ -215,6 +220,7 @@
                     <th>{{ _('내용') }}</th>
                     <th class="w-20 text-center">{{ _('업적') }}</th>
                     <th class="w-20 text-center">{{ _('베팅') }}</th>
+                    <th class="w-20 text-center">{{ _('스쿠타') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -238,10 +244,19 @@
                             <span class="text-gray-300">-</span>
                             {% endif %}
                     </td>
+                    <td class="text-center font-bold">
+                        {% if (log.scutta_change or 0) > 0 %}
+                        <span class="text-blue-500">+{{ log.scutta_change }}</span>
+                        {% elif (log.scutta_change or 0) < 0 %} <span class="text-red-600">{{ log.scutta_change
+                            }}</span>
+                            {% else %}
+                            <span class="text-gray-300">-</span>
+                            {% endif %}
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-gray-500">{{ _('기록이 없습니다.') }}</td>
+                    <td colspan="5" class="text-center py-4 text-gray-500">{{ _('기록이 없습니다.') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

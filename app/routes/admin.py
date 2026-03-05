@@ -57,49 +57,6 @@ def update_global_texts():
     return redirect(url_for('admin.settings'))
 
 
-@admin_bp.route('/reset_matches', methods=['POST'])
-@login_required
-def reset_matches():
-    if not current_user.is_admin:
-        flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
-        return redirect(url_for('main.index'))
-    try:
-        Match.query.delete()
-        for player in Player.query.all():
-            player.win_count = 0
-            player.loss_count = 0
-            player.match_count = 0
-            player.rate_count = 0
-        db.session.commit()
-        update_player_orders_by_match()
-        flash('모든 경기 기록이 삭제되었습니다.', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'경기 기록 초기화 중 오류: {e}', 'error')
-    return redirect(url_for('admin.settings'))
-
-
-@admin_bp.route('/reset_betting', methods=['POST'])
-@login_required
-def reset_betting():
-    if not current_user.is_admin:
-        flash(_('관리자만 접근할 수 있는 페이지입니다.'), 'error')
-        return redirect(url_for('main.index'))
-    try:
-        BettingParticipant.query.delete()
-        Betting.query.delete()
-        PlayerPointLog.query.delete()
-        for player in Player.query.all():
-            player.achieve_count = 0
-            player.betting_count = 0
-        db.session.commit()
-        update_player_orders_by_point()
-        flash('모든 베팅 기록이 삭제되었습니다.', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'베팅 기록 초기화 중 오류: {e}', 'error')
-    return redirect(url_for('admin.settings'))
-
 
 @admin_bp.route('/admin_reset_password_page')
 @login_required
@@ -172,7 +129,8 @@ def get_assignment_players():
             'gender': player.gender.value if player.gender else None,
             'is_freshman': player.is_she_or_he_freshman.value if player.is_she_or_he_freshman else None,
             'match_count': player.match_count,
-            'achieve_count': player.achieve_count, 'betting_count': player.betting_count
+            'achieve_count': player.achieve_count, 'betting_count': player.betting_count,
+            'scutta_count': player.scutta_count
         })
     return jsonify(response_data)
 
@@ -198,6 +156,10 @@ def update_player_points():
             change = point_value - player.betting_count
             player.betting_count = point_value
             add_point_log(player_id, betting_change=change, reason=reason)
+        elif point_type == 'scutta':
+            change = point_value - (player.scutta_count or 0)
+            player.scutta_count = point_value
+            add_point_log(player_id, scutta_change=change, reason=reason)
         else:
             return jsonify({'success': False, 'error': '잘못된 포인트 타입입니다.'}), 400
         db.session.commit()
@@ -256,6 +218,12 @@ def save_all_assignment_changes():
                 if diff != 0:
                     player.betting_count = new_betting
                     add_point_log(player_id, betting_change=diff, reason="관리자 수동 조정")
+            if 'scutta_count' in change:
+                new_scutta = int(change['scutta_count'])
+                diff = new_scutta - (player.scutta_count or 0)
+                if diff != 0:
+                    player.scutta_count = new_scutta
+                    add_point_log(player_id, scutta_change=diff, reason="관리자 수동 조정")
         db.session.commit()
         update_player_orders_by_point()
         return jsonify({'success': True, 'message': '모든 변경사항이 저장되었습니다.'})

@@ -212,33 +212,6 @@
     </div>
 </div>
 
-{# ===== 데이터 초기화 (위험) ===== #}
-<div class="card mt-8">
-    <h2 class="text-2xl font-bold mb-6">데이터 초기화 (위험)</h2>
-    <div class="space-y-4">
-        <div class="p-4 border border-red-200 bg-red-50 rounded-lg">
-            <h3 class="font-bold text-red-700 mb-2">모든 경기 기록 삭제</h3>
-            <p class="text-sm text-red-600 mb-4">모든 경기 기록이 영구적으로 삭제됩니다. 되돌릴 수 없습니다.</p>
-            <form action="{{ url_for('admin.reset_matches') }}" method="POST"
-                onsubmit="return confirm('정말 모든 경기 기록을 삭제하시겠습니까?');">
-                <button type="submit"
-                    class="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 w-full md:w-auto">경기 기록
-                    초기화</button>
-            </form>
-        </div>
-        <div class="p-4 border border-red-200 bg-red-50 rounded-lg">
-            <h3 class="font-bold text-red-700 mb-2">모든 베팅 기록 삭제</h3>
-            <p class="text-sm text-red-600 mb-4">모든 베팅 및 포인트 내역이 영구적으로 삭제됩니다.</p>
-            <form action="{{ url_for('admin.reset_betting') }}" method="POST"
-                onsubmit="return confirm('정말 모든 베팅 기록을 삭제하시겠습니까?');">
-                <button type="submit"
-                    class="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 w-full md:w-auto">베팅 기록
-                    초기화</button>
-            </form>
-        </div>
-    </div>
-</div>
-
 {# ===== 관리자 계정 관리 ===== #}
 <div class="card mt-8">
     <h2 class="text-2xl font-bold mb-6">관리자 계정 관리</h2>

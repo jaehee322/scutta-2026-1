@@ -35,8 +35,9 @@ function loadPlayers(searchQuery = '', showAll = false) {
                 // 각 input에 원래 값을 data-original-value로 저장해 둡니다.
                 row.innerHTML = `
                     <td><a href="/player/${player.id}" class="hover:underline">${player.name}</a></td>
-                    <td class="w-24"><input type="number" data-original-value="${player.achieve_count || 0}" value="${player.achieve_count || 0}" class="w-full text-center border rounded py-1 achieve-input"></td>
-                    <td class="w-24"><input type="number" data-original-value="${player.betting_count || 0}" value="${player.betting_count || 0}" class="w-full text-center border rounded py-1 betting-input"></td>
+                    <td class="w-24"><input type="number" data-original-value="${player.achieve_count ?? 0}" value="${player.achieve_count ?? 0}" class="w-full text-center border rounded py-1 achieve-input"></td>
+                    <td class="w-24"><input type="number" data-original-value="${player.betting_count ?? 0}" value="${player.betting_count ?? 0}" class="w-full text-center border rounded py-1 betting-input"></td>
+                    <td class="w-24"><input type="number" data-original-value="${player.scutta_count ?? 0}" value="${player.scutta_count ?? 0}" class="w-full text-center border rounded py-1 scutta-input"></td>
                     <td class="w-24"><input type="number" data-original-value="${player.rank || ''}" value="${player.rank || ''}" class="w-full text-center border rounded py-1 rank-input"></td>
                 `;
                 tableBody.appendChild(row);
@@ -57,6 +58,7 @@ function saveAllChanges() {
         const rankInput = row.querySelector('.rank-input');
         const achieveInput = row.querySelector('.achieve-input');
         const bettingInput = row.querySelector('.betting-input');
+        const scuttaInput = row.querySelector('.scutta-input');
 
         // 원래 값과 현재 값을 비교해서 변경된 경우에만 추가
         if (rankInput.value !== rankInput.dataset.originalValue) {
@@ -69,6 +71,10 @@ function saveAllChanges() {
         }
         if (bettingInput.value !== bettingInput.dataset.originalValue) {
             playerChange.betting_count = bettingInput.value;
+            hasChanged = true;
+        }
+        if (scuttaInput.value !== scuttaInput.dataset.originalValue) {
+            playerChange.scutta_count = scuttaInput.value;
             hasChanged = true;
         }
 

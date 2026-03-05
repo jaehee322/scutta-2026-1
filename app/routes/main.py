@@ -127,6 +127,7 @@ def rankings_page():
     attach_rank(players, 'opponent_count', 'real_opponent_rank')
     attach_rank(players, 'achieve_count', 'real_achieve_rank')
     attach_rank(players, 'betting_count', 'real_betting_rank')
+    attach_rank(players, 'scutta_count', 'real_scutta_rank')
 
     return render_template('rankings.html', players=players)
 
@@ -173,6 +174,7 @@ def player_detail(player_id):
     player.opponent_order = ranks['opponent_order']
     player.achieve_order = ranks['achieve_order']
     player.betting_order = ranks['betting_order']
+    player.scutta_order = ranks['scutta_order']
 
     if current_user.is_admin:
         point_logs = PlayerPointLog.query.filter_by(player_id=player_id)\

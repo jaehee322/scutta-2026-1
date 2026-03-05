@@ -11,17 +11,67 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto space-y-6 mt-10">
+<div class="max-w-xl mx-auto space-y-8 mt-6 px-2 pb-10">
+
+    {# 리그전 카드 #}
     <a href="{{ url_for('league.league') }}"
-        class="block p-8 bg-white rounded-xl hover:shadow-lg transition transform hover:-translate-y-1 text-center border border-gray-100 hover:border-blue-300">
-        <div class="text-4xl mb-4">🏆</div>
-        <h2 class="text-2xl font-bold text-gray-800">{{ _('리그전') }}</h2>
+        class="relative block bg-white rounded-3xl p-10 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden">
+
+        {# 우측 배경 워터마크 (리스트 형태) #}
+        <div
+            class="absolute -right-4 top-1/2 transform -translate-y-1/2 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity flex items-center pointer-events-none select-none text-blue-900">
+            <div class="flex flex-col gap-3 font-black text-6xl mr-4 italic">
+                <span>1</span><span>2</span><span>3</span>
+            </div>
+            <div class="flex flex-col gap-10 py-2">
+                <div class="h-6 w-32 bg-blue-900 rounded-sm"></div>
+                <div class="h-6 w-32 bg-blue-900 rounded-sm"></div>
+                <div class="h-6 w-32 bg-blue-900 rounded-sm"></div>
+            </div>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center justify-center text-center">
+            {# 아이콘 #}
+            <div
+                class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-500 text-2xl group-hover:-translate-y-1 transition-transform">
+                <i class="fas fa-trophy"></i>
+            </div>
+
+            <h2 class="text-3xl font-black text-gray-900 mb-3 tracking-tight">리그전 (League)</h2>
+            <p class="text-gray-500 font-medium leading-relaxed">
+                참가자 모두와 한 번씩 겨루는<br>풀 리그 방식
+            </p>
+        </div>
     </a>
 
+    {# 토너먼트 카드 #}
     <a href="{{ url_for('league.tournament') }}"
-        class="block p-8 bg-white rounded-xl hover:shadow-lg transition transform hover:-translate-y-1 text-center border border-gray-100 hover:border-blue-300">
-        <div class="text-4xl mb-4">⚔️</div>
-        <h2 class="text-2xl font-bold text-gray-800">{{ _('토너먼트') }}</h2>
+        class="relative block bg-white rounded-3xl p-10 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden mt-8">
+
+        {# 우측 배경 워터마크 (트리 형태) #}
+        <div
+            class="absolute -right-2 top-1/2 transform -translate-y-1/2 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity flex items-center pointer-events-none select-none text-blue-900">
+            <div
+                class="w-20 h-32 border-r-[12px] border-t-[12px] border-b-[12px] border-blue-900 flex flex-col justify-between">
+                <div class="w-14 h-14 bg-transparent border-[12px] border-blue-900 -ml-8 -mt-6"></div>
+                <div class="w-14 h-14 bg-transparent border-[12px] border-blue-900 -ml-8 -mb-6"></div>
+            </div>
+            <div class="w-16 border-t-[12px] border-blue-900"></div>
+            <div class="w-16 h-20 bg-transparent border-[12px] border-blue-900"></div>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center justify-center text-center">
+            {# 아이콘 #}
+            <div
+                class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-500 text-2xl group-hover:-translate-y-1 transition-transform">
+                <i class="fas fa-medal"></i>
+            </div>
+
+            <h2 class="text-3xl font-black text-gray-900 mb-3 tracking-tight">토너먼트 (Tournament)</h2>
+            <p class="text-gray-500 font-medium leading-relaxed">
+                승자만 다음 라운드에 진출하는<br>토너먼트 방식
+            </p>
+        </div>
     </a>
 </div>
 {% endblock %}

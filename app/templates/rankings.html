@@ -31,6 +31,9 @@
         <button
             class="tab-button bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
             data-tab="betting">{{ _('베팅순') }}</button>
+        <button
+            class="tab-button bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+            data-tab="scutta">{{ _('스쿠타순') }}</button>
     </div>
 
     <div id="ranking-container" class="flex-grow overflow-y-auto">
@@ -114,6 +117,18 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            <tbody class="ranking-list hidden" id="ranking-list-scutta">
+                {% for p in players|sort(attribute='scutta_count', reverse=True) %}
+                <tr class="hover:bg-blue-50 transition cursor-pointer" onclick="location.href='/player/{{ p.id }}'">
+                    <td class="!text-center font-bold text-gray-400">{{ p.real_scutta_rank }}</td>
+                    <td class="!text-left pl-36 font-semibold">
+                        {{ p.name }}
+                        <span class="text-xs font-normal text-gray-400 ml-1">{{ p.rank or '무' }}</span>
+                    </td>
+                    <td class="!text-center font-bold text-blue-500">{{ p.scutta_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </div>
@@ -141,7 +156,8 @@
                 'match': '{{ _("경기수") }}',
                 'opponent': '{{ _("상대수") }}',
                 'achieve': '{{ _("업적") }}',
-                'betting': '{{ _("베팅") }}'
+                'betting': '{{ _("베팅") }}',
+                'scutta': '{{ _("스쿠타") }}'
             };
             const headerCell = document.querySelector('thead th:last-child');
             if (headerCell && headerTextMap[tabName]) {

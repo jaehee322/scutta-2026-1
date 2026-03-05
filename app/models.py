@@ -31,6 +31,7 @@ class Player(db.Model):
     opponent_count = db.Column(db.Integer, default=0)
     achieve_count = db.Column(db.Integer, default=0)
     betting_count = db.Column(db.Integer, default=100)
+    scutta_count = db.Column(db.Integer, default=0)
     win_order = db.Column(db.Integer, default=None)
     loss_order = db.Column(db.Integer, default=None)
     match_order = db.Column(db.Integer, default=None)
@@ -38,6 +39,7 @@ class Player(db.Model):
     opponent_order = db.Column(db.Integer, default=None)
     achieve_order = db.Column(db.Integer, default=None)
     betting_order = db.Column(db.Integer, default=None)
+    scutta_order = db.Column(db.Integer, default=None)
     is_she_or_he_freshman = db.Column(db.Enum(FreshmanEnum), nullable=True)
 
     def __repr__(self):
@@ -153,6 +155,7 @@ class PlayerPointLog(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     achieve_change = db.Column(db.Integer, default=0)
     betting_change = db.Column(db.Integer, default=0)
+    scutta_change = db.Column(db.Integer, default=0)
     reason = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("Asia/Seoul")))
     player = db.relationship('Player', backref=db.backref('point_logs', lazy=True))

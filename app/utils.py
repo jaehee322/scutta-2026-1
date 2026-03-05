@@ -50,15 +50,16 @@ def _get_summary_rankings_data(current_player):
     return rankings_data
 
 
-def add_point_log(player_id, achieve_change=0, betting_change=0, reason=""):
+def add_point_log(player_id, achieve_change=0, betting_change=0, scutta_change=0, reason=""):
     """플레이어 포인트 변동 로그 기록"""
-    if achieve_change == 0 and betting_change == 0:
+    if achieve_change == 0 and betting_change == 0 and scutta_change == 0:
         return
 
     log = PlayerPointLog(
         player_id=player_id,
         achieve_change=achieve_change,
         betting_change=betting_change,
+        scutta_change=scutta_change,
         reason=reason
     )
     db.session.add(log)
@@ -113,10 +114,11 @@ def update_player_orders_by_match():
 
 
 def update_player_orders_by_point():
-    """업적/베팅 포인트 기반 순위를 재계산합니다."""
+    """업적/베팅/스쿠타 포인트 기반 순위를 재계산합니다."""
     categories = [
         ('achieve_order', Player.achieve_count.desc()),
         ('betting_order', Player.betting_count.desc()),
+        ('scutta_order', Player.scutta_count.desc()),
     ]
 
     for order_field, primary_criteria in categories:
@@ -159,6 +161,9 @@ def get_player_ranks(player):
     
     # 7. 베팅 순위
     betting_rank = Player.query.filter(Player.betting_count > player.betting_count, Player.is_valid == True).count() + 1
+
+    # 8. 스쿠타 순위
+    scutta_rank = Player.query.filter(Player.scutta_count > player.scutta_count, Player.is_valid == True).count() + 1
     
     return {
         'win_order': win_rank,
@@ -167,7 +172,8 @@ def get_player_ranks(player):
         'match_order': match_rank,
         'opponent_order': opponent_rank,
         'achieve_order': achieve_rank,
-        'betting_order': betting_rank
+        'betting_order': betting_rank,
+        'scutta_order': scutta_rank
     }
 
 
