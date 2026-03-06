@@ -95,7 +95,7 @@ def submit_match_page():
 def my_submissions():
     my_matches = Match.query.filter(
         (Match.winner == current_user.player_id) | (Match.loser == current_user.player_id)
-    ).order_by(Match.timestamp.desc()).limit(5).all()
+    ).order_by(Match.timestamp.desc()).all()
 
     return render_template('my_submissions.html', matches=my_matches)
 

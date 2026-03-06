@@ -177,20 +177,17 @@ def player_detail(player_id):
     player.betting_order = ranks['betting_order']
     player.scutta_order = ranks['scutta_order']
 
-    if current_user.is_admin:
-        point_logs = PlayerPointLog.query.filter_by(player_id=player_id)\
-                                         .order_by(PlayerPointLog.timestamp.desc()).all()
+    point_logs = PlayerPointLog.query.filter_by(player_id=player_id)\
+                                     .order_by(PlayerPointLog.timestamp.desc()).all()
 
-        recent_matches = Match.query.filter(
-            (Match.winner == player.id) | (Match.loser == player.id)
-        ).order_by(Match.timestamp.desc()).limit(10).all()
+    recent_matches = Match.query.filter(
+        (Match.winner == player.id) | (Match.loser == player.id)
+    ).order_by(Match.timestamp.desc()).limit(10).all()
 
-        return render_template('player_detail_admin.html',
-                               player=player,
-                               point_logs=point_logs,
-                               matches=recent_matches)
-    else:
-        return render_template('public_player_profile.html', player=player)
+    return render_template('player_detail.html',
+                           player=player,
+                           point_logs=point_logs,
+                           matches=recent_matches)
 
 
 @main_bp.route('/health', methods=['GET'])

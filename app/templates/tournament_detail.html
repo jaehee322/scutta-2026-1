@@ -12,22 +12,22 @@
 
 {% block content %}
 <div class="card overflow-x-auto no-scrollbar">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">{{ tournament.title }} {{ _('대진표') }}</h2>
+    <div class="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4 mb-6">
+        <h2 class="text-2xl font-bold break-words">{{ tournament.title }} {{ _('대진표') }}</h2>
         {% if current_user.is_admin %}
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             {% if tournament.status == '진행중' %}
             <a href="{{ url_for('league.submit_tournament_results_page', tournament_id=tournament.id) }}"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition text-sm">
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition text-sm whitespace-nowrap">
                 {{ _('결과 입력') }}
             </a>
             <button onclick="if(confirm(&quot;정말로 토너먼트를 일찍 마감하시겠습니까?&quot;)) closeTournament({{ tournament.id }});"
-                class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition text-sm">
+                class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition text-sm whitespace-nowrap">
                 {{ _('토너먼트 마감') }}
             </button>
             {% endif %}
             <button onclick="deleteTournament({{ tournament.id }})"
-                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition text-sm">
+                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition text-sm whitespace-nowrap">
                 {{ _('삭제') }}
             </button>
         </div>

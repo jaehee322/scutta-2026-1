@@ -80,7 +80,7 @@
                 <div class="border rounded p-3 bg-gray-100 border-gray-300">
                     <div class="flex justify-between mb-1">
                         <span class="font-bold">{{ title }}</span>
-                        <span class="text-xs text-gray-700 font-bold">완료 ({{ player.match_count }}/{{ goal }})</span>
+                        <span class="text-xs text-gray-700 font-bold">완료 ({{ goal }}/{{ goal }})</span>
                     </div>
                     <div class="w-full bg-gray-300 rounded-full h-2.5">
                         <div class="bg-gray-600 h-2.5 rounded-full" style="width: 100%"></div>
@@ -114,7 +114,7 @@
                 <div class="border rounded p-3 bg-blue-50 border-blue-200">
                     <div class="flex justify-between mb-1">
                         <span class="font-bold">{{ title }}</span>
-                        <span class="text-xs text-blue-600 font-bold">완료 ({{ player.win_count }}/{{ goal }})</span>
+                        <span class="text-xs text-blue-600 font-bold">완료 ({{ goal }}/{{ goal }})</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                         <div class="bg-blue-600 h-2.5 rounded-full" style="width: 100%"></div>
@@ -149,7 +149,7 @@
                 <div class="border rounded p-3 bg-red-50 border-red-200">
                     <div class="flex justify-between mb-1">
                         <span class="font-bold">{{ title }}</span>
-                        <span class="text-xs text-red-600 font-bold">완료 ({{ player.loss_count }}/{{ goal }})</span>
+                        <span class="text-xs text-red-600 font-bold">완료 ({{ goal }}/{{ goal }})</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                         <div class="bg-red-600 h-2.5 rounded-full" style="width: 100%"></div>
@@ -184,8 +184,7 @@
                 <div class="border rounded p-3 bg-green-50 border-green-200">
                     <div class="flex justify-between mb-1">
                         <span class="font-bold">{{ title }}</span>
-                        <span class="text-xs text-green-700 font-bold">완료 ({{ player.opponent_count }}/{{ goal
-                            }})</span>
+                        <span class="text-xs text-green-700 font-bold">완료 ({{ goal }}/{{ goal }})</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                         <div class="bg-green-600 h-2.5 rounded-full" style="width: 100%"></div>
@@ -207,6 +206,43 @@
                 {% endfor %}
             </div>
         </div>
+    </div>
+</div>
+
+<div class="bg-white shadow-sm p-6 rounded-lg mb-6">
+    <h3 class="text-xl font-bold mb-4">{{ _('최근 경기 기록') }}</h3>
+    <div class="overflow-x-auto max-h-96">
+        <table class="table-modern w-full whitespace-nowrap">
+            <thead class="sticky top-0 bg-white">
+                <tr>
+                    <th class="w-1/4 text-center">{{ _('일시') }}</th>
+                    <th class="w-1/4 text-center">{{ _('승자') }}</th>
+                    <th class="w-1/4 text-center">{{ _('패자') }}</th>
+                    <th class="w-1/4 text-center">{{ _('스코어') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                <tr class="hover:bg-gray-50 transition border-b">
+                    <td class="text-center text-sm text-gray-500 py-2">{{ match.timestamp|datetimeformat('%m.%d %H:%M')
+                        }}</td>
+                    <td
+                        class="text-center {% if match.winner == player.id %}text-blue-600 font-bold{% else %}text-gray-800 font-semibold{% endif %}">
+                        {{ match.winner_name }}
+                    </td>
+                    <td
+                        class="text-center {% if match.loser == player.id %}text-red-500 font-bold{% else %}text-gray-800 font-semibold{% endif %}">
+                        {{ match.loser_name }}
+                    </td>
+                    <td class="text-center text-sm text-gray-700">{{ match.score }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-gray-500">{{ _('최근 경기 기록이 없습니다.') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 

@@ -247,6 +247,13 @@ def generate_tournament():
     player_names_str = request.form.get('players')
     player_names = [name.strip() for name in player_names_str.splitlines() if name.strip()]
 
+    # 입력된 선수가 DB에 유효하게 존재하는지 검증
+    for name in player_names:
+        player = Player.query.filter_by(name=name, is_valid=True).first()
+        if not player:
+            flash(f'선수 "{name}"를 찾을 수 없습니다. 등록된 이름을 정자로 입력해 주세요.', 'error')
+            return redirect(url_for('league.create_tournament_page'))
+
     random.shuffle(player_names)
     num_players = len(player_names)
 

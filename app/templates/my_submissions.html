@@ -18,11 +18,11 @@
         <table class="table-modern w-full">
             <thead>
                 <tr>
-                    <th class="text-center">{{ _('시간') }}</th>
-                    <th class="text-center">{{ _('승자') }}</th>
-                    <th class="text-center">{{ _('패자') }}</th>
-                    <th class="text-center">{{ _('스코어') }}</th>
-                    <th class="text-center">{{ _('상태') }}</th>
+                    <th class="text-center whitespace-nowrap">{{ _('시간') }}</th>
+                    <th class="text-center whitespace-nowrap">{{ _('승자') }}</th>
+                    <th class="text-center whitespace-nowrap">{{ _('패자') }}</th>
+                    <th class="text-center whitespace-nowrap">{{ _('스코어') }}</th>
+                    <th class="text-center whitespace-nowrap">{{ _('상태') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,16 +31,16 @@
                     <td class="text-center text-gray-500 text-sm whitespace-nowrap">
                         {{ match.timestamp|datetimeformat('%m.%d %H:%M') }}
                     </td>
-                    <td class="text-center font-semibold">
+                    <td class="text-center font-semibold whitespace-nowrap">
                         {{ match.winner_name }}
                     </td>
-                    <td class="text-center text-gray-600">
+                    <td class="text-center text-gray-600 whitespace-nowrap">
                         {{ match.loser_name }}
                     </td>
-                    <td class="text-center">
+                    <td class="text-center whitespace-nowrap">
                         {{ match.score }}
                     </td>
-                    <td class="text-center px-4 py-2">
+                    <td class="text-center px-4 py-2 whitespace-nowrap">
                         {% if match.approved %}
                         <span
                             class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
