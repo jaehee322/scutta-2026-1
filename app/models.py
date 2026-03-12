@@ -19,7 +19,7 @@ class FreshmanEnum(enum.Enum):
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
-    is_valid = db.Column(db.Boolean, default=True)
+    is_valid = db.Column(db.Boolean, default=True, index=True)
     gender=db.Column(db.Enum(GenderEnum), nullable=True)
     previous_rank = db.Column(db.Integer, default=None)
     rank_change = db.Column(db.String(10), default=None)
@@ -47,13 +47,13 @@ class Player(db.Model):
 
 class Match(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    winner = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    winner = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False, index=True)
     winner_name = db.Column(db.String(100), nullable=False)
-    loser = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    loser = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False, index=True)
     loser_name = db.Column(db.String(100), nullable=False)
     score = db.Column(db.String(10), nullable=False)
-    timestamp = db.Column(db.DateTime(timezone=True), default=get_seoul_time)
-    approved = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime(timezone=True), default=get_seoul_time, index=True)
+    approved = db.Column(db.Boolean, default=False, index=True)
 
     def __repr__(self):
         return f"<Match {self.winner_name} vs {self.loser_name}>"
@@ -173,7 +173,7 @@ class Betting(db.Model):
     point = db.Column(db.Integer, nullable=False)
     approved = db.Column(db.Boolean, default=False)
     submitted = db.Column(db.Boolean, default=False)
-    result = db.Column(db.Integer, db.ForeignKey('match.id'), nullable=True)
+    result = db.Column(db.Integer, db.ForeignKey('match.id'), nullable=True, index=True)
     is_closed = db.Column(db.Boolean, default=False, nullable=True)
     participants = db.relationship('BettingParticipant', backref='betting', cascade='all, delete-orphan')
 
@@ -186,11 +186,11 @@ class BettingParticipant(db.Model):
 
 class TodayPartner(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    p1_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    p1_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False, index=True)
     p1_name = db.Column(db.String(100), nullable=False)
-    p2_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    p2_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False, index=True)
     p2_name = db.Column(db.String(100), nullable=False)
-    submitted = db.Column(db.Boolean, default=False)
+    submitted = db.Column(db.Boolean, default=False, index=True)
     
 
 class PlayerPointLog(db.Model):

@@ -114,7 +114,7 @@ def delete_bettings():
         BettingParticipant.query.filter(BettingParticipant.betting_id.in_(ids)).delete(synchronize_session=False)
         Betting.query.filter(Betting.id.in_(ids)).delete(synchronize_session=False)
     db.session.commit()
-    update_player_orders_by_point()
+    update_player_orders_by_match()
     return jsonify({'success': True, 'message': f'{approved_count}개의 승인된 베팅과 {pending_count}개의 미승인된 베팅이 삭제되었습니다.'})
 
 

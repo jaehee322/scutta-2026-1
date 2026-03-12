@@ -4,7 +4,7 @@ from flask_babel import _
 from sqlalchemy.orm.attributes import flag_modified
 from ..extensions import db
 from ..models import Match, Player, User, League, Tournament
-from ..utils import add_point_log, update_player_orders_by_point
+from ..utils import add_point_log, update_player_orders_by_point, update_player_orders_by_match
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import random
@@ -588,7 +588,7 @@ def close_league(league_id):
             add_point_log(second_player.id, scutta_change=2000, reason=f"리그전 '{league.display_name}' 2위 보상")
 
     db.session.commit()
-    update_player_orders_by_point()
+    update_player_orders_by_match()
 
     return jsonify({'success': True, 'message': '리그전이 마감되고 스쿠타 포인트가 지급되었습니다.'})
 

@@ -86,94 +86,50 @@ def calculate_opponent_count(player_id):
 
 
 def update_player_orders_by_match():
-    """승리/패배/경기 수 기반 순위를 재계산합니다."""
+    """모든 순위(경기+포인트)를 한 번에 재계산합니다."""
+    players = Player.query.filter(Player.is_valid == True).all()
+
     categories = [
-        ('win_order', Player.win_count.desc()),
-        ('loss_order', Player.loss_count.desc()),
-        ('match_order', Player.match_count.desc()),
-        ('rate_order', Player.rate_count.desc()),
-        ('opponent_order', Player.opponent_count.desc()),
+        ('win_order', 'win_count'),
+        ('loss_order', 'loss_count'),
+        ('match_order', 'match_count'),
+        ('rate_order', 'rate_count'),
+        ('opponent_order', 'opponent_count'),
+        ('achieve_order', 'achieve_count'),
+        ('betting_order', 'betting_count'),
+        ('scutta_order', 'scutta_count'),
     ]
 
-    for order_field, primary_criteria in categories:
-        players = Player.query.filter(Player.is_valid == True).order_by(primary_criteria).all()
-
+    for order_field, value_field in categories:
+        sorted_players = sorted(players, key=lambda p: getattr(p, value_field) or 0, reverse=True)
         current_rank = 0
-        previous_primary_value = None
-        primary_field_name = primary_criteria.element.name
-
-        for i, player in enumerate(players, start=1):
-            primary_value = getattr(player, primary_field_name)
-            if primary_value != previous_primary_value:
+        previous_value = None
+        for i, player in enumerate(sorted_players, start=1):
+            value = getattr(player, value_field) or 0
+            if value != previous_value:
                 current_rank = i
-                previous_primary_value = primary_value
-
+                previous_value = value
             setattr(player, order_field, current_rank)
 
     db.session.commit()
 
 
 def update_player_orders_by_point():
-    """업적/베팅/스쿠타 포인트 기반 순위를 재계산합니다."""
-    categories = [
-        ('achieve_order', Player.achieve_count.desc()),
-        ('betting_order', Player.betting_count.desc()),
-        ('scutta_order', Player.scutta_count.desc()),
-    ]
-
-    for order_field, primary_criteria in categories:
-        players = Player.query.filter(Player.is_valid == True).order_by(primary_criteria).all()
-
-        current_rank = 0
-        previous_primary_value = None
-        primary_field_name = primary_criteria.element.name
-
-        for i, player in enumerate(players, start=1):
-            primary_value = getattr(player, primary_field_name)
-            if primary_value != previous_primary_value:
-                current_rank = i
-                previous_primary_value = primary_value
-
-            setattr(player, order_field, current_rank)
-
-    db.session.commit()
+    """update_player_orders_by_match에 통합됨. 호환성을 위해 유지."""
+    pass
 
 
 def get_player_ranks(player):
-    """특정 선수의 실시간 순위 정보를 계산하여 반환합니다."""
-    # 1. 승리 순위
-    win_rank = Player.query.filter(Player.win_count > player.win_count, Player.is_valid == True).count() + 1
-    
-    # 2. 패배 순위 (많이 진 순서)
-    loss_rank = Player.query.filter(Player.loss_count > player.loss_count, Player.is_valid == True).count() + 1
-    
-    # 3. 승률 순위
-    rate_rank = Player.query.filter(Player.rate_count > player.rate_count, Player.is_valid == True).count() + 1
-    
-    # 4. 경기수 순위
-    match_rank = Player.query.filter(Player.match_count > player.match_count, Player.is_valid == True).count() + 1
-    
-    # 5. 상대수 순위
-    opponent_rank = Player.query.filter(Player.opponent_count > player.opponent_count, Player.is_valid == True).count() + 1
-    
-    # 6. 업적 순위
-    achieve_rank = Player.query.filter(Player.achieve_count > player.achieve_count, Player.is_valid == True).count() + 1
-    
-    # 7. 베팅 순위
-    betting_rank = Player.query.filter(Player.betting_count > player.betting_count, Player.is_valid == True).count() + 1
-
-    # 8. 스쿠타 순위
-    scutta_rank = Player.query.filter(Player.scutta_count > player.scutta_count, Player.is_valid == True).count() + 1
-    
+    """특정 선수의 순위 정보를 반환합니다. DB에 저장된 순위를 직접 사용합니다."""
     return {
-        'win_order': win_rank,
-        'loss_order': loss_rank,
-        'rate_order': rate_rank,
-        'match_order': match_rank,
-        'opponent_order': opponent_rank,
-        'achieve_order': achieve_rank,
-        'betting_order': betting_rank,
-        'scutta_order': scutta_rank
+        'win_order': player.win_order,
+        'loss_order': player.loss_order,
+        'rate_order': player.rate_order,
+        'match_order': player.match_order,
+        'opponent_order': player.opponent_order,
+        'achieve_order': player.achieve_order,
+        'betting_order': player.betting_order,
+        'scutta_order': player.scutta_order
     }
 
 

@@ -225,7 +225,7 @@ def save_all_assignment_changes():
                     player.scutta_count = new_scutta
                     add_point_log(player_id, scutta_change=diff, reason="관리자 수동 조정")
         db.session.commit()
-        update_player_orders_by_point()
+        update_player_orders_by_match()
         return jsonify({'success': True, 'message': '모든 변경사항이 저장되었습니다.'})
     except Exception as e:
         db.session.rollback()
@@ -448,7 +448,7 @@ def update_achievement():
             player.betting_count += additional_betting
             add_point_log(player.id, betting_change=additional_betting, reason='수동 입력')
     db.session.commit()
-    update_player_orders_by_point()
+    update_player_orders_by_match()
     return jsonify({'success': True})
 
 

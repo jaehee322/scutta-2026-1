@@ -212,13 +212,21 @@ def favicon():
 def partner():
     partners = TodayPartner.query.order_by(TodayPartner.id).all()
 
-    p1_ranks = []
-    p2_ranks = []
+    # 배치 조회: 모든 파트너의 player_id를 한 번에 로드
+    all_player_ids = set()
     for p in partners:
-        p1 = Player.query.filter_by(id=p.p1_id).first()
-        p1_ranks.append(p1.rank if p1 else None)
-        p2 = Player.query.filter_by(id=p.p2_id).first()
-        p2_ranks.append(p2.rank if p2 else None)
+        all_player_ids.add(p.p1_id)
+        all_player_ids.add(p.p2_id)
+    players_map = {p.id: p for p in Player.query.filter(Player.id.in_(all_player_ids)).all()}
 
-    indexed_partners = [{'index': idx, 'partner': pr, 'p1_rank': p1_rank, 'p2_rank': p2_rank} for idx, (pr, p1_rank, p2_rank) in enumerate(zip(partners, p1_ranks, p2_ranks))]
+    indexed_partners = []
+    for idx, pr in enumerate(partners):
+        p1 = players_map.get(pr.p1_id)
+        p2 = players_map.get(pr.p2_id)
+        indexed_partners.append({
+            'index': idx,
+            'partner': pr,
+            'p1_rank': p1.rank if p1 else None,
+            'p2_rank': p2.rank if p2 else None
+        })
     return render_template('partner.html', partners=indexed_partners, global_texts=current_app.config['GLOBAL_TEXTS'])

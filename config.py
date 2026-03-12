@@ -17,14 +17,22 @@ class Config:
     # 현재 환경이 Render인지 확인 
     is_render_env = 'IS_PULL_REQUEST' in os.environ
 
+    # 공통 connection pool 설정
+    _pool_options = {
+        'pool_size': 5,
+        'pool_recycle': 300,
+        'pool_pre_ping': True,
+    }
+
     # Render 환경일 경우에만 SSL 연결을 요구하도록 수정
     if is_render_env:
         SQLALCHEMY_ENGINE_OPTIONS = {
+            **_pool_options,
             'connect_args': {
                 'sslmode': 'require'
             }
         }
     # 로컬 환경에서는 SSL 설정을 적용하지 않음
     else:
-        SQLALCHEMY_ENGINE_OPTIONS = {}
+        SQLALCHEMY_ENGINE_OPTIONS = {**_pool_options}
   
