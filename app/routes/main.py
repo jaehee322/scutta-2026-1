@@ -52,12 +52,7 @@ def index():
                 db.session.commit()
         today_partner_info = {'date': datetime.now(ZoneInfo("Asia/Seoul")).strftime('%m.%d'), 'opponent_name': opponent_name, 'submitted': today_match.submitted, 'approval_status': approval_status}
 
-    # --- 2. 베팅 정보 조회 ---
-    ongoing_bettings = Betting.query.filter_by(is_closed=False).order_by(Betting.id.desc()).all()
-    betting_data = []
-    for bet in ongoing_bettings:
-        if current_user.player_id not in [bet.p1_id, bet.p2_id]:
-            betting_data.append(bet)
+
 
     # --- 3. 나의 리그 정보 조회 ---
     my_league_info = None
@@ -111,7 +106,6 @@ def index():
         rankings=rankings_data,
         my_recent_matches=my_recent_matches,
         today_partner_info=today_partner_info,
-        ongoing_bettings=betting_data,
         my_league_info=my_league_info
     )
 

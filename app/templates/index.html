@@ -150,55 +150,6 @@
 </section>
 {% endif %}
 
-{# ===== 베팅하기 ===== #}
-{% if ongoing_bettings %}
-<section class="mb-10">
-    <div class="section-header">
-        <h3 class="section-title">{{ _('베팅하기') }}</h3>
-        <a href="{{ url_for('betting.betting_page') }}" class="section-more">
-            {{ _('더보기') }} &gt;
-        </a>
-    </div>
-    <div class="relative">
-        <div class="
-                {% if ongoing_bettings|length == 1 %}
-                    space-y-4
-                {% elif ongoing_bettings|length == 2 %}
-                    grid grid-cols-2 gap-4
-                {% else %}
-                    flex overflow-x-auto space-x-4 pb-4 no-scrollbar
-                {% endif %}
-            ">
-            {% for bet in ongoing_bettings %}
-            <a href="{{ url_for('betting.betting_detail_for_user', betting_id=bet.id) }}"
-                class="block rounded-xl border border-gray-100 hover:border-blue-200 transition overflow-hidden {% if ongoing_bettings|length >= 3 %}flex-shrink-0{% endif %}"
-                style="{% if ongoing_bettings|length >= 3 %}width: 280px;{% endif %}">
-                <div class="p-4 bg-white">
-                    <div class="flex justify-between items-center text-center">
-                        <div class="w-2/5">
-                            <p class="font-bold truncate">{{ bet.p1_name }}</p>
-                        </div>
-                        <div class="w-1/5 text-gray-300 text-sm font-semibold">VS</div>
-                        <div class="w-2/5">
-                            <p class="font-bold truncate">{{ bet.p2_name }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center text-sm text-white bg-blue-500 p-2.5 font-semibold">
-                    {{ _('베팅 참여하기') }} ({{ bet.point }}pt)
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-
-        {% if ongoing_bettings|length > 2 %}
-        <div
-            class="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none">
-        </div>
-        {% endif %}
-    </div>
-</section>
-{% endif %}
 
 {# ===== 시즌 리포트 ===== #}
 {% if current_user.is_authenticated %}
