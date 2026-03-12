@@ -95,9 +95,9 @@ def batch_add_users():
         freshman_enum = FreshmanEnum(freshman_str)
         initial_rank = None
         if gender_enum == GenderEnum.MALE:
-            initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 4
+            initial_rank = 5 if freshman_enum == FreshmanEnum.YES else 4
         elif gender_enum == GenderEnum.FEMALE:
-            initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 6
+            initial_rank = 7 if freshman_enum == FreshmanEnum.YES else 6
         new_player = Player(name=name, gender=gender_enum, is_she_or_he_freshman=freshman_enum, rank=initial_rank)
         db.session.add(new_player)
         db.session.flush()
@@ -260,8 +260,7 @@ def update_ranks():
         }
 
         for i, player in enumerate(players):
-            if player.is_she_or_he_freshman == FreshmanEnum.YES and player.match_count < 16:
-                continue
+            position = i + 1
             position = i + 1
             if position <= rank_boundaries.get(1, 0): new_rank = 1
             elif position <= rank_boundaries.get(2, 0): new_rank = 2
@@ -391,9 +390,9 @@ def register_players():
             freshman_enum = FreshmanEnum(freshman_str)
             initial_rank = None
             if gender_enum == GenderEnum.MALE:
-                initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 4
+                initial_rank = 5 if freshman_enum == FreshmanEnum.YES else 4
             elif gender_enum == GenderEnum.FEMALE:
-                initial_rank = 8 if freshman_enum == FreshmanEnum.YES else 6
+                initial_rank = 7 if freshman_enum == FreshmanEnum.YES else 6
             db.session.add(Player(name=name, gender=gender_enum, is_she_or_he_freshman=freshman_enum, rank=initial_rank))
             added_count += 1
     db.session.commit()

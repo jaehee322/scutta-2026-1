@@ -307,18 +307,7 @@ def _approve_single_match(match):
         add_point_log(loser.id, betting_change=3, reason='안 쉬세요??')
         add_point_log(loser.id, achieve_change=1, reason='안 쉬세요??')
 
-    if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 16:
-        if winner.gender == GenderEnum.MALE:
-            winner.rank = 5
-        elif winner.gender == GenderEnum.FEMALE:
-            winner.rank = 7
 
-
-    if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 16:
-        if loser.gender == GenderEnum.MALE:
-            loser.rank = 5
-        elif loser.gender == GenderEnum.FEMALE:
-            loser.rank = 7
 
 
 def _delete_single_match(match):
@@ -469,12 +458,7 @@ def _delete_single_match(match):
             add_point_log(loser.id, achieve_change=-1, reason='안 쉬세요?? 취소')
             add_point_log(loser.id, betting_change=-3, reason='안 쉬세요?? 취소')
 
-        if winner.is_she_or_he_freshman == FreshmanEnum.YES and winner.match_count == 15:
-            if winner.gender == GenderEnum.MALE or winner.gender == GenderEnum.FEMALE:
-                winner.rank = 8
-        if loser.is_she_or_he_freshman == FreshmanEnum.YES and loser.match_count == 15:
-            if loser.gender == GenderEnum.MALE or loser.gender == GenderEnum.FEMALE:
-                loser.rank = 8
+
     else:
         today_partner = TodayPartner.query.filter(
             (
