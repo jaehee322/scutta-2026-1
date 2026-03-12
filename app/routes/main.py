@@ -18,13 +18,16 @@ def index():
         ('승리', 'win_order', 'win_count'), ('승률', 'rate_order', 'rate_count'),
         ('경기', 'match_order', 'match_count'), ('베팅', 'betting_order', 'betting_count'),
     ]
-    
+
+    # 플레이어 1회 로드 → 4개 카테고리 Python에서 정렬 (4 쿼리 → 1 쿼리)
+    all_players = Player.query.join(Player.user).filter(Player.is_valid == True, User.is_admin == False).all()
+    current_player = current_user.player
 
     rankings_data = {}
     for title, order_field, value_field in categories:
-        top_players = Player.query.join(Player.user).filter(Player.is_valid == True, User.is_admin == False).order_by(getattr(Player, order_field).asc(), Player.name.asc()).limit(3).all()
+        sorted_players = sorted(all_players, key=lambda p: (getattr(p, order_field) or 9999, p.name))
+        top_players = sorted_players[:3]
         top_ranks = sorted(list(set(getattr(p, order_field) for p in top_players if getattr(p, order_field) is not None)))
-        current_player = current_user.player
         my_rank_info = {'rank': getattr(current_player, order_field), 'value': getattr(current_player, value_field)}
         rankings_data[title] = {
             'players': [{'name': p.name, 'rank': p.rank, 'value': getattr(p, value_field), 'actual_rank': getattr(p, order_field)} for p in top_players],
