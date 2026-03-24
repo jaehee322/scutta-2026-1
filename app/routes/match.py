@@ -127,17 +127,25 @@ def get_matches():
 
     matches = query.offset(offset).limit(limit).all()
 
-    response = [
-        {
+    kst = ZoneInfo("Asia/Seoul")
+    response = []
+    for match in matches:
+        ts = match.timestamp
+        if ts:
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=ZoneInfo("UTC"))
+            ts_kst = ts.astimezone(kst)
+            ts_str = ts_kst.strftime("%y-%m-%d %H:%M")
+        else:
+            ts_str = ''
+        response.append({
             'id': match.id,
             'winner_name': match.winner_name,
             'loser_name': match.loser_name,
             'score': match.score,
             'approved': match.approved,
-            'timestamp': match.timestamp
-        }
-        for match in matches
-    ]
+            'timestamp': ts_str
+        })
     return jsonify(response)
 
 

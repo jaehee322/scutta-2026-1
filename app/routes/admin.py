@@ -362,6 +362,7 @@ def submit_partner():
     data = request.json
     pairs = data.get('pairs', [])
     try:
+        TodayPartner.query.delete()
         for pair in pairs:
             p1 = Player.query.filter_by(name=pair['p1_name']).first()
             p2 = Player.query.filter_by(name=pair['p2_name']).first()

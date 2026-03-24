@@ -54,6 +54,10 @@ def create_app():
     def datetimeformat_filter(value, format='%Y-%m-%d %H:%M'):
         if value is None:
             return ""
+        kst = ZoneInfo("Asia/Seoul")
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=ZoneInfo("UTC"))
+        value = value.astimezone(kst)
         return value.strftime(format)
 
     commands.register_commands(app)

@@ -27,7 +27,7 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td class="text-sm text-gray-500">{{ log.timestamp.strftime('%m.%d %H:%M') }}</td>
+                    <td class="text-sm text-gray-500">{{ log.timestamp|datetimeformat('%m.%d %H:%M') }}</td>
                     <td class="font-medium">{{ log.reason }}</td>
                     <td class="text-center font-bold">
                         {% if log.achieve_change > 0 %}
