@@ -115,12 +115,9 @@ def batch_add_users():
 @login_required
 def get_assignment_players():
     search_query = request.args.get('search', '').strip()
-    show_all = request.args.get('show_all', 'false').lower() == 'true'
     query = Player.query.filter(Player.is_valid == True).order_by(Player.name.asc())
     if search_query:
         query = query.filter(Player.name.ilike(f"%{search_query}%"))
-    if not show_all and not search_query:
-        query = query.limit(10)
     players = query.all()
     response_data = []
     for player in players:
@@ -344,8 +341,8 @@ def reset_partner():
 @admin_bp.route('/register_partner', methods=['POST'])
 def register_partner():
     data = request.json
-    old_players = data.get('old_players', [])
-    new_players = data.get('new_players', [])
+    old_players = [p.strip() for p in data.get('old_players', []) if p.strip()]
+    new_players = [p.strip() for p in data.get('new_players', []) if p.strip()]
     if not old_players or not new_players:
         return jsonify({"error": "부원 이름이 필요합니다."}), 400
     pairs = []
@@ -362,13 +359,37 @@ def submit_partner():
     data = request.json
     pairs = data.get('pairs', [])
     try:
-        TodayPartner.query.delete()
+        missing_names = []
+        clean_pairs = []
         for pair in pairs:
-            p1 = Player.query.filter_by(name=pair['p1_name']).first()
-            p2 = Player.query.filter_by(name=pair['p2_name']).first()
-            if not p1 or not p2:
-                return jsonify({"error": f"{pair['p1_name'] if not p1 else pair['p2_name']}의 정보를 찾을 수 없습니다."}), 400
-            db.session.add(TodayPartner(p1_id=p1.id, p1_name=p1.name, p2_id=p2.id, p2_name=p2.name))
+            # 이름의 끝에 공백, 엔터 등이 있을 수 있으므로 모두 strip
+            p1_name = pair['p1_name'].strip()
+            p2_name = pair['p2_name'].strip()
+            
+            p1_db = Player.query.filter_by(name=p1_name).first()
+            p2_db = Player.query.filter_by(name=p2_name).first()
+            
+            if not p1_db and p1_name not in missing_names:
+                missing_names.append(p1_name)
+            if not p2_db and p2_name not in missing_names:
+                missing_names.append(p2_name)
+                
+            if p1_db and p2_db:
+                clean_pairs.append({
+                    'p1_id': p1_db.id, 'p1_name': p1_db.name,
+                    'p2_id': p2_db.id, 'p2_name': p2_db.name
+                })
+                
+        if missing_names:
+            names_str = ", ".join(missing_names)
+            return jsonify({"error": f"다음 선수의 정보를 찾을 수 없습니다: {names_str}"}), 400
+            
+        TodayPartner.query.delete()
+        for pair in clean_pairs:
+            db.session.add(TodayPartner(
+                p1_id=pair['p1_id'], p1_name=pair['p1_name'],
+                p2_id=pair['p2_id'], p2_name=pair['p2_name']
+            ))
         db.session.commit()
         return "오늘의 상대 저장 완료", 200
     except Exception as e:

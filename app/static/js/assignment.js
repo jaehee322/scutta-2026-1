@@ -6,17 +6,12 @@ document.addEventListener('DOMContentLoaded', function () {
         loadPlayers(query);
     });
 
-    document.getElementById('show-all-players-btn').addEventListener('click', () => {
-        document.getElementById('player-search-input').value = '';
-        loadPlayers('', true);
-    });
-
     // 저장 버튼에 이벤트 리스너 추가
     document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
 });
 
-function loadPlayers(searchQuery = '', showAll = false) {
-    let url = `/get_assignment_players?search=${encodeURIComponent(searchQuery)}&show_all=${showAll}`;
+function loadPlayers(searchQuery = '') {
+    let url = `/get_assignment_players?search=${encodeURIComponent(searchQuery)}`;
     fetch(url)
         .then(response => response.json())
         .then(data => {

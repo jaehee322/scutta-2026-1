@@ -25,7 +25,7 @@ def create_app():
     app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations' # 필요시 번역 디렉터리 지정(기본값은 'translations')
     app.config['SEASON_START'] = datetime(2025, 9, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
     app.config['SEMESTER_DEADLINE'] = datetime(2025, 12, 13, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
-    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 43200  # 정적 파일 캐시 12시간
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 28800  # 정적 파일 캐시 8시간
 
     db.init_app(app)
     migrate.init_app(app, db)
