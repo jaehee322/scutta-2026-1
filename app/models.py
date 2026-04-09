@@ -179,9 +179,9 @@ class Betting(db.Model):
 
 class BettingParticipant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    betting_id = db.Column(db.Integer, db.ForeignKey('betting.id'), nullable=False)
+    betting_id = db.Column(db.Integer, db.ForeignKey('betting.id'), nullable=False, index=True)
     participant_name = db.Column(db.String(100), nullable=False)
-    participant_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True)
+    participant_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True, index=True)
     winner_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=True)
 
 class TodayPartner(db.Model):
@@ -195,7 +195,7 @@ class TodayPartner(db.Model):
 
 class PlayerPointLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False, index=True)
     achieve_change = db.Column(db.Integer, default=0)
     betting_change = db.Column(db.Integer, default=0)
     scutta_change = db.Column(db.Integer, default=0)

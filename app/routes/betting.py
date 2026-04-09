@@ -17,10 +17,14 @@ betting_bp = Blueprint('betting', __name__)
 def betting_page():
     bettings = Betting.query.filter_by(submitted=False).order_by(Betting.is_closed, Betting.id.desc()).all()
 
+    # 배치 조회: 모든 player_id를 한 번에 로드 (N+1 → 2 쿼리)
+    player_ids = {b.p1_id for b in bettings} | {b.p2_id for b in bettings}
+    players_map = {p.id: p for p in Player.query.filter(Player.id.in_(player_ids)).all()} if player_ids else {}
+
     betting_data = []
     for bet in bettings:
-        p1 = Player.query.get(bet.p1_id)
-        p2 = Player.query.get(bet.p2_id)
+        p1 = players_map.get(bet.p1_id)
+        p2 = players_map.get(bet.p2_id)
         is_player = current_user.player_id in [bet.p1_id, bet.p2_id]
         betting_data.append({
             'betting': bet, 'p1_rank': p1.rank if p1 else None,

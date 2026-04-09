@@ -175,7 +175,7 @@ def player_detail(player_id):
     player.scutta_order = ranks['scutta_order']
 
     point_logs = PlayerPointLog.query.filter_by(player_id=player_id)\
-                                     .order_by(PlayerPointLog.timestamp.desc()).all()
+                                     .order_by(PlayerPointLog.timestamp.desc()).limit(50).all()
 
     recent_matches = Match.query.filter(
         (Match.winner == player.id) | (Match.loser == player.id)
