@@ -120,6 +120,7 @@ def rankings_page():
     
     # 랭킹 페이지용 실시간 순위 계산 (1위, 1위, 3위 방식)
     attach_rank(players, 'win_count', 'real_win_rank')
+    attach_rank(players, 'loss_count', 'real_loss_rank')
     attach_rank(players, 'rate_count', 'real_rate_rank')
     attach_rank(players, 'match_count', 'real_match_rank')
     attach_rank(players, 'opponent_count', 'real_opponent_rank')
